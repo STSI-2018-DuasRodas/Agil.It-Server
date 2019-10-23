@@ -1,0 +1,27 @@
+{
+  "name": "agil-it",
+  "version": "1.0.0",
+  "description": "Agil-It",
+  "scripts": {
+    "start": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/app.ts --type-check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agil-it/agil-it.git"
+  },
+  "author": "Agil-It Team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/agil-it/agil-it/issues"
+  },
+  "homepage": "https://github.com/agil-it/agil-it#readme",
+  "dependencies": {
+    "@types/node": "^12.11.1",
+    "mysql2": "^1.7.0",
+    "nodemon": "^1.19.4",
+    "reflect-metadata": "^0.1.13",
+    "ts-node": "^8.4.1",
+    "typeorm": "^0.2.20",
+    "typescript": "^3.6.4"
+  }
+}
