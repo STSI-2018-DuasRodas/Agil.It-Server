@@ -6,8 +6,8 @@
   "password": "",
   "database": "agilit",
   "synchronize": true,
-  "logging": false,
+  "logging": ["query", "error"],
   "entities": [
-     "models/**/*.ts"
+     "src/models/**/*.ts"
   ]
 }

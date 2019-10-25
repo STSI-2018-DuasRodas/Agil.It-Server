@@ -1,13 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, JoinColumn, OneToOne, ManyToOne } from "typeorm";
+import { Entity, Column, OneToOne, JoinColumn } from "typeorm";
 
-import { UserRole } from '../enum/UserRole';
+import { UserRole } from './enum/UserRole';
 import { Sector } from './Sector';
+import { BaseClass } from "./BaseClass";
 
 @Entity("user")
-export class User {
-
-  @PrimaryGeneratedColumn()
-  private id: number | undefined;
+export class User extends BaseClass {
 
   @Column()
   private name: string = '';
@@ -31,9 +29,6 @@ export class User {
   private birthDate: Date | undefined;
 
   @Column()
-  private integrationID: string = '';
-
-  @Column()
   private forceChangePassword: boolean = false;
   
   @OneToOne(
@@ -44,46 +39,8 @@ export class User {
   @JoinColumn()
   private sector: Sector | null = null;
 
-
-  @CreateDateColumn()
-  private createdAt: Date | undefined;
-
-  
-  @OneToOne(
-    (type) => User,
-    (user) => user.getId,
-    { nullable: true },
-  )
-  @JoinColumn()
-  private createdBy: User | undefined
-
-  @UpdateDateColumn()
-  private updatedAt   : Date | undefined;
-
-  @OneToOne(
-    (type) => User,
-    (user) => user.getId,
-    { nullable: true },
-  )
-  @JoinColumn()
-  private updatedBy: User | undefined
-
-  @Column({
-    type: Boolean,
-    default: false
-  })
-  private deleted : boolean = false
-
   constructor() {
-
-  }
-
-  public setId(id: number): void {
-    this.id = id;
-  }
-
-  public getId(): number | undefined {
-    return this.id;
+    super();
   }
 
   public setName(name: string): void {
@@ -134,14 +91,6 @@ export class User {
     return this.birthDate;
   }
 
-  public setIntegrationID(integrationID: string): void {
-    this.integrationID = integrationID;
-  }
-
-  public getIntegrationID(): string {
-    return this.integrationID;
-  }
-
   public setForceChangePassword(forceChangePassword: boolean): void {
     this.forceChangePassword = forceChangePassword;
   }
@@ -157,37 +106,5 @@ export class User {
   public getSector(): Sector | null {
     return this.sector;
   }
-
-  public getCreatedAt(): Date | undefined {
-    return this.createdAt;
-  }
-
-  public getUpdatedAt(): Date | undefined {
-    return this.updatedAt;
-  }
-
-  public getCreatedBy(): User | undefined {
-    return this.createdBy;
-  }
-
-  public getUpdatedBy(): User | undefined {
-    return this.updatedBy;
-  }
-
-  /**
-   * Getter deleted
-   * @return {boolean }
-   */
-	public getDeleted(): boolean  {
-		return this.deleted;
-	}
-
-  /**
-   * Setter deleted
-   * @param {boolean } value
-   */
-	public setDeleted(value: boolean ) {
-		this.deleted = value;
-	}
 
 }

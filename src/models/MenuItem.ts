@@ -1,5 +1,5 @@
 import {Entity, Column, PrimaryGeneratedColumn} from "typeorm";
-import { UserRole } from "../enum/UserRole";
+import { UserRole } from "./enum/UserRole";
 
 @Entity("menu_item")
 export class MenuItem {
@@ -32,7 +32,6 @@ export class MenuItem {
   private deleted : boolean = false
 
   constructor() {
-
   }
   
   /**
