@@ -5,6 +5,8 @@ import * as bodyParser from "body-parser";
 import {Request, Response} from "express";
 import * as cors from 'cors';
 import {Routes} from "./routes";
+import { Collection } from "./routes/Collection";
+import { Route } from "./routes/Route";
 
 createConnection().then(async connection => {
 
@@ -13,18 +15,23 @@ createConnection().then(async connection => {
     app.use(bodyParser.json());
     app.use(cors());
 
-    // register express routes from defined application routes
-    Routes.forEach(route => {
-        (app as any)[route.method](route.route, (req: Request, res: Response, next: Function) => {
-            const result = (new (route.controller as any))[route.action](req, res, next);
-            if (result instanceof Promise) {
-                result.then(result => result !== null && result !== undefined ? res.send(result) : undefined);
+    let routes = new Routes();
 
-            } else if (result !== null && result !== undefined) {
-                res.json(result);
-            }
+    routes.getCollections().forEach((collection: Collection) => {
+        collection.getRoutes().forEach((route: Route) => {
+            (app as any)[route.getMethod()](route.getRoute(), (req: Request, res: Response, next: Function) => {
+
+                const result = (new (route.getController() as any))[route.getAction()](req, res, next);
+          
+                if (result instanceof Promise) {
+                  result.then(result => result !== null && result !== undefined ? res.send(result) : undefined);
+                } else if (result !== null && result !== undefined) {
+                  res.json(result);
+                }
+              });
+              console.log(`Registering route:\t${route.getMethod()}\t${route.getRoute()}`)
         });
-    });
+    })
 
     app.listen(3000);
 

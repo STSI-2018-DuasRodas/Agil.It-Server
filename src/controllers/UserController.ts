@@ -1,3 +1,4 @@
+/*
 import {getRepository} from "typeorm";
 import {NextFunction, Request, Response} from "express";
 import {User} from "../models/User";
@@ -22,5 +23,16 @@ export class UserController {
         let userToRemove = await this.userRepository.findOne(request.params.id);
         await this.userRepository.remove(userToRemove);
     }
+
+}/**/
+import {getRepository} from "typeorm";
+import {User} from "../models/User";
+import {CrudController} from "./CrudController";
+
+export class UserController extends CrudController<User> {
+
+  constructor() {
+    super(getRepository(User))
+  } 
 
 }
