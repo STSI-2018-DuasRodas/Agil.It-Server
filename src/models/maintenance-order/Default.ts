@@ -1,11 +1,20 @@
-import { Entity } from "typeorm";
+import { ChildEntity, OneToOne, JoinColumn } from "typeorm";
 import { MaintenanceOrder } from "./MaintenanceOrder";
+import { OrderEquipment } from "./OrderEquipment";
 
-@Entity("maintenance_order_default")
+@ChildEntity()
 export class Default extends MaintenanceOrder {
   
   constructor() {
     super();
   }
+
+  @OneToOne(
+    (type) => OrderEquipment,
+    (orderEquipment) => orderEquipment.getId,
+    { nullable: false, cascade: true }
+  )
+  @JoinColumn()
+  private orderEquipment: OrderEquipment = new OrderEquipment();
   
 }

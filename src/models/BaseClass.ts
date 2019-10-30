@@ -30,14 +30,6 @@ export abstract class BaseClass {
   }
 
   /**
-   * Setter Id
-   * @param {number } id
-   */
-  public setId(id: number): void {
-    this.id = id;
-  }
-
-  /**
    * Getter Id
    * @return {number }
    */

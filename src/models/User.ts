@@ -39,6 +39,9 @@ export class User extends BaseClass {
   @JoinColumn()
   private sector: Sector | null = null;
 
+  @Column()
+  private employeeBadge: string = ''
+
   constructor() {
     super();
   }
@@ -106,5 +109,13 @@ export class User extends BaseClass {
   public getSector(): Sector | null {
     return this.sector;
   }
+
+	public setEmployeeBadge(value: string ) {
+		this.employeeBadge = value;
+	}
+
+	public getEmployeeBadge(): string  {
+		return this.employeeBadge;
+	}
 
 }

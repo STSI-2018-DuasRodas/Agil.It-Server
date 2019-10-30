@@ -1,7 +1,7 @@
-import { Entity } from "typeorm";
+import { ChildEntity } from "typeorm";
 import { OrderOperation } from "./OrderOperation";
 
-@Entity("maintenance_order_operation_list")
+@ChildEntity()
 export class List extends OrderOperation {
   
 }

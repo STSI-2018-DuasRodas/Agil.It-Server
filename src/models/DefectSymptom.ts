@@ -3,7 +3,7 @@ import { MachineType } from "./MachineType";
 import { CrudClass } from "./CrudClass";
 
 @Entity("defect_symptom")
-export class DefectOrigin extends CrudClass {
+export class DefectSymptom extends CrudClass {
 
   @OneToOne(
     (type) => MachineType,
