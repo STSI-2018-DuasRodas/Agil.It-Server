@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { NotificatoinStatus } from "./NotificatoinStatus";
 
 @Entity("notification")
@@ -26,6 +26,11 @@ export class Notification {
   })
   status: NotificatoinStatus;
 
+  @CreateDateColumn()
+  private createdAt: Date | undefined;
+
+  @UpdateDateColumn()
+  private updatedAt: Date | undefined;
 
   /**
    * Getter id
@@ -65,6 +70,23 @@ export class Notification {
    */
 	public setIcon(value: string) {
 		this.icon = value;
+  }
+
+  /**
+   * Getter createdAt
+   * @return {Date }
+   */
+	public getCreatedAt(): Date  {
+		return this.createdAt;
 	}
+
+  /**
+   * Getter updatedAt
+   * @return {Date }
+   */
+	public getUpdatedAt(): Date  {
+		return this.updatedAt;
+	}
+  
 
 }
