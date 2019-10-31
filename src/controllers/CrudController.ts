@@ -1,4 +1,4 @@
-import {Repository, Entity} from 'typeorm';
+import {Repository} from 'typeorm';
 import {NextFunction, Request, Response} from "express";
 
 export class CrudController<Entity> {
