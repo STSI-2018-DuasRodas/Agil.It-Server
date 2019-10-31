@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
 import { NotificatoinStatus } from "./NotificatoinStatus";
+import { User } from "./User";
 
 @Entity("notification")
 export class Notification {
@@ -28,6 +29,9 @@ export class Notification {
     default: NotificatoinStatus.NEW
   })
   status: NotificatoinStatus;
+
+  @ManyToOne(type => User, user => user.getId)
+  private user: User;
 
   @CreateDateColumn()
   private createdAt: Date | undefined;
@@ -105,6 +109,23 @@ export class Notification {
    */
 	public setTitle(value: string) {
 		this.title = value;
+  }
+
+  /**
+   * Getter user
+   * @return {User}
+   */
+	public getUser(): User {
+		return this.user;
 	}
+
+  /**
+   * Setter user
+   * @param {User} value
+   */
+	public setUser(value: User) {
+		this.user = value;
+	}
+
   
 }

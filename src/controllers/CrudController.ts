@@ -1,4 +1,4 @@
-import {Repository} from 'typeorm';
+import {Repository, Entity} from 'typeorm';
 import {NextFunction, Request, Response} from "express";
 
 export class CrudController<Entity> {
@@ -41,5 +41,10 @@ export class CrudController<Entity> {
   async remove(request: Request, response: Response, next: NextFunction) {
     let entityToRemove = await this.getRepositoryEntity().findOne(request.params.id);
     await this.getRepositoryEntity().remove(entityToRemove);
+  }
+
+  async update(request: Request, response: Response, next: NextFunction) {
+    let entity = await this.getRepositoryEntity().findOne(request.params.id);
+    await this.getRepositoryEntity().update(entity,request.body);
   }
 }

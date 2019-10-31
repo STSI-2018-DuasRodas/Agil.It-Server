@@ -85,6 +85,15 @@ export class Collection {
 			))
 		}
 		
+		if (config.addUpdate) {
+			this.addRoute(new Route(
+				Method.PATCH,
+				this.getRouteWithId(),
+				this.getController(),
+				'update'
+			))
+		}
+		
 		if (config.addDelete) {
 			this.addRoute(new Route(
 				Method.DELETE,
