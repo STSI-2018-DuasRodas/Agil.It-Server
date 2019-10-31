@@ -8,6 +8,9 @@ export class Notification {
   private id: any;
 
   @Column()
+  private title: string;
+
+  @Column()
   private description: string;
 
   @Column()
@@ -87,6 +90,21 @@ export class Notification {
 	public getUpdatedAt(): Date  {
 		return this.updatedAt;
 	}
-  
 
+    /**
+     * Getter title
+     * @return {string}
+     */
+	public getTitle(): string {
+		return this.title;
+	}
+
+  /**
+   * Setter title
+   * @param {string} value
+   */
+	public setTitle(value: string) {
+		this.title = value;
+	}
+  
 }
