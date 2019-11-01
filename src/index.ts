@@ -7,6 +7,7 @@ import * as cors from 'cors';
 import {Routes} from "./routes";
 import { Collection } from "./routes/Collection";
 import { Route } from "./routes/Route";
+import { ResponseAPI } from "./ResponseAPI";
 
 createConnection().then(async connection => {
 
@@ -24,7 +25,20 @@ createConnection().then(async connection => {
                 const result = (new (route.getController() as any))[route.getAction()](req, res, next);
           
                 if (result instanceof Promise) {
-                  result.then(result => result !== null && result !== undefined ? res.send(result) : undefined);
+                  result.then(result => {
+                    if (result !== null && result !== undefined) {
+                      res.status(200).json(ResponseAPI.getResponseObject(true,result))
+                    } else {
+                      res.status(200).json(ResponseAPI.getResponseObject(false,route.getErrorMessage()))
+                    }
+                  })
+                  .catch((err)=> {
+                    if (err !== null && err !== undefined) {
+                      res.status(200).json(ResponseAPI.getResponseObject(true,err))
+                    } else {
+                      res.status(200).json(ResponseAPI.getResponseObject(false,route.getErrorMessage()))
+                    }
+                  })
                 } else if (result !== null && result !== undefined) {
                   res.json(result);
                 }

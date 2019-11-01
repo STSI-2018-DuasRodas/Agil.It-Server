@@ -57,7 +57,7 @@ export class Collection {
 	public addBaseCrudRoutes(config: ConfigCrudRoutes = new ConfigCrudRoutes()) {
 
 		// Get all records
-		if (config.addGetAll) {
+		if (config.getAddGetAll()) {
 			this.addRoute(new Route(
 				Method.GET,
 				this.getRoute(),
@@ -67,7 +67,7 @@ export class Collection {
 		}
 		
 		// Get record by id
-		if (config.addGetById) {
+		if (config.getAddGetById()) {
 			this.addRoute(new Route(
 				Method.GET,
 				this.getRouteWithId(),
@@ -76,30 +76,33 @@ export class Collection {
 			))
 		}
 
-		if (config.addPost) {
+		if (config.getAddPost()) {
 			this.addRoute(new Route(
 				Method.POST,
 				this.getRoute(),
 				this.getController(),
-				'save'
+				'save',
+				`Ocorreu um erro ao persistir o dado`
 			))
 		}
 		
-		if (config.addUpdate) {
+		if (config.getAddUpdate()) {
 			this.addRoute(new Route(
 				Method.PATCH,
 				this.getRouteWithId(),
 				this.getController(),
-				'update'
+				'update',
+				`Ocorreu um erro ao atualizar o dado`
 			))
 		}
 		
-		if (config.addDelete) {
+		if (config.getAddDelete()) {
 			this.addRoute(new Route(
 				Method.DELETE,
 				this.getRouteWithId(),
 				this.getController(),
-				'remove'
+				'remove',
+				`Ocorreu um erro ao deletar o dado`
 			))
 		}
 	}

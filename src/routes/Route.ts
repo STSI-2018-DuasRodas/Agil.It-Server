@@ -7,12 +7,14 @@ export class Route {
   private route: string;
   private controller: any;
   private action: string;
+  private errorMessage: any;
 
-  constructor(method: Method, route: string, controller: any, action: string) {
+  constructor(method: Method, route: string, controller: any, action: string, errorMessage: any = `Registro não encontrado`) {
     this.method = method
     this.route = route
     this.controller = controller
     this.action = action
+    this.errorMessage = errorMessage
   }
 
   public getMethod(): Method {
@@ -46,22 +48,13 @@ export class Route {
   public setAction(value: string) {
     this.action = value;
   }
+  
+	public getErrorMessage(): any {
+		return this.errorMessage;
+	}
 
-  public registerRoute(app:any, logRoutes: boolean = false) {
-    app[this.getMethod()](this.getRoute(), (req: Request, res: Response, next: Function) => {
-
-      const result = (new (this.getController() as any))[this.getAction()](req, res, next);
-
-      if (result instanceof Promise) {
-        result.then(result => result !== null && result !== undefined ? res.send(result) : undefined);
-      } else if (result !== null && result !== undefined) {
-        res.json(result);
-      }
-    });
-    
-    if (logRoutes) {
-      console.log(`Registering route:\t${this.getMethod()}\t${this.getRoute()}`)
-    }
-  }
+	public setErrorMessage(value: any) {
+		this.errorMessage = value;
+	}
 
 }
