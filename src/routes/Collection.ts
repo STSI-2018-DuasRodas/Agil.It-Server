@@ -76,6 +76,7 @@ export class Collection {
 			))
 		}
 
+		// Create new record
 		if (config.getAddPost()) {
 			this.addRoute(new Route(
 				Method.POST,
@@ -86,6 +87,7 @@ export class Collection {
 			))
 		}
 		
+		// Update record
 		if (config.getAddUpdate()) {
 			this.addRoute(new Route(
 				Method.PATCH,
@@ -96,6 +98,7 @@ export class Collection {
 			))
 		}
 		
+		// Delete record
 		if (config.getAddDelete()) {
 			this.addRoute(new Route(
 				Method.DELETE,

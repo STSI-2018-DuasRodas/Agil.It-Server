@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
-import { NotificatoinStatus } from "./NotificatoinStatus";
+import { NotificatoinStatus } from "./enum/NotificatoinStatus";
 import { User } from "./User";
 
 @Entity("notification")

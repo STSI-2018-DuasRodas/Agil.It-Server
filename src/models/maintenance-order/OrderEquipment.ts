@@ -1,61 +1,63 @@
 import { Equipment } from "../Equipment";
 import { SuperiorEquipment } from "../SuperiorEquipment";
-import { OneToOne, JoinColumn, Column, Entity } from "typeorm";
-import { DefectOrigin } from "../DefectOrigin";
-import { DefectSymptom } from "../DefectSymptom";
-import { BaseClass } from "../BaseClass";
+import { OneToOne, Column, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
+import { OrderOperation } from "./OrderOperation";
+import { MaintenanceOrder } from "./MaintenanceOrder";
 
 @Entity('order_equipment')
-export class OrderEquipment extends BaseClass {
+export class OrderEquipment {
 
-  @OneToOne(
-    (type) => Equipment,
-    (equipment) => equipment.getId,
-    { nullable: false }
-  )
-  @JoinColumn()
-  private equipment: Equipment = new Equipment();
+  @PrimaryColumn()
+  private maintenanceOrderId : number;
+  
+  @PrimaryColumn()
+  private equipmentId: number;
+
+  @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: false})
+  private maintenanceOrder : MaintenanceOrder;
+  
+  @OneToOne( type => Equipment, equipment => equipment.getId, {cascade: false, nullable: false})
+  private equipment: Equipment;
   
   @OneToOne(
     (type) => SuperiorEquipment,
     (superiorEquipment) => superiorEquipment.getId,
     { nullable: true }
   )
-  @JoinColumn()
-  private superiorEquipment: SuperiorEquipment = new SuperiorEquipment();
+  private superiorEquipment: SuperiorEquipment;
 
-  @OneToOne(
-    (type) => DefectOrigin,
-    (defectOrigin) => defectOrigin.getId,
-    { nullable: true }
-  )
-  @JoinColumn()
-  private defectOrigin: DefectOrigin = null;
+  @OneToMany(type => OrderOperation, orderOperation => orderOperation.getOrderEquipment, {onDelete: "CASCADE"})
+  private orderOperation: Array<OrderOperation>;
 
-  @Column({
-    type: 'varchar',
-    length:'255'
-  })
-  private defectOriginNote: string = '';
+  @CreateDateColumn()
+  private createdAt: Date | undefined;
 
-  @OneToOne(
-    (type) => DefectSymptom,
-    (defectSymptom) => defectSymptom.getId,
-    { nullable: true }
-  )
-  @JoinColumn()
-  private defectSymptom: DefectSymptom = null;
+  @Column()
+  private createdBy: number | undefined;
+
+  @UpdateDateColumn()
+  private updatedAt: Date | undefined;
+
+  @Column()
+  private updatedBy: number | undefined;
 
   @Column({
-    type: 'varchar',
-    length:'255'
+    type: Boolean,
+    default: false
   })
-  private defectSymptomNote: string = '';
+  private deleted: boolean = false;
 
   constructor() {
-    super();
   }
 
+  /**
+   * Getter maintenanceOrder
+   * @return {MaintenanceOrder}
+   */
+	public getMaintenanceOrder(): MaintenanceOrder {
+		return this.maintenanceOrder;
+  }
+  
   /**
    * Getter equipment
    * @return {Equipment }
@@ -87,70 +89,141 @@ export class OrderEquipment extends BaseClass {
 	public setSuperiorEquipment(value: SuperiorEquipment ) {
 		this.superiorEquipment = value;
   }
-  
 
   /**
-   * Getter defectOrigin
-   * @return {DefectOrigin }
+   * Getter orderOperation
+   * @return {Array<OrderOperation>}
    */
-	public getDefectOrigin(): DefectOrigin  {
-		return this.defectOrigin;
+	public getOrderOperation(): Array<OrderOperation> {
+		return this.orderOperation;
 	}
 
   /**
-   * Getter defectOriginNote
-   * @return {string }
+   * Setter maintenanceOrder
+   * @param {MaintenanceOrder} value
    */
-	public getDefectOriginNote(): string  {
-		return this.defectOriginNote;
+	public setMaintenanceOrder(value: MaintenanceOrder) {
+		this.maintenanceOrder = value;
 	}
 
   /**
-   * Getter defectSymptom
-   * @return {DefectSymptom }
+   * Setter orderOperation
+   * @param {Array<OrderOperation>} value
    */
-	public getDefectSymptom(): DefectSymptom  {
-		return this.defectSymptom;
+	public setOrderOperation(value: Array<OrderOperation>) {
+		this.orderOperation = value;
 	}
 
   /**
-   * Getter defectSymptomNote
-   * @return {string }
+   * Getter maintenanceOrderId
+   * @return {number}
    */
-	public getDefectSymptomNote(): string  {
-		return this.defectSymptomNote;
+	public getMaintenanceOrderId(): number {
+		return this.maintenanceOrderId;
 	}
 
   /**
-   * Setter defectOrigin
-   * @param {DefectOrigin } value
+   * Setter maintenanceOrderId
+   * @param {number} value
    */
-	public setDefectOrigin(value: DefectOrigin ) {
-		this.defectOrigin = value;
+	public setMaintenanceOrderId(value: number) {
+		this.maintenanceOrderId = value;
 	}
 
   /**
-   * Setter defectOriginNote
-   * @param {string } value
+   * Getter equipmentId
+   * @return {number}
    */
-	public setDefectOriginNote(value: string ) {
-		this.defectOriginNote = value;
+	public getEquipmentId(): number {
+		return this.equipmentId;
 	}
 
   /**
-   * Setter defectSymptom
-   * @param {DefectSymptom } value
+   * Setter equipmentId
+   * @param {number} value
    */
-	public setDefectSymptom(value: DefectSymptom ) {
-		this.defectSymptom = value;
+	public setEquipmentId(value: number) {
+		this.equipmentId = value;
 	}
 
   /**
-   * Setter defectSymptomNote
-   * @param {string } value
+   * Getter createdAt
+   * @return {Date }
    */
-	public setDefectSymptomNote(value: string ) {
-		this.defectSymptomNote = value;
+	public getCreatedAt(): Date  {
+		return this.createdAt;
 	}
+
+  /**
+   * Getter createdBy
+   * @return {number }
+   */
+	public getCreatedBy(): number  {
+		return this.createdBy;
+	}
+
+  /**
+   * Getter updatedAt
+   * @return {Date }
+   */
+	public getUpdatedAt(): Date  {
+		return this.updatedAt;
+	}
+
+  /**
+   * Getter updatedBy
+   * @return {number }
+   */
+	public getUpdatedBy(): number  {
+		return this.updatedBy;
+	}
+
+  /**
+   * Getter deleted
+   * @return {boolean }
+   */
+	public getDeleted(): boolean  {
+		return this.deleted;
+	}
+
+  /**
+   * Setter createdAt
+   * @param {Date } value
+   */
+	public setCreatedAt(value: Date ) {
+		this.createdAt = value;
+	}
+
+  /**
+   * Setter createdBy
+   * @param {number } value
+   */
+	public setCreatedBy(value: number ) {
+		this.createdBy = value;
+	}
+
+  /**
+   * Setter updatedAt
+   * @param {Date } value
+   */
+	public setUpdatedAt(value: Date ) {
+		this.updatedAt = value;
+	}
+
+  /**
+   * Setter updatedBy
+   * @param {number } value
+   */
+	public setUpdatedBy(value: number ) {
+		this.updatedBy = value;
+	}
+
+  /**
+   * Setter deleted
+   * @param {boolean } value
+   */
+	public setDeleted(value: boolean ) {
+		this.deleted = value;
+  }
 
 }

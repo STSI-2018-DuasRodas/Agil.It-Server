@@ -11,10 +11,25 @@ export class Default extends MaintenanceOrder {
 
   @OneToOne(
     (type) => OrderEquipment,
-    (orderEquipment) => orderEquipment.getId,
-    { nullable: false, cascade: true }
+    (orderEquipment) => orderEquipment.getMaintenanceOrderId,
+    { cascade: true }
   )
-  @JoinColumn()
-  private orderEquipment: OrderEquipment = new OrderEquipment();
+  private orderEquipment: OrderEquipment;
   
+  /**
+   * Getter orderEquipment
+   * @return {OrderEquipment }
+   */
+	public getOrderEquipment(): OrderEquipment  {
+		return this.orderEquipment;
+	}
+
+  /**
+   * Setter orderEquipment
+   * @param {OrderEquipment } value
+   */
+	public setOrderEquipment(value: OrderEquipment ) {
+		this.orderEquipment = value;
+	}
+
 }
