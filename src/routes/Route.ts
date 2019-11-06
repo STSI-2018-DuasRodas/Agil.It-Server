@@ -1,15 +1,16 @@
 import { Method } from "./Method";
-import {Request, Response} from "express";
+import { ResponseAPI } from "../ResponseAPI";
+import { Request, Response } from "express-serve-static-core";
 
 export class Route {
 
-  private method: Method;
+  private method: Method | Array<Method>;
   private route: string;
   private controller: any;
   private action: string;
   private errorMessage: any;
 
-  constructor(method: Method, route: string, controller: any, action: string, errorMessage: any = `Registro não encontrado`) {
+  constructor(method: Method | Array<Method>, route: string, controller: any, action: string, errorMessage: any = `Registro não encontrado`) {
     this.method = method
     this.route = route
     this.controller = controller
@@ -17,7 +18,7 @@ export class Route {
     this.errorMessage = errorMessage
   }
 
-  public getMethod(): Method {
+  public getMethod(): Method | Array<Method> {
     return this.method;
   }
 
@@ -33,7 +34,7 @@ export class Route {
     return this.action;
   }
 
-  public setMethod(value: Method) {
+  public setMethod(value: Method | Array<Method>) {
     this.method = value;
   }
 
@@ -55,6 +56,46 @@ export class Route {
 
 	public setErrorMessage(value: any) {
 		this.errorMessage = value;
-	}
+  }
+  
+  public registerRoute(app: any) {
+    let metedos = this.getMethod()
+    if (typeof metedos == "string") {
+      metedos = [metedos]
+    }
+    metedos.forEach(metodo => {
+      (app as any)[metodo](this.getRoute(), (req: Request, res: Response, next: Function) => {
+
+          const result = (new (this.getController() as any))[this.getAction()](req, res, next);
+    
+          if (result instanceof Promise) {
+            result.then(result => {
+              if (result !== null && result !== undefined) {
+                res.status(200).json(ResponseAPI.getResponseObject(true,result))
+              } else {
+                res.status(200).json(ResponseAPI.getResponseObject(false,this.getErrorMessage()))
+              }
+            })
+            .catch((err)=> {
+              if (err !== null && err !== undefined) {
+                res.status(200).json(ResponseAPI.getResponseObject(true,err))
+              } else {
+                res.status(200).json(ResponseAPI.getResponseObject(false,this.getErrorMessage()))
+              }
+            })
+          } else if (result !== null && result !== undefined) {
+            res.json(result);
+          }
+        });
+        console.log(`Registering route:${this.alignRight(metodo,10)}\t${this.getRoute()}`)
+      });
+  }
+  
+  public alignRight(text: string, qtdCharacters:number = 15) {
+    let textLength=text.length
+    let repeatTimes = (qtdCharacters-textLength)>0 ? (qtdCharacters-textLength) : 0
+
+    return `${" ".repeat(repeatTimes)}${text}`
+  }
 
 }

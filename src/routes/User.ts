@@ -13,7 +13,7 @@ export class UserCollection extends Collection {
     private createLoginRoute() : Route {
         return new Route(
             Method.POST,
-            `/login`,
+            `${this.baseRoute}/login`,
             this.getController(),
             'login',
             `Usuário ou senha inválidos`

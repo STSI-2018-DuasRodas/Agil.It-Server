@@ -4,6 +4,7 @@ import { ConfigCrudRoutes } from "./ConfigCrudRoutes";
 
 export class Collection {
 
+	readonly baseRoute: string = "/api/v1"
   private route: string;
   private controller: any;
   private routes: Array<Route>;
@@ -20,7 +21,7 @@ export class Collection {
   }
 
 	public getRoute(): string {
-		return this.route;
+		return `/api/v1${this.route}`;
 	}
 
 	public getRouteWithId() : string {
@@ -90,7 +91,7 @@ export class Collection {
 		// Update record
 		if (config.getAddUpdate()) {
 			this.addRoute(new Route(
-				Method.PATCH,
+				[Method.PUT, Method.PATCH],
 				this.getRouteWithId(),
 				this.getController(),
 				'update',

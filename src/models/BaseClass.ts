@@ -5,7 +5,7 @@ export abstract class BaseClass {
   @PrimaryGeneratedColumn()
   private id: number | undefined;
 
-  @Column()
+  @Column({default: ''})
   private integrationID: string = '';
 
   @CreateDateColumn()

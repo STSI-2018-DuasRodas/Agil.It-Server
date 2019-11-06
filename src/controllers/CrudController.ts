@@ -27,7 +27,7 @@ export class CrudController<Entity> {
 
 
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.getRepositoryEntity().find();
+    return this.getRepositoryEntity().find({ where: { deleted: false}});
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
@@ -39,12 +39,17 @@ export class CrudController<Entity> {
   }
 
   async remove(request: Request, response: Response, next: NextFunction) {
-    let entityToRemove = await this.getRepositoryEntity().findOne(request.params.id);
-    await this.getRepositoryEntity().remove(entityToRemove);
+    let result = await this.getRepositoryEntity().update(request.params.id,<any>{deleted:true})
+    if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
+
+    return await this.getRepositoryEntity().findOne(request.params.id);
   }
 
   async update(request: Request, response: Response, next: NextFunction) {
-    let entity = await this.getRepositoryEntity().findOne(request.params.id);
-    await this.getRepositoryEntity().update(entity,request.body);
+    
+    let result = await this.getRepositoryEntity().update(request.params.id,request.body)
+    if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
+
+    return await this.getRepositoryEntity().findOne(request.params.id);
   }
 }
