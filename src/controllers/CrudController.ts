@@ -1,5 +1,8 @@
 import {Repository} from 'typeorm';
 import {NextFunction, Request, Response} from "express";
+import { validate } from "class-validator";
+import * as jwt from "jsonwebtoken";
+import JWT from "../config/JWT";
 
 export class CrudController<Entity> {
 
@@ -35,19 +38,94 @@ export class CrudController<Entity> {
   }
 
   async save(request: Request, response: Response, next: NextFunction) {
-    return this.getRepositoryEntity().save(request.body);
-  }
+    let entity: Entity = this.getRepositoryEntity().create(<Entity>request.body)
 
-  async remove(request: Request, response: Response, next: NextFunction) {
-    let result = await this.getRepositoryEntity().update(request.params.id,<any>{deleted:true})
-    if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
+    console.log(1,entity)
+    const token = <string>request.headers["token"];
+    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
+    const { userId } = jwtPayload;
 
-    return await this.getRepositoryEntity().findOne(request.params.id);
+    entity["setUpdatedBy"](userId);
+
+    if (entity["getCreatedBy"]() == "") {
+      entity["setCreatedBy"](userId);
+    }
+
+    //Validade if the parameters are ok
+    const errors = await validate(entity);
+    if (errors.length > 0) {
+      return {
+        "success":false,
+        "error":errors
+      };
+    }
+
+    if (entity["getIntegrationID"]() != "") {
+      try {
+        await this.getRepositoryEntity().findOneOrFail({where: {integrationID: entity["getIntegrationID"]()}});
+        return {"success":false,"error":`Registro com o integrationID ${entity["getIntegrationID"]()} já existe.`};
+      } catch (error) {
+        // Não está duplicado
+      }
+    }
+
+    return this.getRepositoryEntity().save(entity);
   }
 
   async update(request: Request, response: Response, next: NextFunction) {
     
-    let result = await this.getRepositoryEntity().update(request.params.id,request.body)
+    let entity: Entity
+
+    try {
+      entity = await this.getRepositoryEntity().findOneOrFail(request.params.id);
+      entity = await this.getRepositoryEntity().merge(entity, request.body)
+    } catch (error) {
+      return {"success":false,"error":`Registro ${request.params.id} não encontrado`};
+    }
+
+    const token = <string>request.headers["token"];
+    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
+    const { userId } = jwtPayload;
+
+    entity["setUpdatedBy"](userId);
+    if (entity["getCreatedBy"]() == "") {
+      entity["setCreatedBy"](userId);
+    }
+
+    const errors = await validate(entity);
+    if (errors.length > 0) {
+      return {
+        "success":false,
+        "error":errors
+      };
+    }
+
+    let result = await this.getRepositoryEntity().update(request.params.id,entity)
+    if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
+
+    return await this.getRepositoryEntity().findOne(request.params.id);
+  }
+  
+  async remove(request: Request, response: Response, next: NextFunction) {
+    
+    let entity: Entity
+
+    try {
+      entity = await this.getRepositoryEntity().findOneOrFail(request.params.id);
+    } catch (error) {
+      return {"success":false,"error":`Registro com o integrationID ${entity["getIntegrationID"]()} já existe.`};
+    }
+
+    entity["setDeleted"](true);
+    const errors = await validate(entity);
+    if (errors.length > 0) {
+      return {
+        "success":false,
+        "error":errors
+      };
+    }
+
+    let result = await this.getRepositoryEntity().update(request.params.id,entity)
     if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
 
     return await this.getRepositoryEntity().findOne(request.params.id);

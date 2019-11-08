@@ -1,31 +1,39 @@
-import { Entity, Column, OneToOne, JoinColumn } from "typeorm";
-
+import { Entity, Column, OneToOne, JoinColumn, Unique } from "typeorm";
+import { Length, IsNotEmpty } from "class-validator";
 import { UserRole } from './enum/UserRole';
 import { Sector } from './Sector';
 import { BaseClass } from "./BaseClass";
+import { WorkCenter } from "./WorkCenter";
 
 @Entity("user")
+@Unique(["email","employeeBadge"])
 export class User extends BaseClass {
 
   @Column()
+  @IsNotEmpty()
   private name: string = '';
 
   @Column()
+  @IsNotEmpty()
   private email: string = '';
 
   @Column()
+  @Length(4, 100)
   private password: string = '';
 
   @Column({
     type: "enum",
     enum: UserRole
   })
+  @IsNotEmpty()
   private role: UserRole | undefined;
 
   @Column()
+  @IsNotEmpty()
   private contact: string = '';
 
   @Column("date")
+  @IsNotEmpty()
   private birthDate: Date | undefined;
 
   @Column()
@@ -39,7 +47,16 @@ export class User extends BaseClass {
   @JoinColumn()
   private sector: Sector | null = null;
 
+  @OneToOne(
+    type => WorkCenter,
+    workCenter => workCenter.getId,
+    { nullable: true },
+  )
+  @JoinColumn()
+  private workCenter: WorkCenter | null = null;
+
   @Column()
+  @IsNotEmpty()
   private employeeBadge: string = ''
 
   constructor() {
@@ -116,6 +133,14 @@ export class User extends BaseClass {
 
 	public getEmployeeBadge(): string  {
 		return this.employeeBadge;
+	}
+
+	public getWorkCenter(): WorkCenter  {
+		return this.workCenter;
+	}
+
+	public setWorkCenter(value: WorkCenter ) {
+		this.workCenter = value;
 	}
 
 }

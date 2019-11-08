@@ -3,6 +3,7 @@ import {createConnection} from "typeorm";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as cors from 'cors';
+import * as helmet from "helmet";
 import {Routes} from "./routes";
 import { Collection } from "./routes/Collection";
 import { Route } from "./routes/Route";
@@ -13,6 +14,7 @@ createConnection().then(async connection => {
     const app = express();
     app.use(bodyParser.json());
     app.use(cors());
+    app.use(helmet());
 
     let routes = new Routes();
 

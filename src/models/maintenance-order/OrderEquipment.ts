@@ -3,6 +3,7 @@ import { SuperiorEquipment } from "../SuperiorEquipment";
 import { OneToOne, Column, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
 import { OrderOperation } from "./OrderOperation";
 import { MaintenanceOrder } from "./MaintenanceOrder";
+import { InstallationArea } from "../InstallationArea";
 
 @Entity('order_equipment')
 export class OrderEquipment {
@@ -26,6 +27,13 @@ export class OrderEquipment {
   )
   private superiorEquipment: SuperiorEquipment;
 
+  @OneToOne(
+    (type) => InstallationArea,
+    (installationArea) => installationArea.getId,
+    { nullable: false, cascade: false }
+  )
+  private installationArea: InstallationArea;
+  
   @OneToMany(type => OrderOperation, orderOperation => orderOperation.getOrderEquipment, {onDelete: "CASCADE"})
   private orderOperation: Array<OrderOperation>;
 
@@ -225,5 +233,21 @@ export class OrderEquipment {
 	public setDeleted(value: boolean ) {
 		this.deleted = value;
   }
+
+  /**
+   * Getter installationArea
+   * @return {InstallationArea}
+   */
+	public getInstallationArea(): InstallationArea {
+		return this.installationArea;
+	}
+
+  /**
+   * Setter installationArea
+   * @param {InstallationArea} value
+   */
+	public setInstallationArea(value: InstallationArea) {
+		this.installationArea = value;
+	}
 
 }

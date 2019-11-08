@@ -1,11 +1,11 @@
-import { Entity, Column, OneToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
-import { User } from "../User";
+import { Entity, PrimaryGeneratedColumn, OneToOne, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { MaintenanceOrder } from "./MaintenanceOrder";
-import { MaintenanceWorker } from "./MaintenanceWorker";
-import { WorderRequestStatus } from "../enum/WorkerRequestStatus";
+import { SignatureRole } from "../enum/SignatureRole";
+import { User } from "../User";
+import { SignatureStatus } from "../enum/SignatureStatus";
 
-@Entity('worker_request')
-export class WorkerRequest {
+@Entity("order_signature")
+export class OrderSignature {
 
   @PrimaryGeneratedColumn("uuid")
   private id: any;
@@ -16,21 +16,25 @@ export class WorkerRequest {
   @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
   private maintenanceOrder: MaintenanceOrder;
 
-  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerRequest)
-  private maintenanceWorker: MaintenanceWorker;
-
-  @Column()
-  private request: boolean = false;
-
-  @OneToOne(type => User, user => user.getId)
-  private requestedBy: User;
+  @Column({
+    type: "enum",
+    enum: SignatureRole,
+    nullable: false
+  })
+  private signatureRole: SignatureRole;
 
   @Column({
     type: "enum",
-    enum: WorderRequestStatus,
-    default: WorderRequestStatus.REQUESTED
+    enum: SignatureStatus,
+    default: SignatureStatus.NEW
   })
-  private status: WorderRequestStatus;
+  private signatureStatus: SignatureStatus;
+
+  @Column({
+    type: 'varchar',
+    length: '255'
+  })
+  private note: string;
 
   @CreateDateColumn()
   private createdAt: Date | undefined;
@@ -69,19 +73,27 @@ export class WorkerRequest {
   }
 
   /**
-   * Getter request
-   * @return {boolean }
+   * Getter signatureRole
+   * @return {SignatureRole}
    */
-  public getRequest(): boolean {
-    return this.request;
+  public getSignatureRole(): SignatureRole {
+    return this.signatureRole;
   }
 
   /**
-   * Getter requestedBy
-   * @return {User}
+   * Getter signatureStatus
+   * @return {SignatureStatus}
    */
-  public getRequestedBy(): User {
-    return this.requestedBy;
+  public getSignatureStatus(): SignatureStatus {
+    return this.signatureStatus;
+  }
+
+  /**
+   * Getter note
+   * @return {string}
+   */
+  public getNote(): string {
+    return this.note;
   }
 
   /**
@@ -98,14 +110,6 @@ export class WorkerRequest {
    */
   public getUpdatedAt(): Date {
     return this.updatedAt;
-  }
-
-  /**
-   * Getter status
-   * @return {WorderRequestStatus}
-   */
-  public getStatus(): WorderRequestStatus {
-    return this.status;
   }
 
   /**
@@ -141,19 +145,27 @@ export class WorkerRequest {
   }
 
   /**
-   * Setter request
-   * @param {boolean } value
+   * Setter signatureRole
+   * @param {SignatureRole} value
    */
-  public setRequest(value: boolean) {
-    this.request = value;
+  public setSignatureRole(value: SignatureRole) {
+    this.signatureRole = value;
   }
 
   /**
-   * Setter requestedBy
-   * @param {User} value
+   * Setter signatureStatus
+   * @param {SignatureStatus} value
    */
-  public setRequestedBy(value: User) {
-    this.requestedBy = value;
+  public setSignatureStatus(value: SignatureStatus) {
+    this.signatureStatus = value;
+  }
+
+  /**
+   * Setter note
+   * @param {string} value
+   */
+  public setNote(value: string) {
+    this.note = value;
   }
 
   /**
@@ -173,35 +185,11 @@ export class WorkerRequest {
   }
 
   /**
-   * Setter status
-   * @param {WorderRequestStatus} value
-   */
-  public setStatus(value: WorderRequestStatus) {
-    this.status = value;
-  }
-
-  /**
    * Setter deleted
    * @param {boolean } value
    */
   public setDeleted(value: boolean) {
     this.deleted = value;
-  }
-
-  /**
-   * Getter maintenanceWorker
-   * @return {MaintenanceWorker}
-   */
-  public getMaintenanceWorker(): MaintenanceWorker {
-    return this.maintenanceWorker;
-  }
-
-  /**
-   * Setter maintenanceWorker
-   * @param {MaintenanceWorker} value
-   */
-  public setMaintenanceWorker(value: MaintenanceWorker) {
-    this.maintenanceWorker = value;
   }
 
 }

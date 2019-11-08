@@ -8,6 +8,7 @@ import { MaintenanceWorker } from "./MaintenanceWorker";
 import { OrderProblem } from "./OrderProblem";
 import { OrderComponent } from "./OrderComponent";
 import { OrderStatus } from "../enum/OrderStatus";
+import { OrderLayout } from "../OrderLayout";
 
 @Entity("maintenance_order")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -15,13 +16,6 @@ export abstract class MaintenanceOrder extends BaseClass {
 
   @Column()
   private orderNumber: string = '';
-
-  @OneToOne(
-    (type) => InstallationArea,
-    (installationArea) => installationArea.getId,
-    { nullable: false, cascade: false }
-  )
-  private installationArea: InstallationArea = new InstallationArea();
 
   @OneToOne(
     (type) => OrderType,
@@ -37,15 +31,24 @@ export abstract class MaintenanceOrder extends BaseClass {
   )
   private orderClassification: OrderClassification = new OrderClassification();
 
+  @OneToOne(
+    (type) => OrderLayout,
+    (orderLayout) => orderLayout.getId,
+    { nullable: false, cascade: false }
+  )
+  private orderLayout: OrderLayout;
+
   @Column({
     type: "enum",
-    enum: OrderPriority
+    enum: OrderPriority,
+    default: OrderPriority.LOW
   })
   private priority: OrderPriority = OrderPriority.LOW
 
   @Column({
     type: "enum",
-    enum: OrderStatus
+    enum: OrderStatus,
+    default: OrderStatus.CREATED
   })
   private orderStatus: OrderStatus = OrderStatus.CREATED
 
@@ -88,14 +91,6 @@ export abstract class MaintenanceOrder extends BaseClass {
   }
 
   /**
-   * Getter installationArea
-   * @return {InstallationArea }
-   */
-	public getInstallationArea(): InstallationArea  {
-		return this.installationArea;
-	}
-
-  /**
    * Getter orderType
    * @return {OrderType }
    */
@@ -125,14 +120,6 @@ export abstract class MaintenanceOrder extends BaseClass {
    */
 	public getMaintenanceWorker(): Array<MaintenanceWorker> {
 		return this.maintenanceWorker;
-	}
-
-  /**
-   * Setter installationArea
-   * @param {InstallationArea } value
-   */
-	public setInstallationArea(value: InstallationArea ) {
-		this.installationArea = value;
 	}
 
   /**
@@ -261,6 +248,22 @@ export abstract class MaintenanceOrder extends BaseClass {
    */
 	public setExported(value: boolean ) {
 		this.exported = value;
+	}
+
+  /**
+   * Getter orderLayout
+   * @return {OrderLayout}
+   */
+	public getOrderLayout(): OrderLayout {
+		return this.orderLayout;
+	}
+
+  /**
+   * Setter orderLayout
+   * @param {OrderLayout} value
+   */
+	public setOrderLayout(value: OrderLayout) {
+		this.orderLayout = value;
 	}
 
 }

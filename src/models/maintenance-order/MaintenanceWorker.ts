@@ -2,6 +2,7 @@ import { Entity, PrimaryColumn, OneToOne, Column, UpdateDateColumn, CreateDateCo
 import { User } from "../User";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { WorkerRequest } from "./WorkerRequest";
+import { WorkedTime } from "./WorkedTime";
 
 @Entity('maintenance_worker')
 export class MaintenanceWorker {
@@ -31,11 +32,10 @@ export class MaintenanceWorker {
   private updatedAt: Date | undefined;
   
   @OneToMany(type => WorkerRequest, workerRequest => workerRequest.getId, {cascade: false})
-  @JoinColumn([
-    {name: "userId", referencedColumnName: "userId"},
-    {name: "maintenanceOrderId", referencedColumnName: "maintenanceOrderId"}
-  ])
   private workerRequest: Array<WorkerRequest>;
+
+  @OneToMany(type => WorkedTime, workerdTime => workerdTime.getId, {cascade: false})
+  private workerdTime: Array<WorkedTime>;
 
   @Column({
     type: Boolean,
@@ -202,6 +202,21 @@ export class MaintenanceWorker {
 	public setMaintenanceOrderId(value: number) {
 		this.maintenanceOrderId = value;
 	}
-  
 
+  /**
+   * Getter workerdTime
+   * @return {Array<WorkedTime>}
+   */
+	public getWorkerdTime(): Array<WorkedTime> {
+		return this.workerdTime;
+	}
+
+  /**
+   * Setter workerdTime
+   * @param {Array<WorkedTime>} value
+   */
+	public setWorkerdTime(value: Array<WorkedTime>) {
+		this.workerdTime = value;
+	}
+  
 }

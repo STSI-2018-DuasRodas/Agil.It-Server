@@ -1,4 +1,4 @@
-import { CreateDateColumn, OneToOne, JoinColumn, UpdateDateColumn, Column, PrimaryGeneratedColumn } from "typeorm";
+import { CreateDateColumn, UpdateDateColumn, Column, PrimaryGeneratedColumn } from "typeorm";
 
 export abstract class BaseClass {
 
@@ -59,6 +59,14 @@ export abstract class BaseClass {
    */
   public getCreatedAt(): Date | undefined {
     return this.createdAt;
+  }
+
+  /**
+   * Setter createdBy
+   * @param {number } value
+   */
+  public setCreatedBy(value: number) {
+    this.createdBy = value;
   }
 
   /**

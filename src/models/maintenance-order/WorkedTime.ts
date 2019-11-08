@@ -1,11 +1,10 @@
-import { Entity, Column, OneToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
-import { User } from "../User";
-import { MaintenanceOrder } from "./MaintenanceOrder";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, CreateDateColumn, UpdateDateColumn, Column } from "typeorm";
 import { MaintenanceWorker } from "./MaintenanceWorker";
-import { WorderRequestStatus } from "../enum/WorkerRequestStatus";
+import { MaintenanceOrder } from "./MaintenanceOrder";
+import { User } from "../User";
 
-@Entity('worker_request')
-export class WorkerRequest {
+@Entity('maintenance_worker_time')
+export class WorkedTime {
 
   @PrimaryGeneratedColumn("uuid")
   private id: any;
@@ -16,21 +15,17 @@ export class WorkerRequest {
   @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
   private maintenanceOrder: MaintenanceOrder;
 
-  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerRequest)
+  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerdTime)
   private maintenanceWorker: MaintenanceWorker;
 
   @Column()
-  private request: boolean = false;
+  private startedWork: Date;
 
-  @OneToOne(type => User, user => user.getId)
-  private requestedBy: User;
+  @Column()
+  private finishedWork: Date;
 
-  @Column({
-    type: "enum",
-    enum: WorderRequestStatus,
-    default: WorderRequestStatus.REQUESTED
-  })
-  private status: WorderRequestStatus;
+  @Column({ type: "int" })
+  private intervalTime: number;
 
   @CreateDateColumn()
   private createdAt: Date | undefined;
@@ -69,19 +64,11 @@ export class WorkerRequest {
   }
 
   /**
-   * Getter request
-   * @return {boolean }
+   * Getter maintenanceWorker
+   * @return {MaintenanceWorker}
    */
-  public getRequest(): boolean {
-    return this.request;
-  }
-
-  /**
-   * Getter requestedBy
-   * @return {User}
-   */
-  public getRequestedBy(): User {
-    return this.requestedBy;
+  public getMaintenanceWorker(): MaintenanceWorker {
+    return this.maintenanceWorker;
   }
 
   /**
@@ -98,14 +85,6 @@ export class WorkerRequest {
    */
   public getUpdatedAt(): Date {
     return this.updatedAt;
-  }
-
-  /**
-   * Getter status
-   * @return {WorderRequestStatus}
-   */
-  public getStatus(): WorderRequestStatus {
-    return this.status;
   }
 
   /**
@@ -141,19 +120,11 @@ export class WorkerRequest {
   }
 
   /**
-   * Setter request
-   * @param {boolean } value
+   * Setter maintenanceWorker
+   * @param {MaintenanceWorker} value
    */
-  public setRequest(value: boolean) {
-    this.request = value;
-  }
-
-  /**
-   * Setter requestedBy
-   * @param {User} value
-   */
-  public setRequestedBy(value: User) {
-    this.requestedBy = value;
+  public setMaintenanceWorker(value: MaintenanceWorker) {
+    this.maintenanceWorker = value;
   }
 
   /**
@@ -173,14 +144,6 @@ export class WorkerRequest {
   }
 
   /**
-   * Setter status
-   * @param {WorderRequestStatus} value
-   */
-  public setStatus(value: WorderRequestStatus) {
-    this.status = value;
-  }
-
-  /**
    * Setter deleted
    * @param {boolean } value
    */
@@ -189,19 +152,51 @@ export class WorkerRequest {
   }
 
   /**
-   * Getter maintenanceWorker
-   * @return {MaintenanceWorker}
+   * Getter startedWork
+   * @return {Date}
    */
-  public getMaintenanceWorker(): MaintenanceWorker {
-    return this.maintenanceWorker;
+  public getStartedWork(): Date {
+    return this.startedWork;
   }
 
   /**
-   * Setter maintenanceWorker
-   * @param {MaintenanceWorker} value
+   * Getter finishedWork
+   * @return {Date}
    */
-  public setMaintenanceWorker(value: MaintenanceWorker) {
-    this.maintenanceWorker = value;
+  public getFinishedWork(): Date {
+    return this.finishedWork;
+  }
+
+  /**
+   * Setter startedWork
+   * @param {Date} value
+   */
+  public setStartedWork(value: Date) {
+    this.startedWork = value;
+  }
+
+  /**
+   * Setter finishedWork
+   * @param {Date} value
+   */
+  public setFinishedWork(value: Date) {
+    this.finishedWork = value;
+  }
+
+  /**
+   * Getter intervalTime
+   * @return {number}
+   */
+  public getIntervalTime(): number {
+    return this.intervalTime;
+  }
+
+  /**
+   * Setter intervalTime
+   * @param {number} value
+   */
+  public setIntervalTime(value: number) {
+    this.intervalTime = value;
   }
 
 }

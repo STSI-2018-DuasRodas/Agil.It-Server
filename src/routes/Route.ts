@@ -1,6 +1,8 @@
 import { Method } from "./Method";
 import { ResponseAPI } from "../ResponseAPI";
-import { Request, Response } from "express-serve-static-core";
+import { Request, Response } from "express";
+import { checkJwt } from "../middlewares/checkJwt";
+import { nextCallback } from "../middlewares/nextCallback";
 
 export class Route {
 
@@ -64,7 +66,7 @@ export class Route {
       metedos = [metedos]
     }
     metedos.forEach(metodo => {
-      (app as any)[metodo](this.getRoute(), (req: Request, res: Response, next: Function) => {
+      (app as any)[metodo](this.getRoute(), [this.getRoute().split("/")[3] !== "login"? checkJwt : nextCallback] ,(req: Request, res: Response, next: Function) => {
 
           const result = (new (this.getController() as any))[this.getAction()](req, res, next);
     
@@ -97,5 +99,4 @@ export class Route {
 
     return `${" ".repeat(repeatTimes)}${text}`
   }
-
 }
