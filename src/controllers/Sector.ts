@@ -1,5 +1,5 @@
-import {getRepository} from "typeorm";
-import {Sector} from "../models/Sector";
+import { getRepository } from "typeorm";
+import { Sector } from "../models/Sector";
 import { CrudController } from "./CrudController";
 
 export class SectorController extends CrudController<Sector> {

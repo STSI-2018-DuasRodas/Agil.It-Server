@@ -1,7 +1,7 @@
-import {getRepository} from "typeorm";
-import {User} from "../models/User";
-import {CrudController} from "./CrudController";
-import {NextFunction, Request, Response} from "express";
+import { getRepository } from "typeorm";
+import { User } from "../models/User";
+import { CrudController } from "./CrudController";
+import { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import JWT from "../config/JWT";
 

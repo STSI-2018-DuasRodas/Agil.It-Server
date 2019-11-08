@@ -1,4 +1,4 @@
-import {UserController} from "../controllers/UserController";
+import { UserController } from "../controllers/User";
 import { Collection } from "./Collection";
 import { Route } from "./Route";
 import { Method } from "./Method";

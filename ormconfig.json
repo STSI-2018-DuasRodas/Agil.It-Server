@@ -5,7 +5,7 @@
   "username": "root",
   "password": "",
   "database": "agilit",
-  "synchronize": true,
+  "synchronize": false,
   "logging": ["query", "error"],
   "entities": [
      "src/models/**/*.ts"
