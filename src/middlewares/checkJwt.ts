@@ -14,7 +14,7 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
     response.locals.jwtPayload = jwtPayload;
   } catch (error) {
     //If token is not valid, respond with 401 (unauthorized)
-    response.status(401).send({
+    response.status(200).send({
       "success":false,
       "error": error.message
     });
