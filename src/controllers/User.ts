@@ -30,7 +30,7 @@ export class UserController extends CrudController<User> {
       return {"success":false,"error":"Usuário ou senha incorreto"};
     }
     
-    //Sing JWT, valid for 1 hour
+    //Sing JWT, valid for 5 hours
     const token = jwt.sign(
       {
         userId: user.getId(),
@@ -42,11 +42,11 @@ export class UserController extends CrudController<User> {
       { expiresIn: "5h" }
     );
     
-    //Send the jwt in the response
+    response.append('token', token);
+
     return {
       "success": true,
-      "token": token,
-      "user": user
+      "data": user
     };
   }
 
