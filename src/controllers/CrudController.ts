@@ -40,16 +40,8 @@ export class CrudController<Entity> {
   async save(request: Request, response: Response, next: NextFunction) {
     let entity: Entity = this.getRepositoryEntity().create(<Entity>request.body)
 
-    console.log(1,entity)
     const token = <string>request.headers["token"];
-    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
-    const { userId } = jwtPayload;
-
-    entity["setUpdatedBy"](userId);
-
-    if (entity["getCreatedBy"]() == "") {
-      entity["setCreatedBy"](userId);
-    }
+    this.updateFields(token, entity);
 
     //Validade if the parameters are ok
     const errors = await validate(entity);
@@ -84,13 +76,7 @@ export class CrudController<Entity> {
     }
 
     const token = <string>request.headers["token"];
-    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
-    const { userId } = jwtPayload;
-
-    entity["setUpdatedBy"](userId);
-    if (entity["getCreatedBy"]() == "") {
-      entity["setCreatedBy"](userId);
-    }
+    this.updateFields(token, entity);
 
     const errors = await validate(entity);
     if (errors.length > 0) {
@@ -116,6 +102,9 @@ export class CrudController<Entity> {
       return {"success":false,"error":`Registro com o integrationID ${entity["getIntegrationID"]()} já existe.`};
     }
 
+    const token = <string>request.headers["token"];
+    this.updateFields(token, entity);
+
     entity["setDeleted"](true);
     const errors = await validate(entity);
     if (errors.length > 0) {
@@ -129,5 +118,15 @@ export class CrudController<Entity> {
     if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
 
     return await this.getRepositoryEntity().findOne(request.params.id);
+  }
+
+  updateFields(token:string, entity : Entity) {
+    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
+    const { userId } = jwtPayload;
+
+    entity["setUpdatedBy"](userId);
+    if (entity["getCreatedBy"]() === undefined) {
+      entity["setCreatedBy"](userId);
+    }
   }
 }

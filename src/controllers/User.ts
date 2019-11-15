@@ -23,7 +23,8 @@ export class UserController extends CrudController<User> {
       user = await this.getRepositoryEntity().findOneOrFail({
         where: {
           "email" : request.body.username,
-          "password" : request.body.password
+          "password" : request.body.password,
+          "deleted": false
         }
       });
     } catch (error) {
