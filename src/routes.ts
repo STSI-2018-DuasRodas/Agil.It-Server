@@ -17,6 +17,8 @@ import { OrderLayoutCollection } from './routes/OrderLayout';
 import { OrderTypeCollection } from './routes/OrderType';
 import { WorkCenterCollection } from './routes/WorkCenter';
 import { SecurityParamCollection } from './routes/SecurityParam';
+import { MachineComponentCollection } from './routes/MachineComponent';
+import { SuperiorEquipmentCollection } from './routes/SuperiorEquipment';
 
 export class Routes {
   private collections : Array<Collection>;
@@ -31,6 +33,7 @@ export class Routes {
     this.addCollection(new EquipmentCollection())
     this.addCollection(new InstallationAreaCollection())
     this.addCollection(new ItemCollection())
+    this.addCollection(new MachineComponentCollection())
     this.addCollection(new MachineTypeCollection())
     this.addCollection(new MeasurementUnitCollection())
     this.addCollection(new MenuItemCollection())
@@ -40,6 +43,7 @@ export class Routes {
     this.addCollection(new OrderTypeCollection())
     this.addCollection(new SectorCollection())
     this.addCollection(new SecurityParamCollection())
+    this.addCollection(new SuperiorEquipmentCollection())
     this.addCollection(new UserCollection())
     this.addCollection(new WorkCenterCollection())
   }

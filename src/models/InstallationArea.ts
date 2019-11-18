@@ -11,7 +11,7 @@ export class InstallationArea extends CrudClass {
     { nullable: false },
   )
   @JoinColumn()
-  private sector: Sector = new Sector();
+  private sector: Sector;
 
   constructor() {
     super();

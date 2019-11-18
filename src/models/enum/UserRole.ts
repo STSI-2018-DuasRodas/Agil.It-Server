@@ -1,7 +1,7 @@
 export enum UserRole {
-  Administrator = 'Administrator',
-  MaintainerLeader = 'MaintainerLeader',
-  SectorLeader = 'SectorLeader',
-  Maintainer = 'Maintainer',
-  Integration = 'Integration'
+  ADMINISTRATOR = 'administrator',
+  MAINTAINER_LEADER = 'maintainer_leader',
+  SECTOR_LEADER = 'sector_leader',
+  MAINTAINER = 'maintainer',
+  INTEGRATION = 'integration'
 }

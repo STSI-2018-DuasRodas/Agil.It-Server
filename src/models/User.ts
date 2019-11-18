@@ -4,9 +4,10 @@ import { UserRole } from './enum/UserRole';
 import { Sector } from './Sector';
 import { BaseClass } from "./BaseClass";
 import { WorkCenter } from "./WorkCenter";
+import { Gender } from "./enum/Gender";
 
 @Entity("user")
-@Unique(["email","employeeBadge"])
+@Unique(["email", "employeeBadge"])
 export class User extends BaseClass {
 
   @Column()
@@ -38,7 +39,7 @@ export class User extends BaseClass {
 
   @Column()
   private forceChangePassword: boolean = false;
-  
+
   @OneToOne(
     type => Sector,
     sector => sector.getId,
@@ -58,6 +59,13 @@ export class User extends BaseClass {
   @Column()
   @IsNotEmpty()
   private employeeBadge: string = ''
+
+  @Column({
+    type: "enum",
+    enum: Gender
+  })
+  @IsNotEmpty()
+  private gender: Gender;
 
   constructor() {
     super();
@@ -127,20 +135,28 @@ export class User extends BaseClass {
     return this.sector;
   }
 
-	public setEmployeeBadge(value: string ) {
-		this.employeeBadge = value;
-	}
+  public setEmployeeBadge(value: string) {
+    this.employeeBadge = value;
+  }
 
-	public getEmployeeBadge(): string  {
-		return this.employeeBadge;
-	}
+  public getEmployeeBadge(): string {
+    return this.employeeBadge;
+  }
 
-	public getWorkCenter(): WorkCenter  {
-		return this.workCenter;
-	}
+  public getWorkCenter(): WorkCenter {
+    return this.workCenter;
+  }
 
-	public setWorkCenter(value: WorkCenter ) {
-		this.workCenter = value;
-	}
+  public setWorkCenter(value: WorkCenter) {
+    this.workCenter = value;
+  }
+
+  public getGender(): Gender {
+    return this.gender;
+  }
+
+  public setGender(value: Gender) {
+    this.gender = value;
+  }
 
 }

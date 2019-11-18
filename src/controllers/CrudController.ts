@@ -43,14 +43,16 @@ export class CrudController<Entity> {
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
 
+    console.log('recieved: ',entity)
     //Validade if the parameters are ok
-    const errors = await validate(entity);
-    if (errors.length > 0) {
+    const error = await this.validate(entity)
+    if (error !== undefined) {
       return {
-        "success":false,
-        "error":errors
-      };
+        success: false,
+        error: error
+      }
     }
+    
 
     if (entity["getIntegrationID"]() != "") {
       try {
@@ -102,6 +104,10 @@ export class CrudController<Entity> {
       return {"success":false,"error":`Registro com o integrationID ${entity["getIntegrationID"]()} já existe.`};
     }
 
+    if (entity["getDeleted"]() === true) {
+      return {"success":false,"error":`Registro ${request.params.id} já está excluído.`};
+    }
+
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
 
@@ -128,5 +134,27 @@ export class CrudController<Entity> {
     if (entity["getCreatedBy"]() === undefined) {
       entity["setCreatedBy"](userId);
     }
+  }
+
+  async validate(entity: Entity) : Promise<any> {
+    const errors = await validate(entity);
+
+    if (errors.length === 0) {
+      return undefined
+    }
+    
+    let errorList = []
+
+    errors.forEach(error => {
+      let constraints = error.constraints
+
+      for (const key in constraints) {
+        if (constraints.hasOwnProperty(key)) {
+          errorList.push(constraints[key])
+        }
+      }
+    });
+
+    return errorList
   }
 }

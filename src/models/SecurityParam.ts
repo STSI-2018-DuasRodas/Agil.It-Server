@@ -4,10 +4,10 @@ import { CrudClass } from "./CrudClass";
 @Entity("security_param")
 export class SecurityParam extends CrudClass {
 
-  @Column()
+  @Column({nullable: true})
   private entityClass: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", nullable: true })
   private entityId: number;
 
   @Column()

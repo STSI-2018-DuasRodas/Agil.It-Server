@@ -51,51 +51,72 @@ export class Route {
   public setAction(value: string) {
     this.action = value;
   }
-  
-	public getErrorMessage(): any {
-		return this.errorMessage;
-	}
 
-	public setErrorMessage(value: any) {
-		this.errorMessage = value;
+  public getErrorMessage(): any {
+    return this.errorMessage;
   }
-  
-  public registerRoute(app: any) {
+
+  public setErrorMessage(value: any) {
+    this.errorMessage = value;
+  }
+
+  public registerRoute(app: any, logResponses: boolean = true) {
     let metedos = this.getMethod()
     if (typeof metedos == "string") {
       metedos = [metedos]
     }
     metedos.forEach(metodo => {
-      (app as any)[metodo](this.getRoute(), [this.getRoute().split("/")[3] !== "login"? checkJwt : nextCallback] ,(req: Request, res: Response, next: Function) => {
+      (app as any)[metodo](this.getRoute(), [this.getRoute().split("/")[3] !== "login" ? checkJwt : nextCallback], (req: Request, res: Response, next: Function) => {
 
-          const result = (new (this.getController() as any))[this.getAction()](req, res, next);
-    
-          if (result instanceof Promise) {
-            result.then(result => {
-              if (result !== null && result !== undefined) {
-                res.status(200).json(ResponseAPI.getResponseObject(true,result))
-              } else {
-                res.status(200).json(ResponseAPI.getResponseObject(false,this.getErrorMessage()))
+        const result = (new (this.getController() as any))[this.getAction()](req, res, next);
+
+        if (result instanceof Promise) {
+          result.then(result => {
+            if (result !== null && result !== undefined) {
+              res.status(200).json(ResponseAPI.getResponseObject(true, result))
+              if (logResponses) {
+                console.log(ResponseAPI.getResponseObject(true, result))
               }
-            })
-            .catch((err)=> {
-              if (err !== null && err !== undefined) {
-                res.status(200).json(ResponseAPI.getResponseObject(true,err))
-              } else {
-                res.status(200).json(ResponseAPI.getResponseObject(false,this.getErrorMessage()))
+            } else {
+              res.status(200).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
+              if (logResponses) {
+                console.log(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
               }
-            })
-          } else if (result !== null && result !== undefined) {
-            res.json(result);
-          }
-        });
-        console.log(`Registering route:${this.alignRight(metodo,10)}\t${this.getRoute()}`)
+            }
+          })
+          .catch(err => {
+            if (err !== null && err !== undefined) {
+              res.status(200).json(ResponseAPI.getResponseObject(false, err))
+              if (logResponses) {
+                console.log("error => ", err)
+                console.log(ResponseAPI.getResponseObject(false, err))
+              }
+            } else {
+              res.status(200).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
+              if (logResponses) {
+                console.log("error => ", err)
+                console.log(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
+              }
+            }
+          })
+        } else if (result !== null && result !== undefined) {
+          console.log('not promisse => ', result)
+          res.json(result);
+        } else {
+          console.log('null or undefined => ', result)
+          res.json({
+            success: false,
+            error: 'Erro inesperado'
+          });
+        }
       });
+      console.log(`Registering route:${this.alignRight(metodo, 10)}\t${this.getRoute()}`)
+    });
   }
-  
-  public alignRight(text: string, qtdCharacters:number = 15) {
-    let textLength=text.length
-    let repeatTimes = (qtdCharacters-textLength)>0 ? (qtdCharacters-textLength) : 0
+
+  public alignRight(text: string, qtdCharacters: number = 15) {
+    let textLength = text.length
+    let repeatTimes = (qtdCharacters - textLength) > 0 ? (qtdCharacters - textLength) : 0
 
     return `${" ".repeat(repeatTimes)}${text}`
   }

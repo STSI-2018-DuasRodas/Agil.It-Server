@@ -11,7 +11,7 @@ export class Item extends CrudClass {
     { nullable: false },
   )
   @JoinColumn()
-  private measurementUnit: MeasurementUnit = new MeasurementUnit();
+  private measurementUnit: MeasurementUnit;
 
   constructor() {
     super();

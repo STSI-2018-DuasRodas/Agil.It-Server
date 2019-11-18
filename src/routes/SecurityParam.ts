@@ -3,7 +3,7 @@ import { Collection } from "./Collection";
 
 export class SecurityParamCollection extends Collection {
   constructor() {
-    super('/security-params', SecurityParamController);
+    super('/safety-params', SecurityParamController);
     this.addBaseCrudRoutes();
   }
 }
