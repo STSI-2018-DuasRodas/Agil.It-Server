@@ -1,11 +1,11 @@
-import { Entity, JoinColumn, OneToOne } from "typeorm";
+import { Entity, JoinColumn, ManyToOne } from "typeorm";
 import { InstallationArea } from "./InstallationArea";
 import { CrudClass } from "./CrudClass";
 
 @Entity("superior_equipment")
 export class SuperiorEquipment extends CrudClass {
 
-  @OneToOne(
+  @ManyToOne(
     (type) => InstallationArea,
     (installationArea) => installationArea.getId,
     { nullable: false }

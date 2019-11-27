@@ -1,5 +1,5 @@
 import { BaseClass } from "../BaseClass"
-import { Entity, ManyToOne, JoinColumn, OneToOne, Column } from "typeorm"
+import { Entity, ManyToOne, JoinColumn, Column } from "typeorm"
 import { Item } from "../Item";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { OrderOperation } from "./OrderOperation";
@@ -15,7 +15,7 @@ export class OrderComponent extends BaseClass {
   @JoinColumn({name:"orderOperationId"})
   private orderOperation : OrderOperation;
 
-  @OneToOne(type => Item, item => item.getId, {cascade: false, nullable: false})
+  @ManyToOne(type => Item, item => item.getId, {cascade: false, nullable: false})
   @JoinColumn({name:"itemId"})
   private item : Item;
 

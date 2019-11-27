@@ -10,10 +10,10 @@ export class WorkerRequest {
   @PrimaryGeneratedColumn("uuid")
   private id: any;
 
-  @OneToOne(type => User, user => user.getId)
+  @ManyToOne(type => User, user => user.getId)
   private user: User;
 
-  @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
   private maintenanceOrder: MaintenanceOrder;
 
   @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerRequest)
@@ -22,7 +22,7 @@ export class WorkerRequest {
   @Column()
   private request: boolean = false;
 
-  @OneToOne(type => User, user => user.getId)
+  @ManyToOne(type => User, user => user.getId)
   private requestedBy: User;
 
   @Column({

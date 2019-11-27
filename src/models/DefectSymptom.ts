@@ -1,11 +1,11 @@
-import { Entity, OneToOne, JoinColumn } from "typeorm";
+import { Entity, ManyToOne, JoinColumn } from "typeorm";
 import { MachineType } from "./MachineType";
 import { CrudClass } from "./CrudClass";
 
 @Entity("defect_symptom")
 export class DefectSymptom extends CrudClass {
 
-  @OneToOne(
+  @ManyToOne(
     (type) => MachineType,
     (machineType) => machineType.getId,
     { nullable: false },

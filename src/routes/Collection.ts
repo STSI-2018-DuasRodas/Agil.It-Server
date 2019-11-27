@@ -109,5 +109,6 @@ export class Collection {
 				`Ocorreu um erro ao deletar o dado`
 			))
 		}
-	}
+  }
+  
 }

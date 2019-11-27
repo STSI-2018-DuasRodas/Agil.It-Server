@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, CreateDateColumn, UpdateDateColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, Column, JoinColumn } from "typeorm";
 import { MaintenanceWorker } from "./MaintenanceWorker";
-import { MaintenanceOrder } from "./MaintenanceOrder";
 import { User } from "../User";
 
 @Entity('maintenance_worker_time')
@@ -9,13 +8,14 @@ export class WorkedTime {
   @PrimaryGeneratedColumn("uuid")
   private id: any;
 
-  @OneToOne(type => User, user => user.getId)
+  @ManyToOne(type => User, user => user.getId)
   private user: User;
 
-  @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
-  private maintenanceOrder: MaintenanceOrder;
-
-  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerdTime)
+  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkedTime)
+  @JoinColumn([
+    { name: "userId", referencedColumnName: "userId" },
+    { name: "maintenanceOrderId", referencedColumnName: "maintenanceOrderId" }
+  ])
   private maintenanceWorker: MaintenanceWorker;
 
   @Column()
@@ -55,13 +55,6 @@ export class WorkedTime {
     return this.user;
   }
 
-  /**
-   * Getter maintenanceOrder
-   * @return {MaintenanceOrder}
-   */
-  public getMaintenanceOrder(): MaintenanceOrder {
-    return this.maintenanceOrder;
-  }
 
   /**
    * Getter maintenanceWorker
@@ -109,14 +102,6 @@ export class WorkedTime {
    */
   public setUser(value: User) {
     this.user = value;
-  }
-
-  /**
-   * Setter maintenanceOrder
-   * @param {MaintenanceOrder} value
-   */
-  public setMaintenanceOrder(value: MaintenanceOrder) {
-    this.maintenanceOrder = value;
   }
 
   /**

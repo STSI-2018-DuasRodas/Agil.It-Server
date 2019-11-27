@@ -1,6 +1,6 @@
 import { Equipment } from "../Equipment";
 import { SuperiorEquipment } from "../SuperiorEquipment";
-import { OneToOne, Column, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
+import { OneToOne, ManyToOne, Column, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
 import { OrderOperation } from "./OrderOperation";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { InstallationArea } from "../InstallationArea";
@@ -14,20 +14,20 @@ export class OrderEquipment {
   @PrimaryColumn()
   private equipmentId: number;
 
-  @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: false})
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: false})
   private maintenanceOrder : MaintenanceOrder;
   
-  @OneToOne( type => Equipment, equipment => equipment.getId, {cascade: false, nullable: false})
+  @ManyToOne( type => Equipment, equipment => equipment.getId, {cascade: false, nullable: false})
   private equipment: Equipment;
   
-  @OneToOne(
+  @ManyToOne(
     (type) => SuperiorEquipment,
     (superiorEquipment) => superiorEquipment.getId,
     { nullable: true }
   )
   private superiorEquipment: SuperiorEquipment;
 
-  @OneToOne(
+  @ManyToOne(
     (type) => InstallationArea,
     (installationArea) => installationArea.getId,
     { nullable: false, cascade: false }

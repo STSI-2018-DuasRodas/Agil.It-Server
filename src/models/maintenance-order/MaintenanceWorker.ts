@@ -13,10 +13,10 @@ export class MaintenanceWorker {
   @PrimaryColumn()
   private maintenanceOrderId : number;
 
-  @OneToOne(type => User, user => user.getId)
+  @ManyToOne(type => User, user => user.getId)
   private user : User;
   
-  @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getMaintenanceWorker, {cascade: false})
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getMaintenanceWorker, {cascade: false})
   private maintenanceOrder : MaintenanceOrder;
   
   @Column()
@@ -34,8 +34,8 @@ export class MaintenanceWorker {
   @OneToMany(type => WorkerRequest, workerRequest => workerRequest.getId, {cascade: false})
   private workerRequest: Array<WorkerRequest>;
 
-  @OneToMany(type => WorkedTime, workerdTime => workerdTime.getId, {cascade: false})
-  private workerdTime: Array<WorkedTime>;
+  @OneToMany(type => WorkedTime, workedTime => workedTime.getId, {cascade: false})
+  private workedTime: Array<WorkedTime>;
 
   @Column({
     type: Boolean,
@@ -204,19 +204,19 @@ export class MaintenanceWorker {
 	}
 
   /**
-   * Getter workerdTime
+   * Getter workedTime
    * @return {Array<WorkedTime>}
    */
-	public getWorkerdTime(): Array<WorkedTime> {
-		return this.workerdTime;
+	public getWorkedTime(): Array<WorkedTime> {
+		return this.workedTime;
 	}
 
   /**
-   * Setter workerdTime
+   * Setter workedTime
    * @param {Array<WorkedTime>} value
    */
-	public setWorkerdTime(value: Array<WorkedTime>) {
-		this.workerdTime = value;
+	public setWorkedTime(value: Array<WorkedTime>) {
+		this.workedTime = value;
 	}
   
 }

@@ -38,12 +38,24 @@ export class CrudController<Entity> {
   }
 
   async save(request: Request, response: Response, next: NextFunction) {
-    let entity: Entity = this.getRepositoryEntity().create(<Entity>request.body)
+
+    let description=request.body.description
+    let entity: Entity
+    try {
+      entity = await this.getRepositoryEntity().findOneOrFail({
+        where: {
+          deleted: false,
+          description: description
+        }
+      })
+      entity = await this.getRepositoryEntity().merge(entity, request.body)
+    } catch (error) {
+      entity = this.getRepositoryEntity().create(<Entity>request.body)
+    }
 
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
 
-    console.log('recieved: ',entity)
     //Validade if the parameters are ok
     const error = await this.validate(entity)
     if (error !== undefined) {

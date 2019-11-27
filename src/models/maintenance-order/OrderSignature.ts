@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, OneToOne, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, OneToOne, ManyToOne, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { SignatureRole } from "../enum/SignatureRole";
 import { User } from "../User";
@@ -10,10 +10,10 @@ export class OrderSignature {
   @PrimaryGeneratedColumn("uuid")
   private id: any;
 
-  @OneToOne(type => User, user => user.getId)
+  @ManyToOne(type => User, user => user.getId)
   private user: User;
 
-  @OneToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
   private maintenanceOrder: MaintenanceOrder;
 
   @Column({

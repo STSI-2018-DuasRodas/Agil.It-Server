@@ -1,10 +1,9 @@
-import { Column, OneToOne, Entity, TableInheritance, OneToMany } from "typeorm";
+import { Column, OneToOne, ManyToOne, Entity, TableInheritance, OneToMany } from "typeorm";
 import { BaseClass } from "../BaseClass";
 import { OrderType } from "../OrderType";
 import { OrderClassification } from "../OrderClassification";
 import { OrderPriority } from "../enum/OrderPriority";
 import { MaintenanceWorker } from "./MaintenanceWorker";
-import { OrderProblem } from "./OrderProblem";
 import { OrderComponent } from "./OrderComponent";
 import { OrderStatus } from "../enum/OrderStatus";
 import { OrderLayout } from "../OrderLayout";
@@ -16,21 +15,21 @@ export abstract class MaintenanceOrder extends BaseClass {
   @Column()
   private orderNumber: string = '';
 
-  @OneToOne(
+  @ManyToOne(
     (type) => OrderType,
     (orderType) => orderType.getId,
     { nullable: false, cascade: false }
   )
   private orderType: OrderType = new OrderType();
 
-  @OneToOne(
+  @ManyToOne(
     (type) => OrderClassification,
     (orderClassification) => orderClassification.getId,
     { nullable: false, cascade: false }
   )
   private orderClassification: OrderClassification = new OrderClassification();
 
-  @OneToOne(
+  @ManyToOne(
     (type) => OrderLayout,
     (orderLayout) => orderLayout.getId,
     { nullable: false, cascade: false }
@@ -59,9 +58,6 @@ export abstract class MaintenanceOrder extends BaseClass {
 
   @OneToMany(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getMaintenanceOrder)
   private maintenanceWorker: Array<MaintenanceWorker>;
-
-  @OneToOne(type => OrderProblem, orderProblem => orderProblem.getMaintenanceOrder, { cascade: false, nullable: true })
-  private orderProblem: OrderProblem;
 
   @OneToMany(type => OrderComponent, orderComponent => orderComponent.getMaintenanceOrder, { cascade: false, nullable: true })
   private orderComponent: Array<OrderComponent>;
@@ -186,22 +182,6 @@ export abstract class MaintenanceOrder extends BaseClass {
    */
   public setNeedStopping(value: boolean) {
     this.needStopping = value;
-  }
-
-  /**
-   * Getter orderProblem
-   * @return {OrderProblem}
-   */
-  public getOrderProblem(): OrderProblem {
-    return this.orderProblem;
-  }
-
-  /**
-   * Setter orderProblem
-   * @param {OrderProblem} value
-   */
-  public setOrderProblem(value: OrderProblem) {
-    this.orderProblem = value;
   }
 
   /**

@@ -19,6 +19,15 @@ import { WorkCenterCollection } from './routes/WorkCenter';
 import { SecurityParamCollection } from './routes/SecurityParam';
 import { MachineComponentCollection } from './routes/MachineComponent';
 import { SuperiorEquipmentCollection } from './routes/SuperiorEquipment';
+import { MaintenanceOrderCollection } from './routes/MaintenanceOrder';
+import { MaintenanceWorkerCollection } from './routes/MaintenanceWorker';
+import { OrderComponentCollection } from './routes/OrderComponent';
+import { OrderEquipmentCollection } from './routes/OrderEquipment';
+import { OrderOperationCollection } from './routes/OrderOperation';
+import { OrderSafetyParamsCollection } from './routes/OrderSafetyParams';
+import { OrderSignatureCollection } from './routes/OrderSignature';
+import { WorkedTimeCollection } from './routes/WorkedTime';
+import { WorkerRequestCollection } from './routes/WorkerRequest';
 
 export class Routes {
   private collections : Array<Collection>;
@@ -35,17 +44,26 @@ export class Routes {
     this.addCollection(new ItemCollection())
     this.addCollection(new MachineComponentCollection())
     this.addCollection(new MachineTypeCollection())
+    this.addCollection(new MaintenanceOrderCollection())
+    this.addCollection(new MaintenanceWorkerCollection())
     this.addCollection(new MeasurementUnitCollection())
     this.addCollection(new MenuItemCollection())
     this.addCollection(new NotificationCollection())
     this.addCollection(new OrderClassificationCollection())
+    this.addCollection(new OrderComponentCollection())
+    this.addCollection(new OrderEquipmentCollection())
     this.addCollection(new OrderLayoutCollection())
+    this.addCollection(new OrderOperationCollection())
+    this.addCollection(new OrderSafetyParamsCollection())
+    this.addCollection(new OrderSignatureCollection())
     this.addCollection(new OrderTypeCollection())
     this.addCollection(new SectorCollection())
     this.addCollection(new SecurityParamCollection())
     this.addCollection(new SuperiorEquipmentCollection())
     this.addCollection(new UserCollection())
     this.addCollection(new WorkCenterCollection())
+    this.addCollection(new WorkedTimeCollection())
+    this.addCollection(new WorkerRequestCollection())
   }
 
   public getCollections(): Array<Collection> {

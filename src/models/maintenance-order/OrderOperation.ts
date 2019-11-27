@@ -35,7 +35,7 @@ export abstract class OrderOperation extends CrudClass {
   })
   private note: string;
 
-  @OneToOne(type => DefaultObservation, defaultObservation => defaultObservation.getId, { nullable: true })
+  @ManyToOne(type => DefaultObservation, defaultObservation => defaultObservation.getId, { nullable: true })
   private defaultObservation: DefaultObservation | null = null
 
   constructor() {
