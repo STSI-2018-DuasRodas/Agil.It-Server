@@ -6,6 +6,10 @@ export class EquipmentController extends CrudController<Equipment> {
 
   constructor() {
     super(getRepository(Equipment))
-  } 
+  }
+  
+  public includes() {
+    return ["machineType"]
+  }
 
 }

@@ -4,7 +4,7 @@ import JWT from "../config/JWT";
 
 export const checkJwt = (request: Request, response: Response, next: NextFunction) => {
 
-  //Get the jwt token from the head
+  //Get the jwt token from the request's header
   const token = <string>request.headers["token"];
   let jwtPayload;
   
@@ -13,7 +13,7 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
     jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
     response.locals.jwtPayload = jwtPayload;
   } catch (error) {
-    //If token is not valid, respond with 401 (unauthorized)
+    //If token is not valid, respond with error
     response.status(200).send({
       "success":false,
       "error": error.message
@@ -27,7 +27,7 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
   const newToken = jwt.sign({ userId, email, name, employeeBadge }, JWT.jwtSecret, {
     expiresIn: "5h"
   });
-  //response.setHeader("token", newToken);
+  //set to response's header the new token
   response.append('token', newToken);
 
   //Call the next middleware or controller

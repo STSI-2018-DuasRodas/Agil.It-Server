@@ -51,4 +51,7 @@ export class UserController extends CrudController<User> {
     };
   }
 
+  public includes() {
+    return ["workCenter","sector"]
+  }
 }

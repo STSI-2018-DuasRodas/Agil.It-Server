@@ -8,4 +8,7 @@ export class DefectOriginController extends CrudController<DefectOrigin> {
     super(getRepository(DefectOrigin))
   } 
 
+  public includes() {
+    return ["machineType"]
+  }
 }
