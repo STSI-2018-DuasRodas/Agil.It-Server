@@ -10,7 +10,7 @@ export class DefectOrigin extends CrudClass {
     (machineType) => machineType.getId,
     { nullable: false },
   )
-  @JoinColumn({name: "machineTypeId"})
+  @JoinColumn({ name: "machineTypeId" })
   private machineType: MachineType;
 
   constructor() {
