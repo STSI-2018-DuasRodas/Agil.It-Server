@@ -6,6 +6,10 @@ export class InstallationAreaController extends CrudController<InstallationArea>
 
   constructor() {
     super(getRepository(InstallationArea))
-  } 
+  }
+  
+  public includes() {
+    return ["sector"]
+  }
 
 }

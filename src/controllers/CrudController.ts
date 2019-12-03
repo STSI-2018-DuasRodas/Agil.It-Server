@@ -30,11 +30,16 @@ export class CrudController<Entity> {
 
 
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.getRepositoryEntity().find({ where: { deleted: false}});
+    return this.getRepositoryEntity().find({
+      relations: this.includes(),
+      where: { deleted: false}
+    });
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.getRepositoryEntity().findOne(request.params.id);
+    return this.getRepositoryEntity().findOne(request.params.id, {
+      relations: this.includes()
+    });
   }
 
   async save(request: Request, response: Response, next: NextFunction) {
@@ -168,5 +173,9 @@ export class CrudController<Entity> {
     });
 
     return errorList
+  }
+
+  public includes() {
+    return [];
   }
 }

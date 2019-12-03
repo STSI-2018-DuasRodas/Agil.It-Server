@@ -8,4 +8,7 @@ export class ItemController extends CrudController<Item> {
     super(getRepository(Item))
   } 
 
+  public includes() {
+    return ["measurementUnit"]
+  }
 }

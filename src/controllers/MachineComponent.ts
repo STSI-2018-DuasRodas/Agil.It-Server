@@ -8,4 +8,8 @@ export class MachineComponentController extends CrudController<MachineComponent>
     super(getRepository(MachineComponent))
   } 
 
+  public includes() {
+    return ["machineType"]
+  }
+
 }

@@ -8,4 +8,7 @@ export class SuperiorEquipmentController extends CrudController<SuperiorEquipmen
     super(getRepository(SuperiorEquipment))
   }
 
+  public includes() {
+    return ["installationArea"]
+  }
 }
