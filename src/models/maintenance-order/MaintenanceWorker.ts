@@ -14,9 +14,11 @@ export class MaintenanceWorker {
   private maintenanceOrderId : number;
 
   @ManyToOne(type => User, user => user.getId)
+  @JoinColumn({ name: "userId" })
   private user : User;
   
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getMaintenanceWorker, {cascade: false})
+  @JoinColumn({ name: "maintenanceOrderId" })
   private maintenanceOrder : MaintenanceOrder;
   
   @Column()

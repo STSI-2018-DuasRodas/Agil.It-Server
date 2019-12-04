@@ -14,9 +14,15 @@ export class WorkerRequest {
   private user: User;
 
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
+  @JoinColumn({
+    name: "maintenanceOrderId", referencedColumnName: "id" }
+  )
   private maintenanceOrder: MaintenanceOrder;
 
   @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerRequest)
+  @JoinColumn({
+    name: "maintenanceWorkerId", referencedColumnName: "userId" }
+  )
   private maintenanceWorker: MaintenanceWorker;
 
   @Column()

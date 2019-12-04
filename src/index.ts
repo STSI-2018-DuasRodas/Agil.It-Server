@@ -28,7 +28,7 @@ createConnection().then(async connection => {
 
     app.listen(4000);
 
-    /*
+    //*
     let userController = new UserController()
     console.log(userController.getRepositoryEntity().save(<User><unknown>{
       "id": 1,  
@@ -46,6 +46,6 @@ createConnection().then(async connection => {
       "createdAt": "1977-06-03 22:16:46",
       "updatedAt": "1977-06-03 22:16:46"
     }))
-    */
+    /**/
 
 }).catch(error => console.log(error));

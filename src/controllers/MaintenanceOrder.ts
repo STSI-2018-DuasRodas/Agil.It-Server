@@ -1,10 +1,11 @@
-import { getRepository, Repository } from "typeorm";
+import { getRepository, Repository, getConnection } from "typeorm";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import {NextFunction, Request, Response} from "express";
 
 export class MaintenanceOrderController {
 
   private repositoryEntity : Repository<MaintenanceOrder>;
+  private connection = getConnection();
 
   constructor() {
     this.repositoryEntity = getRepository(MaintenanceOrder)
@@ -21,9 +22,17 @@ export class MaintenanceOrderController {
       relations: ["maintenanceWorker"],
       where: [
         { deleted: false },
-        { "maintenanceWorker.userId": maintenerId }
+        //{ "maintenanceWorker.userId": maintenerId }
       ]
     })
+
+    // return await this.connection.query(`
+    //   SELECT maintenance_order.* from maintenance_order
+    //   INNER JOIN maintenance_worker ON (maintenance_worker.maintenanceOrderId = maintenance_order.id)
+    //   WHERE maintenance_order.deleted = 0
+    //     AND maintenance_worker.deleted = 0
+    //     AND maintenance_worker.userId = ?
+    // `,[maintenerId])
   }
 
   public async getOrder(request: Request, response: Response, next: NextFunction) {
