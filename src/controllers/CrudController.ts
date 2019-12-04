@@ -44,9 +44,12 @@ export class CrudController<Entity> {
 
   async save(request: Request, response: Response, next: NextFunction) {
 
+    console.log("TCL: CrudController<Entity> -> save -> request.body", request.body)
+
     let description=request.body.description
     let entity: Entity
     try {
+      console.log("1");
       entity = await this.getRepositoryEntity().findOneOrFail({
         where: {
           deleted: false,
@@ -54,12 +57,19 @@ export class CrudController<Entity> {
         }
       })
       entity = await this.getRepositoryEntity().merge(entity, request.body)
+      console.log("2");
     } catch (error) {
+      console.log("3");
       entity = this.getRepositoryEntity().create(<Entity>request.body)
     }
 
+    console.log("4");
+    console.log("TCL: CrudController<Entity> -> save -> entity", entity["getIntegrationID"]())
+
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
+
+    
 
     //Validade if the parameters are ok
     const error = await this.validate(entity)
@@ -70,7 +80,6 @@ export class CrudController<Entity> {
       }
     }
     
-
     if (entity["getIntegrationID"]() != "") {
       try {
         await this.getRepositoryEntity().findOneOrFail({where: {integrationID: entity["getIntegrationID"]()}});
