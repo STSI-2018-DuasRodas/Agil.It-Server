@@ -13,7 +13,7 @@ export class Default extends MaintenanceOrder {
 
   @OneToOne(
     (type) => OrderEquipment,
-    (orderEquipment) => orderEquipment.getMaintenanceOrderId,
+    (orderEquipment) => orderEquipment.getId,
     { cascade: true }
   )
   private orderEquipment: OrderEquipment;

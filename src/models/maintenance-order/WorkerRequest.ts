@@ -41,8 +41,14 @@ export class WorkerRequest {
   @CreateDateColumn()
   private createdAt: Date | undefined;
 
+  @Column()
+  private createdBy: number | undefined;
+
   @UpdateDateColumn()
   private updatedAt: Date | undefined;
+
+  @Column()
+  private updatedBy: number | undefined;
 
   @Column({
     type: Boolean,
@@ -121,6 +127,22 @@ export class WorkerRequest {
   public getDeleted(): boolean {
     return this.deleted;
   }
+
+  /**
+   * Getter createdBy
+   * @return {number }
+   */
+	public getCreatedBy(): number  {
+		return this.createdBy;
+	}
+
+  /**
+   * Getter updatedBy
+   * @return {number }
+   */
+	public getUpdatedBy(): number  {
+		return this.updatedBy;
+	}
 
   /**
    * Setter id
@@ -209,5 +231,21 @@ export class WorkerRequest {
   public setMaintenanceWorker(value: MaintenanceWorker) {
     this.maintenanceWorker = value;
   }
+
+  /**
+   * Setter createdBy
+   * @param {number } value
+   */
+	public setCreatedBy(value: number ) {
+		this.createdBy = value;
+	}
+
+  /**
+   * Setter updatedBy
+   * @param {number } value
+   */
+	public setUpdatedBy(value: number ) {
+		this.updatedBy = value;
+	}
 
 }

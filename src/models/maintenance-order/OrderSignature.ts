@@ -39,8 +39,14 @@ export class OrderSignature {
   @CreateDateColumn()
   private createdAt: Date | undefined;
 
+  @Column()
+  private createdBy: number | undefined;
+
   @UpdateDateColumn()
   private updatedAt: Date | undefined;
+
+  @Column()
+  private updatedBy: number | undefined;
 
   @Column({
     type: Boolean,
@@ -105,12 +111,28 @@ export class OrderSignature {
   }
 
   /**
+   * Getter createdBy
+   * @return {number }
+   */
+	public getCreatedBy(): number  {
+		return this.createdBy;
+	}
+
+  /**
    * Getter updatedAt
    * @return {Date }
    */
   public getUpdatedAt(): Date {
     return this.updatedAt;
   }
+
+  /**
+   * Getter updatedBy
+   * @return {number }
+   */
+	public getUpdatedBy(): number  {
+		return this.updatedBy;
+	}
 
   /**
    * Getter deleted
@@ -177,6 +199,14 @@ export class OrderSignature {
   }
 
   /**
+   * Setter createdBy
+   * @param {number } value
+   */
+	public setCreatedBy(value: number ) {
+		this.createdBy = value;
+	}
+
+  /**
    * Setter updatedAt
    * @param {Date } value
    */
@@ -185,11 +215,19 @@ export class OrderSignature {
   }
 
   /**
+   * Setter updatedBy
+   * @param {number } value
+   */
+	public setUpdatedBy(value: number ) {
+		this.updatedBy = value;
+	}
+
+  /**
    * Setter deleted
    * @param {boolean } value
    */
   public setDeleted(value: boolean) {
     this.deleted = value;
   }
-
+  
 }

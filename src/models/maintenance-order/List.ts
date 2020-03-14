@@ -11,10 +11,9 @@ export class List extends MaintenanceOrder {
   
   @OneToMany(
     (type) => OrderEquipment,
-    (orderEquipment) => orderEquipment.getMaintenanceOrderId,
+    (orderEquipment) => orderEquipment.getId,
     { cascade: true }
   )
-  @JoinColumn()
   private orderEquipment: Array<OrderEquipment> = [];
 
   /**

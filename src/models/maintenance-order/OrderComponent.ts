@@ -8,15 +8,12 @@ import { OrderOperation } from "./OrderOperation";
 export class OrderComponent extends BaseClass {
 
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: false})
-  @JoinColumn({name:"maintenanceOrderId"})
   private maintenanceOrder : MaintenanceOrder;
 
   @ManyToOne(type => OrderOperation, orderOperation => orderOperation.getId, {cascade: false, nullable: true})
-  @JoinColumn({name:"orderOperationId"})
   private orderOperation : OrderOperation;
 
   @ManyToOne(type => Item, item => item.getId, {cascade: false, nullable: false})
-  @JoinColumn({name:"itemId"})
   private item : Item;
 
   @Column({type: "int"})
