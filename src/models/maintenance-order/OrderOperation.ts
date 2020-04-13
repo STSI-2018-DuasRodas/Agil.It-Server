@@ -8,10 +8,6 @@ import { OrderComponent } from "./OrderComponent";
 export abstract class OrderOperation extends CrudClass {
 
   @ManyToOne(type => OrderEquipment, orderEquipment => orderEquipment.getOrderOperation, { cascade: false })
-  @JoinColumn([
-    { name: "maintenanceOrderId", referencedColumnName: "maintenanceOrderId" },
-    { name: "equipmentId", referencedColumnName: "equipmentId" }
-  ])
   private orderEquipment: OrderEquipment;
 
   @OneToMany(type => OrderComponent, orderComponent => orderComponent.getMaintenanceOrder, { cascade: false, nullable: true })

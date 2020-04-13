@@ -6,7 +6,7 @@ import { WorkedTime } from "./WorkedTime";
 import { BaseClass } from "../BaseClass";
 
 @Entity('maintenance_worker')
-export class MaintenanceWorker extends BaseClass{
+export class MaintenanceWorker extends BaseClass {
 
   @ManyToOne(type => User, user => user.getId)
   private user : User;

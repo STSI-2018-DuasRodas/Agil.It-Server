@@ -8,14 +8,7 @@ export class WorkedTime {
   @PrimaryGeneratedColumn("uuid")
   private id: any;
 
-  @ManyToOne(type => User, user => user.getId)
-  private user: User;
-
   @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkedTime)
-  @JoinColumn([
-    { name: "userId", referencedColumnName: "userId" },
-    { name: "maintenanceOrderId", referencedColumnName: "maintenanceOrderId" }
-  ])
   private maintenanceWorker: MaintenanceWorker;
 
   @Column()
@@ -51,14 +44,6 @@ export class WorkedTime {
    */
 	public getId(): any {
 		return this.id;
-	}
-
-  /**
-   * Getter user
-   * @return {User}
-   */
-	public getUser(): User {
-		return this.user;
 	}
 
     /**
@@ -139,14 +124,6 @@ export class WorkedTime {
    */
 	public setId(value: any) {
 		this.id = value;
-	}
-
-  /**
-   * Setter user
-   * @param {User} value
-   */
-	public setUser(value: User) {
-		this.user = value;
 	}
 
   /**

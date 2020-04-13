@@ -19,7 +19,7 @@ export class MaintenanceOrderController {
     let maintenerId=request.params.id
 
     return this.getRepositoryEntity().find({
-      relations: ["maintenanceWorker"],
+      //relations: ["maintenanceWorker"],
       where: [
         { deleted: false },
         //{ "maintenanceWorker.userId": maintenerId }

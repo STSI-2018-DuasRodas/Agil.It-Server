@@ -1,4 +1,4 @@
-export enum WorderRequestStatus {
+export enum WorkerRequestStatus {
   REQUESTED = 'requested',
   ACCEPTED = 'accepted',
   DENIED = 'denied',

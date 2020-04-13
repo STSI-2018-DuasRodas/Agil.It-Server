@@ -1,8 +1,8 @@
-import { Entity, Column, OneToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { User } from "../User";
-import { MaintenanceOrder } from "./MaintenanceOrder";
 import { MaintenanceWorker } from "./MaintenanceWorker";
-import { WorderRequestStatus } from "../enum/WorkerRequestStatus";
+import { WorkerRequestStatus } from "../enum/WorkerRequestStatus";
+import { RequestType } from "../enum/RequestType";
 
 @Entity('worker_request')
 export class WorkerRequest {
@@ -10,33 +10,24 @@ export class WorkerRequest {
   @PrimaryGeneratedColumn("uuid")
   private id: any;
 
-  @ManyToOne(type => User, user => user.getId)
-  private user: User;
-
-  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId)
-  @JoinColumn({
-    name: "maintenanceOrderId", referencedColumnName: "id" }
-  )
-  private maintenanceOrder: MaintenanceOrder;
-
-  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkerRequest)
-  @JoinColumn({
-    name: "maintenanceWorkerId", referencedColumnName: "userId" }
-  )
+  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getId)
   private maintenanceWorker: MaintenanceWorker;
-
-  @Column()
-  private request: boolean = false;
 
   @ManyToOne(type => User, user => user.getId)
   private requestedBy: User;
 
   @Column({
     type: "enum",
-    enum: WorderRequestStatus,
-    default: WorderRequestStatus.REQUESTED
+    enum: WorkerRequestStatus,
+    default: WorkerRequestStatus.REQUESTED
   })
-  private status: WorderRequestStatus;
+  private status: WorkerRequestStatus;
+
+  @Column({
+    type: "enum",
+    enum: RequestType
+  })
+  private type: RequestType;
 
   @CreateDateColumn()
   private createdAt: Date | undefined;
@@ -65,30 +56,6 @@ export class WorkerRequest {
   }
 
   /**
-   * Getter user
-   * @return {User}
-   */
-  public getUser(): User {
-    return this.user;
-  }
-
-  /**
-   * Getter maintenanceOrder
-   * @return {MaintenanceOrder}
-   */
-  public getMaintenanceOrder(): MaintenanceOrder {
-    return this.maintenanceOrder;
-  }
-
-  /**
-   * Getter request
-   * @return {boolean }
-   */
-  public getRequest(): boolean {
-    return this.request;
-  }
-
-  /**
    * Getter requestedBy
    * @return {User}
    */
@@ -114,10 +81,18 @@ export class WorkerRequest {
 
   /**
    * Getter status
-   * @return {WorderRequestStatus}
+   * @return {WorkerRequestStatus}
    */
-  public getStatus(): WorderRequestStatus {
+  public getStatus(): WorkerRequestStatus {
     return this.status;
+  }
+  
+  /**
+   * Getter type
+   * @return {WorkerRequestStatus}
+   */
+  public getType(): RequestType {
+    return this.type;
   }
 
   /**
@@ -153,30 +128,6 @@ export class WorkerRequest {
   }
 
   /**
-   * Setter user
-   * @param {User} value
-   */
-  public setUser(value: User) {
-    this.user = value;
-  }
-
-  /**
-   * Setter maintenanceOrder
-   * @param {MaintenanceOrder} value
-   */
-  public setMaintenanceOrder(value: MaintenanceOrder) {
-    this.maintenanceOrder = value;
-  }
-
-  /**
-   * Setter request
-   * @param {boolean } value
-   */
-  public setRequest(value: boolean) {
-    this.request = value;
-  }
-
-  /**
    * Setter requestedBy
    * @param {User} value
    */
@@ -201,10 +152,18 @@ export class WorkerRequest {
   }
 
   /**
-   * Setter status
-   * @param {WorderRequestStatus} value
+   * Setter type
+   * @param {RequestType} value
    */
-  public setStatus(value: WorderRequestStatus) {
+  public setType(value: RequestType) {
+    this.type = value;
+  }
+
+  /**
+   * Setter status
+   * @param {WorkerRequestStatus} value
+   */
+  public setStatus(value: WorkerRequestStatus) {
     this.status = value;
   }
 
