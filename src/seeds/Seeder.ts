@@ -9,6 +9,14 @@ import { Sector } from "./Sector";
 import { InstallationArea } from "./InstallationArea";
 import { MeasurementUnit } from "./MeasurementUnit";
 import { Item } from "./Item";
+import { MachineComponent } from "./MachineComponent";
+import { OrderClassification } from "./OrderClassification";
+import { OrderLayout } from "./OrderLayout";
+import { OrderType } from "./OrderType";
+import { SecurityParam } from "./SecurityParam";
+import { SuperiorEquipment } from "./SuperiorEquipment";
+import { WorkCenter } from "./WorkCenter";
+import { MaintenanceOrder } from "./MaintenanceOrder";
 
 export class Seeder {
 
@@ -24,5 +32,13 @@ export class Seeder {
     await InstallationArea.Seed();
     await MeasurementUnit.Seed();
     await Item.Seed();
+    await MachineComponent.Seed();
+    await OrderClassification.Seed();
+    await OrderLayout.Seed();
+    await OrderType.Seed();
+    await SecurityParam.Seed();
+    await SuperiorEquipment.Seed();
+    await WorkCenter.Seed();
+    await MaintenanceOrder.Seed();
   }
 }

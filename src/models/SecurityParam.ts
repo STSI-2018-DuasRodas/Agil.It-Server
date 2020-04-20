@@ -1,11 +1,12 @@
 import { Entity, Column } from "typeorm";
 import { CrudClass } from "./CrudClass";
+import { SecurityParamEntity } from "./enum/SecurityParamEntity";
 
 @Entity("security_param")
 export class SecurityParam extends CrudClass {
 
   @Column({nullable: true})
-  private entityClass: string;
+  private entityClass: SecurityParamEntity;
 
   @Column({ type: "int", nullable: true })
   private entityId: number;
@@ -19,9 +20,9 @@ export class SecurityParam extends CrudClass {
 
   /**
    * Getter entityClass
-   * @return {string}
+   * @return {SecurityParamEntity}
    */
-  public getEntityClass(): string {
+  public getEntityClass(): SecurityParamEntity {
     return this.entityClass;
   }
 
@@ -35,9 +36,9 @@ export class SecurityParam extends CrudClass {
 
   /**
    * Setter entityClass
-   * @param {string} value
+   * @param {SecurityParamEntity} value
    */
-  public setEntityClass(value: string) {
+  public setEntityClass(value: SecurityParamEntity) {
     this.entityClass = value;
   }
 

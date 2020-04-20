@@ -29,7 +29,6 @@ export class Seed {
   }
 
   public async CheckSeed() {
-    console.log(this.controller)
     return (await this.controller.getRepositoryEntity().count() < 1);
   }
 

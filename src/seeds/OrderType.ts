@@ -1,12 +1,12 @@
-import { MachineComponent as Model } from '../models/MachineComponent';
-import { MachineComponentController } from '../controllers/MachineComponent';
+import { OrderType as Model } from '../models/OrderType';
+import { OrderTypeController } from '../controllers/OrderType';
 import { Seed } from "./Seed";
 
-export class MachineComponent extends Seed {
+export class OrderType extends Seed {
 
   public static Seed(log: Boolean = true) {
-    const machineComponent = new MachineComponent(MachineComponentController);
-    return machineComponent.Executar(log);
+    const orderType = new OrderType(OrderTypeController);
+    return orderType.Executar(log);
   }
 
   public async Mock() {
@@ -14,8 +14,7 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 1,
-      "description":"Motor Refrigerador",
-      "machineType": 1,
+      "description":"XHZ03",
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -25,8 +24,7 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 2,
-      "description":"Ventuinha",
-      "machineType": 2,
+      "description":"LKQ15",
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -36,8 +34,7 @@ export class MachineComponent extends Seed {
     
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 3,
-      "description":"Chapa 220x40",
-      "machineType": 3,
+      "description":"YJB77",
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,

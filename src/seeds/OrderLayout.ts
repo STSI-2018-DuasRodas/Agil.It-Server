@@ -1,12 +1,13 @@
-import { MachineComponent as Model } from '../models/MachineComponent';
-import { MachineComponentController } from '../controllers/MachineComponent';
+import { OrderLayout as Model } from '../models/OrderLayout';
+import {OrderLayout as EnumOrderLayout} from "../models/enum/OrderLayout"
+import { OrderLayoutController } from '../controllers/OrderLayout';
 import { Seed } from "./Seed";
 
-export class MachineComponent extends Seed {
+export class OrderLayout extends Seed {
 
   public static Seed(log: Boolean = true) {
-    const machineComponent = new MachineComponent(MachineComponentController);
-    return machineComponent.Executar(log);
+    const orderLayout = new OrderLayout(OrderLayoutController);
+    return orderLayout.Executar(log);
   }
 
   public async Mock() {
@@ -14,8 +15,8 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 1,
-      "description":"Motor Refrigerador",
-      "machineType": 1,
+      "description": "Normal",
+      "orderLayout": EnumOrderLayout.DEFAULT,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -25,8 +26,8 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 2,
-      "description":"Ventuinha",
-      "machineType": 2,
+      "description": "Rotita Piquitita",
+      "orderLayout": EnumOrderLayout.ROUTE,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -36,8 +37,8 @@ export class MachineComponent extends Seed {
     
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 3,
-      "description":"Chapa 220x40",
-      "machineType": 3,
+      "description": "Listosa Monstra",
+      "orderLayout": EnumOrderLayout.LIST,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,

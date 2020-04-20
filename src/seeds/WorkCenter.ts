@@ -1,12 +1,12 @@
-import { MachineComponent as Model } from '../models/MachineComponent';
-import { MachineComponentController } from '../controllers/MachineComponent';
+import { WorkCenter as Model } from '../models/WorkCenter';
+import { WorkCenterController } from '../controllers/WorkCenter';
 import { Seed } from "./Seed";
 
-export class MachineComponent extends Seed {
+export class WorkCenter extends Seed {
 
   public static Seed(log: Boolean = true) {
-    const machineComponent = new MachineComponent(MachineComponentController);
-    return machineComponent.Executar(log);
+    const workCenter = new WorkCenter(WorkCenterController);
+    return workCenter.Executar(log);
   }
 
   public async Mock() {
@@ -14,8 +14,7 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 1,
-      "description":"Motor Refrigerador",
-      "machineType": 1,
+      "description":"Defumaria",
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -25,8 +24,7 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 2,
-      "description":"Ventuinha",
-      "machineType": 2,
+      "description":"Condensaria",
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -36,8 +34,7 @@ export class MachineComponent extends Seed {
     
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 3,
-      "description":"Chapa 220x40",
-      "machineType": 3,
+      "description":"Condimentaria",
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,

@@ -1,12 +1,13 @@
-import { MachineComponent as Model } from '../models/MachineComponent';
-import { MachineComponentController } from '../controllers/MachineComponent';
+import { SecurityParam as Model } from '../models/SecurityParam';
+import { SecurityParamController } from '../controllers/SecurityParam';
 import { Seed } from "./Seed";
+import { SecurityParamEntity } from '../models/enum/SecurityParamEntity';
 
-export class MachineComponent extends Seed {
+export class SecurityParam extends Seed {
 
   public static Seed(log: Boolean = true) {
-    const machineComponent = new MachineComponent(MachineComponentController);
-    return machineComponent.Executar(log);
+    const securityParam = new SecurityParam(SecurityParamController);
+    return securityParam.Executar(log);
   }
 
   public async Mock() {
@@ -14,8 +15,10 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 1,
-      "description":"Motor Refrigerador",
-      "machineType": 1,
+      "description":"Mascara de Calor",
+      "entityClass": SecurityParamEntity.MACHINE_TYPE,
+      "entityId": 1,
+      "useAlways": false,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -25,8 +28,10 @@ export class MachineComponent extends Seed {
 
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 2,
-      "description":"Ventuinha",
-      "machineType": 2,
+      "description":"Luvas de Proteção",
+      "entityClass": "",
+      "entityId": "",
+      "useAlways": true,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -36,8 +41,10 @@ export class MachineComponent extends Seed {
     
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 3,
-      "description":"Chapa 220x40",
-      "machineType": 3,
+      "description":"Sapato de Proteção",
+      "entityClass": "",
+      "entityId": "",
+      "useAlways": true,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
