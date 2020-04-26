@@ -12,151 +12,63 @@ export class User extends BaseClass {
 
   @Column()
   @IsNotEmpty()
-  private name: string = '';
+  public name: string = '';
 
   @Column()
   @IsNotEmpty()
-  private email: string = '';
+  public email: string = '';
 
-  @Column()
+  @Column(/*{select: false}*/)
   @Length(4, 100)
-  private password: string = '';
+  public password: string = '';
 
   @Column({
     type: "enum",
     enum: UserRole
   })
   @IsNotEmpty()
-  private role: UserRole | undefined;
+  public role: UserRole | undefined;
 
   @Column()
   @IsNotEmpty()
-  private contact: string = '';
+  public contact: string = '';
 
   @Column("date")
   @IsNotEmpty()
-  private birthDate: Date | undefined;
+  public birthDate: Date | undefined;
 
   @Column()
-  private forceChangePassword: boolean = false;
+  public forceChangePassword: boolean = false;
 
   @OneToOne(
     type => Sector,
-    sector => sector.getId,
+    sector => sector.id,
     { nullable: true },
   )
   @JoinColumn()
-  private sector: Sector | null = null;
+  public sector: Sector | null = null;
 
   @OneToOne(
     type => WorkCenter,
-    workCenter => workCenter.getId,
+    workCenter => workCenter.id,
     { nullable: true },
   )
   @JoinColumn()
-  private workCenter: WorkCenter | null = null;
+  public workCenter: WorkCenter | null = null;
 
   @Column()
   @IsNotEmpty()
-  private employeeBadge: string = ''
+  public employeeBadge: string = ''
 
   @Column({
     type: "enum",
     enum: Gender
   })
   @IsNotEmpty()
-  private gender: Gender;
+  public gender: Gender;
 
   constructor() {
     super();
-  }
-
-  public setName(name: string): void {
-    this.name = name;
-  }
-
-  public getName(): string {
-    return this.name;
-  }
-
-  public setEmail(email: string): void {
-    this.email = email;
-  }
-
-  public getEmail(): string {
-    return this.email;
-  }
-
-  public setPassword(password: string): void {
-    this.password = password;
-  }
-
-  public getPassword(): string {
-    return this.password;
-  }
-
-  public setRole(role: UserRole): void {
-    this.role = role;
-  }
-
-  public getRole(): UserRole | undefined {
-    return this.role;
-  }
-
-  public setContact(contact: string): void {
-    this.contact = contact;
-  }
-
-  public getContact(): string {
-    return this.contact;
-  }
-
-  public setBirthDate(birthDate: Date): void {
-    this.birthDate = birthDate;
-  }
-
-  public getBirthDate(): Date | undefined {
-    return this.birthDate;
-  }
-
-  public setForceChangePassword(forceChangePassword: boolean): void {
-    this.forceChangePassword = forceChangePassword;
-  }
-
-  public getForceChangePassword(): boolean {
-    return this.forceChangePassword;
-  }
-
-  public setSector(sector: Sector): void {
-    this.sector = sector;
-  }
-
-  public getSector(): Sector | null {
-    return this.sector;
-  }
-
-  public setEmployeeBadge(value: string) {
-    this.employeeBadge = value;
-  }
-
-  public getEmployeeBadge(): string {
-    return this.employeeBadge;
-  }
-
-  public getWorkCenter(): WorkCenter {
-    return this.workCenter;
-  }
-
-  public setWorkCenter(value: WorkCenter) {
-    this.workCenter = value;
-  }
-
-  public getGender(): Gender {
-    return this.gender;
-  }
-
-  public setGender(value: Gender) {
-    this.gender = value;
   }
 
 }

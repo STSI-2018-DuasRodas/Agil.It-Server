@@ -58,93 +58,69 @@ export class MaintenanceOrder extends Seed {
     const createdBy: number = 1;
     const updatedBy: number = 1;
 
-    //const components: Array<OrderComponent> | null | undefined = await this.loadOrderComponents();
-    const equipments: Array<OrderEquipment> = await this.loadOrderEquipment();
-    const workers: Array<MaintenanceWorker> | null = await this.loadWorkers();
-    
     const layout: OrderLayout = await this.getOrderLayout(layoutId);
     const orderType: OrderType = await this.getOrderType(orderTypeId);
     const orderClassification: OrderClassification = await this.getOrderClassification(orderClassificationId);
 
     let order: Model;
 
-    if (layout.getOrderLayout() === EnumOrderLayout.DEFAULT) {
+    if (layout.orderLayout === EnumOrderLayout.DEFAULT) {
       order = new Default()
 
-    } else if(layout.getOrderLayout() === EnumOrderLayout.LIST) {
+    } else if(layout.orderLayout === EnumOrderLayout.LIST) {
       order = new List()
 
     } else {
       order = new Route()
     }
 
-    order.setOrderNumber(orderNumber);
-    order.setOrderLayout(layout);
-    order.setOrderType(orderType);
-    order.setOrderClassification(orderClassification);
-    order.setCreatedBy(createdBy);
-    order.setUpdatedBy(updatedBy);
-    order.setExported(exported);
-    order.setIsStopped(isStopped);
-    order.setNeedStopping(needStopping);
-    order.setOpenedDate(openedDate);
-    order.setOrderStatus(status);
-    order.setPriority(priority);
-    order.setMaintenanceWorker(workers);
-    order.setOrderEquipment(equipments);
+    order.orderNumber = orderNumber;
+    order.orderLayout = layout;
+    order.orderType = orderType;
+    order.orderClassification = orderClassification;
+    order.createdBy = createdBy;
+    order.updatedBy = updatedBy;
+    order.exported = exported;
+    order.isStopped = isStopped;
+    order.needStopping = needStopping;
+    order.openedDate = openedDate;
+    order.orderStatus = status;
+    order.priority = priority;
     
     const controller = new MaintenanceOrderController();
     await controller.getRepositoryEntity().save(order);
 
-    const equipmentController = new OrderEquipmentController();
-
-    equipments.forEach(async (equipamento: OrderEquipment) => {
-      equipamento.setMaintenanceOrder(order);
-      
-      await equipmentController.getRepositoryEntity().save(equipamento);
-      
-      const operations: Array<OrderOperation> | null | undefined = await this.loadOrderOperations();
-      equipamento.setOrderOperation(operations);
-      await this.SaveOperationsId(equipamento);
-    })
+    await this.loadOrderEquipment(order);
+    await this.loadWorkers(order);
   }
 
-  public static async loadOrderComponents() {
+  public static async loadOrderComponents(orderOperation: OrderOperation) {
     const componentsQty: number = this.getRandomNumber(0,3);
-    const arrayComponents: Array<OrderComponent> = [];
 
     for (let i = 0; i < componentsQty; i++) {
-      arrayComponents.push(await this.CreateOrderComponent())
+      await this.CreateOrderComponent(orderOperation);
     }
-
-    return arrayComponents;
   }
   
-  public static async loadOrderEquipment() {
+  public static async loadOrderEquipment(order: Model) {
 
     const equipmentQty: number = this.getRandomNumber(1,3);
-    const arrayEquipment: Array<OrderEquipment> = [];
 
     for (let i = 0; i < equipmentQty; i++) {
-      arrayEquipment.push(await this.CreateOrderEquipment())
+      await this.CreateOrderEquipment(order)
     }
-
-    return arrayEquipment;
   }
 
-  public static async loadWorkers() {
+  public static async loadWorkers(order: Model) {
     const workersQty: number = this.getRandomNumber(0,3);
-    const arrayWorkers: Array<MaintenanceWorker> = [];
 
     for (let i = 0; i < workersQty; i++) {
       const isMain = (i === 0)  // Apenas o primeiro é o principal
-      arrayWorkers.push(await this.CreateWorker(isMain))
+      await this.CreateWorker(order, isMain)
     }
-
-    return arrayWorkers;
   }
   
-  public static async CreateOrderComponent(): Promise<any> {
+  public static async CreateOrderComponent(orderOperation: OrderOperation): Promise<any> {
 
     const itemId: number = this.getRandomNumber(1,3);
     const quantity: number = this.getRandomNumber(1,10);
@@ -155,11 +131,12 @@ export class MaintenanceOrder extends Seed {
     const item: Item = await this.getItem(itemId);
 
     const orderComponent = new OrderComponent();
-    orderComponent.setCreatedBy(createdBy);
-    orderComponent.setUpdatedBy(updatedBy);
-    orderComponent.setCanBeDeleted(canBeDeleted);
-    orderComponent.setItem(item);
-    orderComponent.setQuantity(quantity);
+    orderComponent.createdBy = createdBy;
+    orderComponent.updatedBy = updatedBy;
+    orderComponent.canBeDeleted = canBeDeleted;
+    orderComponent.item = item;
+    orderComponent.quantity = quantity;
+    orderComponent.orderOperation = orderOperation
 
     const controller = new OrderComponentController();
     await controller.getRepositoryEntity().save(orderComponent);
@@ -167,7 +144,7 @@ export class MaintenanceOrder extends Seed {
     return orderComponent;
   }
   
-  public static async CreateOrderEquipment(): Promise<any> {
+  public static async CreateOrderEquipment(order: Model): Promise<any> {
 
     const equipmentId: number = this.getRandomNumber(1,3);
     const superiorEquipmentId: number = this.getRandomNumber(1,3);
@@ -182,69 +159,60 @@ export class MaintenanceOrder extends Seed {
 
     const orderEquipment = new OrderEquipment();
 
-    orderEquipment.setEquipment(equipment);
-    orderEquipment.setInstallationArea(installationArea);
-    orderEquipment.setSuperiorEquipment(superiorEquipment);
-    orderEquipment.setCreatedBy(createdBy);
-    orderEquipment.setUpdatedBy(updatedBy);
+    orderEquipment.equipment = equipment;
+    orderEquipment.installationArea = installationArea;
+    orderEquipment.superiorEquipment = superiorEquipment;
+    orderEquipment.createdBy = createdBy;
+    orderEquipment.updatedBy = updatedBy;
+    orderEquipment.maintenanceOrder = order;
     
     const controller = new OrderEquipmentController();
     await controller.getRepositoryEntity().save(orderEquipment);
 
-    return orderEquipment;
+    this.loadOrderOperations(orderEquipment);
   }
 
-  public static async SaveOperationsId(orderEquipment: OrderEquipment): Promise<any> {
-
-    const controller = new OrderOperationController();
-
-    orderEquipment.getOrderOperation().forEach(async (operation: OrderOperation) => {
-      operation.setOrderEquipment(orderEquipment);
-      await controller.getRepositoryEntity().save(operation);
-    });
-  }
-
-  public static async loadOrderOperations(): Promise<any> {
+  public static async loadOrderOperations(orderEquipment: OrderEquipment): Promise<any> {
     const operationsQty: number = this.getRandomNumber(0,3);
-    const arrayOperaions: Array<OrderOperation> = [];
 
     for (let i = 0; i < operationsQty; i++) {
-      arrayOperaions.push(await this.CreateOperation(i+1));
+      await this.CreateOperation(orderEquipment,i+1);
     }
-
-    return arrayOperaions;
   }
   
-  public static async CreateOperation(operationNumber: number): Promise<any> {
+  public static async CreateOperation(orderEquipment: OrderEquipment, operationNumber: number): Promise<any> {
 
     const planningTime:number = this.getRandomNumber(15,300);
-    const executeTime:number = this.getRandomNumber(0,(planningTime * 1.5));
+    let executeTime:number = this.getRandomNumber(0,(planningTime * 1.5));
     const executed = ((executeTime/planningTime) >= 0.85)  // Ter feito pelo menos 85% do trabalho
     const description: string = this.getRandomDescription()
     const defaultObservationId: number = this.getRandomNumber(1,3);
     const createdBy: number = 1;
     const updatedBy: number = 1;
 
+    if (!executed) executeTime = 0;
+
     const defaultObservation = await this.getDefaultObservation(defaultObservationId)
 
     const operation = new OrderOperation();
 
-    operation.setPlanningTime(planningTime);
-    operation.setExecuteTime(executeTime);
-    operation.setExecuted(executed);
-    operation.setOperationNumber(operationNumber);
-    operation.setDefaultObservation(defaultObservation);
-    operation.setDescription(description);
-    operation.setCreatedBy(createdBy);
-    operation.setUpdatedBy(updatedBy);
+    operation.planningTime = planningTime;
+    operation.executeTime = executeTime;
+    operation.executed = executed;
+    operation.operationNumber = operationNumber;
+    operation.defaultObservation = defaultObservation;
+    operation.description = description;
+    operation.createdBy = createdBy;
+    operation.updatedBy = updatedBy;
+    operation.orderEquipment = orderEquipment;
 
     const controller = new OrderOperationController();
     await controller.getRepositoryEntity().save(operation);
 
-    return operation;
+    this.loadOrderComponents(operation);
   }
 
-  public static async CreateWorker(isMain: boolean): Promise<any> {
+  public static async CreateWorker(order: Model, isMain: boolean): Promise<any> {
     
     const userId: number = this.getRandomNumber(1,4);
     const isActive: boolean = isMain ? true : this.getRandomBoolean()
@@ -254,16 +222,15 @@ export class MaintenanceOrder extends Seed {
     const user = await this.getUser(userId);
 
     const maintenanceWorker = new MaintenanceWorker();
-    maintenanceWorker.setUser(user);
-    maintenanceWorker.setIsActive(isActive);
-    maintenanceWorker.setIsMain(isMain);
-    maintenanceWorker.setCreatedBy(createdBy);
-    maintenanceWorker.setUpdatedBy(updatedBy);
+    maintenanceWorker.user = user;
+    maintenanceWorker.isActive = isActive;
+    maintenanceWorker.isMain = isMain;
+    maintenanceWorker.createdBy = createdBy;
+    maintenanceWorker.updatedBy = updatedBy;
+    maintenanceWorker.maintenanceOrder = order;
     
     const controller = new MaintenanceWorkerController();
     await controller.getRepositoryEntity().save(maintenanceWorker);
-
-    return maintenanceWorker;
   }
 
   public static async ObterOrderId() {
@@ -330,7 +297,7 @@ export class MaintenanceOrder extends Seed {
   public static getRandomOrderPriority(): OrderPriority
   {
     const arrayKeys = Object.keys(OrderPriority);
-    const key = this.getRandomNumber(0, arrayKeys.length)
+    const key = this.getRandomNumber(0, arrayKeys.length - 1)
 
     return OrderPriority[key];
   }
@@ -338,7 +305,7 @@ export class MaintenanceOrder extends Seed {
   public static getRandomOrderStatus(): OrderStatus
   {
     const arrayKeys = Object.keys(OrderStatus);
-    const key = this.getRandomNumber(0, arrayKeys.length)
+    const key = this.getRandomNumber(0, arrayKeys.length - 1)
 
     return OrderStatus[key];
   }

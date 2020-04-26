@@ -31,14 +31,14 @@ export class UserController extends CrudController<User> {
     } catch (error) {
       return {"success":false,"error":"Usuário ou senha incorreto"};
     }
-    
+
     //Sing JWT, valid for 5 hours
     const token = jwt.sign(
       {
-        userId: user.getId(),
-        email: user.getEmail(),
-        name: user.getName(),
-        employeeBadge: user.getEmployeeBadge()
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        employeeBadge: user.employeeBadge
       },
       JWT.jwtSecret,
       { expiresIn: "5h" }
@@ -54,32 +54,22 @@ export class UserController extends CrudController<User> {
 
   async save(request: Request, response: Response, next: NextFunction) {
 
-    console.log("TCL: CrudController<Entity> -> save -> request.body", request.body)
-
     let name = request.body.name
     let entity: User
     try {
-      console.log("1");
       entity = await this.getRepositoryEntity().findOneOrFail({
         where: {
           deleted: false,
           name: name
         }
       })
-      entity = await this.getRepositoryEntity().merge(entity, request.body)
-      console.log("2");
+      entity = this.getRepositoryEntity().merge(entity, request.body)
     } catch (error) {
-      console.log("3");
       entity = this.getRepositoryEntity().create(<User>request.body)
     }
 
-    console.log("4");
-    console.log("TCL: CrudController<Entity> -> save -> entity", entity["getIntegrationID"]())
-
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
-
-
 
     //Validade if the parameters are ok
     const error = await this.validate(entity)
@@ -90,48 +80,16 @@ export class UserController extends CrudController<User> {
       }
     }
 
-    if (entity["getIntegrationID"]() != "") {
+    if (entity["integrationID"] != "") {
       try {
-        await this.getRepositoryEntity().findOneOrFail({ where: { integrationID: entity["getIntegrationID"]() } });
-        return { "success": false, "error": `Registro com o integrationID ${entity["getIntegrationID"]()} já existe.` };
+        await this.getRepositoryEntity().findOneOrFail({ where: { integrationID: entity["integration"] } });
+        return { "success": false, "error": `Registro com o integrationID ${entity["integrationID"]} já existe.` };
       } catch (error) {
         // Não está duplicado
       }
     }
 
     return this.getRepositoryEntity().save(entity);
-  }
-
-  updateFields(token: string, user: User) {
-    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
-    const { userId } = jwtPayload;
-
-    user["setUpdatedBy"](userId);
-    if (user["getCreatedBy"]() === undefined) {
-      user["setCreatedBy"](userId);
-    }
-  }
-
-  async validate(user: User): Promise<any> {
-    const errors = await validate(user);
-
-    if (errors.length === 0) {
-      return undefined
-    }
-
-    let errorList = []
-
-    errors.forEach(error => {
-      let constraints = error.constraints
-
-      for (const key in constraints) {
-        if (constraints.hasOwnProperty(key)) {
-          errorList.push(constraints[key])
-        }
-      }
-    });
-
-    return errorList
   }
 
   public includes() {

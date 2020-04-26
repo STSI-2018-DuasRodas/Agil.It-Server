@@ -29,9 +29,6 @@ export class Seed {
   }
 
   public async CheckSeed() {
-    if (this.getClassName().toLowerCase() == "maintenanceorder")
-      return true
-
     return (await this.controller.getRepositoryEntity().count() < 1);
   }
 

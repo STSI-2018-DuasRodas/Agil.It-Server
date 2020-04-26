@@ -6,16 +6,16 @@ import { User } from "./User";
 export class Notification {
   
   @PrimaryGeneratedColumn("uuid")
-  private id: any;
+  public id: any;
 
   @Column()
-  private title: string;
+  public title: string;
 
   @Column()
-  private description: string;
+  public description: string;
 
   @Column()
-  private icon: string;
+  public icon: string;
 
   @Column()
   artefact: string;
@@ -28,104 +28,15 @@ export class Notification {
     enum: NotificatoinStatus,
     default: NotificatoinStatus.NEW
   })
-  status: NotificatoinStatus;
+  public status: NotificatoinStatus;
 
-  @ManyToOne(type => User, user => user.getId)
-  private user: User;
+  @ManyToOne(type => User, user => user.id)
+  public user: User;
 
   @CreateDateColumn()
-  private createdAt: Date | undefined;
+  public createdAt: Date | undefined;
 
   @UpdateDateColumn()
-  private updatedAt: Date | undefined;
-
-  /**
-   * Getter id
-   * @return {any}
-   */
-	public getId(): any {
-		return this.id;
-	}
-
-  /**
-   * Getter description
-   * @return {string}
-   */
-	public getDescription(): string {
-		return this.description;
-	}
-
-  /**
-   * Getter icon
-   * @return {string}
-   */
-	public getIcon(): string {
-		return this.icon;
-	}
-
-  /**
-   * Setter description
-   * @param {string} value
-   */
-	public setDescription(value: string) {
-		this.description = value;
-	}
-
-  /**
-   * Setter icon
-   * @param {string} value
-   */
-	public setIcon(value: string) {
-		this.icon = value;
-  }
-
-  /**
-   * Getter createdAt
-   * @return {Date }
-   */
-	public getCreatedAt(): Date  {
-		return this.createdAt;
-	}
-
-  /**
-   * Getter updatedAt
-   * @return {Date }
-   */
-	public getUpdatedAt(): Date  {
-		return this.updatedAt;
-	}
-
-    /**
-     * Getter title
-     * @return {string}
-     */
-	public getTitle(): string {
-		return this.title;
-	}
-
-  /**
-   * Setter title
-   * @param {string} value
-   */
-	public setTitle(value: string) {
-		this.title = value;
-  }
-
-  /**
-   * Getter user
-   * @return {User}
-   */
-	public getUser(): User {
-		return this.user;
-	}
-
-  /**
-   * Setter user
-   * @param {User} value
-   */
-	public setUser(value: User) {
-		this.user = value;
-	}
-
+  public updatedAt: Date | undefined;
   
 }

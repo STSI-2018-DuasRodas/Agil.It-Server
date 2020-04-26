@@ -21,6 +21,13 @@ export class MaintenanceOrderCollection extends Collection {
 
     this.addRoute(new Route(
       Method.GET,
+      this.getRoute(),
+      this.getController(),
+      'all'
+    ))
+    
+    this.addRoute(new Route(
+      Method.GET,
       this.getRouteWithId(),
       this.getController(),
       'getOrder'

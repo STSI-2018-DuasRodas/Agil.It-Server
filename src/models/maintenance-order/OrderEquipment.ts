@@ -9,115 +9,35 @@ import { BaseClass } from "../BaseClass";
 @Entity('order_equipment')
 export class OrderEquipment extends BaseClass {
 
-  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: true})
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.id, {cascade: false, nullable: true})
   @JoinColumn()
-  private maintenanceOrder : MaintenanceOrder;
+  public maintenanceOrder : MaintenanceOrder;
   
-  @ManyToOne( type => Equipment, equipment => equipment.getId, {cascade: false, nullable: false})
+  @ManyToOne( type => Equipment, equipment => equipment.id, {cascade: false, nullable: false})
   @JoinColumn()
-  private equipment: Equipment;
+  public equipment: Equipment;
   
   @ManyToOne(
     (type) => SuperiorEquipment,
-    (superiorEquipment) => superiorEquipment.getId,
+    (superiorEquipment) => superiorEquipment.id,
     { nullable: true }
   )
   @JoinColumn()
-  private superiorEquipment: SuperiorEquipment;
+  public superiorEquipment: SuperiorEquipment;
 
   @ManyToOne(
     (type) => InstallationArea,
-    (installationArea) => installationArea.getId,
+    (installationArea) => installationArea.id,
     { nullable: false, cascade: false }
   )
   @JoinColumn()
-  private installationArea: InstallationArea;
+  public installationArea: InstallationArea;
   
-  @OneToMany(type => OrderOperation, orderOperation => orderOperation.getOrderEquipment, {cascade: false, nullable: true})
-  private orderOperation: Array<OrderOperation>;
+  @OneToMany(type => OrderOperation, orderOperation => orderOperation.orderEquipment, {cascade: false, nullable: true})
+  public orderOperation: Array<OrderOperation>;
 
   constructor() {
     super();
   }
-
-  /**
-   * Getter maintenanceOrder
-   * @return {MaintenanceOrder}
-   */
-	public getMaintenanceOrder(): MaintenanceOrder {
-		return this.maintenanceOrder;
-	}
-
-  /**
-   * Getter equipment
-   * @return {Equipment}
-   */
-	public getEquipment(): Equipment {
-		return this.equipment;
-	}
-
-  /**
-   * Getter superiorEquipment
-   * @return {SuperiorEquipment}
-   */
-	public getSuperiorEquipment(): SuperiorEquipment {
-		return this.superiorEquipment;
-	}
-
-  /**
-   * Getter installationArea
-   * @return {InstallationArea}
-   */
-public getInstallationArea(): InstallationArea {
-		return this.installationArea;
-	}
-
-  /**
-   * Getter orderOperation
-   * @return {Array<OrderOperation>}
-   */
-	public getOrderOperation(): Array<OrderOperation> {
-		return this.orderOperation;
-	}
-
-  /**
-   * Setter maintenanceOrder
-   * @param {MaintenanceOrder} value
-   */
-	public setMaintenanceOrder(value: MaintenanceOrder) {
-		this.maintenanceOrder = value;
-	}
-
-  /**
-   * Setter equipment
-   * @param {Equipment} value
-   */
-	public setEquipment(value: Equipment) {
-		this.equipment = value;
-	}
-
-  /**
-   * Setter superiorEquipment
-   * @param {SuperiorEquipment} value
-   */
-	public setSuperiorEquipment(value: SuperiorEquipment) {
-		this.superiorEquipment = value;
-	}
-
-  /**
-   * Setter installationArea
-   * @param {InstallationArea} value
-   */
-	public setInstallationArea(value: InstallationArea) {
-		this.installationArea = value;
-	}
-
-  /**
-   * Setter orderOperation
-   * @param {Array<OrderOperation>} value
-   */
-	public setOrderOperation(value: Array<OrderOperation>) {
-		this.orderOperation = value;
-	}
 
 }

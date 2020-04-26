@@ -8,18 +8,10 @@ export abstract class CrudClass extends BaseClass {
   @IsNotEmpty({
     message:'Descrição: Campo obrigatório.'
   })
-  private description: string = '';
+  public description: string = '';
 
   constructor() {
     super();
-  }
-
-  public setDescription(description: string): void {
-    this.description = description;
-  }
-
-  public getDescription(): string {
-    return this.description;
   }
 
 }

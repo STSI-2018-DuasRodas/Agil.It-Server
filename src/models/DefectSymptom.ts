@@ -7,30 +7,14 @@ export class DefectSymptom extends CrudClass {
 
   @ManyToOne(
     (type) => MachineType,
-    (machineType) => machineType.getId,
+    (machineType) => machineType.id,
     { nullable: false },
   )
   @JoinColumn()
-  private machineType: MachineType;
+  public machineType: MachineType;
 
   constructor() {
     super();
   }
-
-  /**
-   * Getter machineType
-   * @return {MachineType }
-   */
-	public getMachineType(): MachineType  {
-		return this.machineType;
-	}
-
-  /**
-   * Setter machineType
-   * @param {MachineType } value
-   */
-	public setMachineType(value: MachineType ) {
-		this.machineType = value;
-	}
 
 }

@@ -44,12 +44,9 @@ export class CrudController<Entity> {
 
   async save(request: Request, response: Response, next: NextFunction) {
 
-    console.log("TCL: CrudController<Entity> -> save -> request.body", request.body)
-
-    let description=request.body.description
+    let description = request.body.description;
     let entity: Entity
     try {
-      console.log("1");
       entity = await this.getRepositoryEntity().findOneOrFail({
         where: {
           deleted: false,
@@ -57,14 +54,9 @@ export class CrudController<Entity> {
         }
       })
       entity = await this.getRepositoryEntity().merge(entity, request.body)
-      console.log("2");
     } catch (error) {
-      console.log("3");
       entity = this.getRepositoryEntity().create(<Entity>request.body)
     }
-
-    console.log("4");
-    console.log("TCL: CrudController<Entity> -> save -> entity", entity["getIntegrationID"]())
 
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
@@ -80,10 +72,10 @@ export class CrudController<Entity> {
       }
     }
     
-    if (entity["getIntegrationID"]() != "") {
+    if (entity["integrationID"] != "") {
       try {
-        await this.getRepositoryEntity().findOneOrFail({where: {integrationID: entity["getIntegrationID"]()}});
-        return {"success":false,"error":`Registro com o integrationID ${entity["getIntegrationID"]()} já existe.`};
+        await this.getRepositoryEntity().findOneOrFail({where: {integrationID: entity["integrationID"]}});
+        return {"success":false,"error":`Registro com o integrationID ${entity["integrationID"]} já existe.`};
       } catch (error) {
         // Não está duplicado
       }
@@ -98,7 +90,7 @@ export class CrudController<Entity> {
 
     try {
       entity = await this.getRepositoryEntity().findOneOrFail(request.params.id);
-      entity = await this.getRepositoryEntity().merge(entity, request.body)
+      entity = this.getRepositoryEntity().merge(entity, request.body)
     } catch (error) {
       return {"success":false,"error":`Registro ${request.params.id} não encontrado`};
     }
@@ -127,10 +119,10 @@ export class CrudController<Entity> {
     try {
       entity = await this.getRepositoryEntity().findOneOrFail(request.params.id);
     } catch (error) {
-      return {"success":false,"error":`Registro com o integrationID ${entity["getIntegrationID"]()} já existe.`};
+      return {"success":false,"error":`Registro com o integrationID ${entity["integrationID"]} já existe.`};
     }
 
-    if (entity["getDeleted"]() === true) {
+    if (entity["deleted"] === true) {
       return {"success":false,"error":`Registro ${request.params.id} já está excluído.`};
     }
 
@@ -156,9 +148,9 @@ export class CrudController<Entity> {
     let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
     const { userId } = jwtPayload;
 
-    entity["setUpdatedBy"](userId);
-    if (entity["getCreatedBy"]() === undefined) {
-      entity["setCreatedBy"](userId);
+    entity["updatedBy"] = userId;
+    if (entity["createdBy"] === undefined) {
+      entity["createdBy"] = userId;
     }
   }
 

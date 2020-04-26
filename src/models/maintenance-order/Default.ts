@@ -22,94 +22,30 @@ export class Default extends MaintenanceOrder {
 
   @ManyToOne(
     (type) => DefectOrigin,
-    (defectOrigin) => defectOrigin.getId,
+    (defectOrigin) => defectOrigin.id,
     { nullable: true }
   )
   @JoinColumn()
-  private defectOrigin: DefectOrigin;
+  public defectOrigin: DefectOrigin;
 
   @Column({
     type: 'varchar',
     length: '255'
   })
-  private defectOriginNote: string = '';
+  public defectOriginNote: string = '';
 
   @ManyToOne(
     (type) => DefectSymptom,
-    (defectSymptom) => defectSymptom.getId,
+    (defectSymptom) => defectSymptom.id,
     { nullable: true }
   )
   @JoinColumn()
-  private defectSymptom: DefectSymptom;
+  public defectSymptom: DefectSymptom;
 
   @Column({
     type: 'varchar',
     length: '255'
   })
-  private defectSymptomNote: string = '';
-
-  /**
-   * Getter defectOrigin
-   * @return {DefectOrigin}
-   */
-  public getDefectOrigin(): DefectOrigin {
-    return this.defectOrigin;
-  }
-
-  /**
-   * Getter defectOriginNote
-   * @return {string }
-   */
-  public getDefectOriginNote(): string {
-    return this.defectOriginNote;
-  }
-
-  /**
-   * Getter defectSymptom
-   * @return {DefectSymptom}
-   */
-  public getDefectSymptom(): DefectSymptom {
-    return this.defectSymptom;
-  }
-
-  /**
-   * Getter defectSymptomNote
-   * @return {string }
-   */
-  public getDefectSymptomNote(): string {
-    return this.defectSymptomNote;
-  }
-
-  /**
-   * Setter defectOrigin
-   * @param {DefectOrigin} value
-   */
-  public setDefectOrigin(value: DefectOrigin) {
-    this.defectOrigin = value;
-  }
-
-  /**
-   * Setter defectOriginNote
-   * @param {string } value
-   */
-  public setDefectOriginNote(value: string) {
-    this.defectOriginNote = value;
-  }
-
-  /**
-   * Setter defectSymptom
-   * @param {DefectSymptom} value
-   */
-  public setDefectSymptom(value: DefectSymptom) {
-    this.defectSymptom = value;
-  }
-
-  /**
-   * Setter defectSymptomNote
-   * @param {string } value
-   */
-  public setDefectSymptomNote(value: string) {
-    this.defectSymptomNote = value;
-  }
+  public defectSymptomNote: string = '';
 
 }

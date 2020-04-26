@@ -7,29 +7,14 @@ export class InstallationArea extends CrudClass {
 
   @ManyToOne(
     (type) => Sector,
-    (sector) => sector.getId,
+    (sector) => sector.id,
     { nullable: false },
   )
   @JoinColumn()
-  private sector: Sector;
+  public sector: Sector;
 
   constructor() {
     super();
   }
-
-  /**
-   * Getter sector
-   * @return {Sector }
-   */
-	public getSector(): Sector  {
-		return this.sector;
-	}
-
-  /**
-   * Setter sector
-   * @param {Sector } value
-   */
-	public setSector(value: Sector ) {
-		this.sector = value;
-	}
+  
 }

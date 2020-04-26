@@ -7,29 +7,14 @@ export class Item extends CrudClass {
 
   @ManyToOne(
     (type) => MeasurementUnit,
-    (measurementUnit) => measurementUnit.getId,
+    (measurementUnit) => measurementUnit.id,
     { nullable: false },
   )
   @JoinColumn()
-  private measurementUnit: MeasurementUnit;
+  public measurementUnit: MeasurementUnit;
 
   constructor() {
     super();
   }
 
-  /**
-   * Getter measurementUnit
-   * @return {MeasurementUnit }
-   */
-	public getMeasurementUnit(): MeasurementUnit  {
-		return this.measurementUnit;
-	}
-
-  /**
-   * Setter measurementUnit
-   * @param {MeasurementUnit } value
-   */
-	public setMeasurementUnit(value: MeasurementUnit ) {
-		this.measurementUnit = value;
-	}
 }

@@ -7,30 +7,14 @@ export class SuperiorEquipment extends CrudClass {
 
   @ManyToOne(
     (type) => InstallationArea,
-    (installationArea) => installationArea.getId,
+    (installationArea) => installationArea.id,
     { nullable: false }
   )
   @JoinColumn()
-  private installationArea: InstallationArea;
+  public installationArea: InstallationArea;
 
   constructor() {
     super();
   }
-
-  /**
-   * Getter installationArea
-   * @return {InstallationArea }
-   */
-	public getInstallationArea(): InstallationArea  {
-		return this.installationArea;
-	}
-
-  /**
-   * Setter installationArea
-   * @param {InstallationArea } value
-   */
-	public setInstallationArea(value: InstallationArea ) {
-		this.installationArea = value;
-	}
 
 }

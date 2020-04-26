@@ -3,134 +3,30 @@ import { CreateDateColumn, UpdateDateColumn, Column, PrimaryGeneratedColumn } fr
 export abstract class BaseClass {
 
   @PrimaryGeneratedColumn()
-  private id: number | undefined;
+  public id: number | undefined;
 
   @Column({default: ''})
-  private integrationID: string = '';
+  public integrationID: string = '';
 
   @CreateDateColumn()
-  private createdAt: Date | undefined;
+  public createdAt: Date | undefined;
 
   @Column()
-  private createdBy: number | undefined;
+  public createdBy: number | undefined;
 
   @UpdateDateColumn()
-  private updatedAt: Date | undefined;
+  public updatedAt: Date | undefined;
 
   @Column()
-  private updatedBy: number | undefined;
+  public updatedBy: number | undefined;
 
   @Column({
     type: Boolean,
     default: false
   })
-  private deleted: boolean = false;
+  public deleted: boolean = false;
 
   constructor() {
-  }
-
-  /**
-   * Setter Id
-   * @param {number } value
-   */
-  public setId(value: number) {
-    this.id = value;
-  }
-
-  /**
-   * Getter Id
-   * @return {number }
-   */
-  public getId(): number | undefined {
-    return this.id;
-  }
-
-  /**
-   * Getter integrationID
-   * @return {string }
-   */
-  public getIntegrationID(): string {
-    return this.integrationID;
-  }
-
-  /**
-   * Setter integrationID
-   * @param {string } value
-   */
-  public setIntegrationID(value: string) {
-    this.integrationID = value;
-  }
-
-  /**
-   * Getter createdAt
-   * @return {Date  | undefined }
-   */
-  public getCreatedAt(): Date | undefined {
-    return this.createdAt;
-  }
-
-  /**
-   * Setter createdBy
-   * @param {number } value
-   */
-  public setCreatedBy(value: number) {
-    this.createdBy = value;
-  }
-
-  /**
-   * Getter createdBy
-   * @return {number  | undefined }
-   */
-  public getCreatedBy(): number | undefined {
-    return this.createdBy;
-  }
-
-  /**
-   * Setter updatedAt
-   * @param {Date } value
-   */
-  protected setUpdatedAt(value: Date) {
-    this.updatedAt = value;
-  }
-
-  /**
-   * Getter updatedAt
-   * @return {Date | undefined }
-   */
-  public getUpdatedAt(): Date | undefined {
-    return this.updatedAt;
-  }
-
-  /**
-   * Setter updatedBy
-   * @param {number } value
-   */
-  public setUpdatedBy(value: number) {
-    this.updatedBy = value;
-  }
-
-  /**
-   * Getter updatedBy
-   * @return {number | undefined }
-   */
-  public getUpdatedBy(): number | undefined {
-    return this.updatedBy;
-  }
-
-  /**
-   * Setter deleted
-   * @param {boolean } value
-   */
-  protected setDeleted(value: boolean) {
-    this.deleted = value;
-  }
-
-  /**
-   * Getter deleted
-   * @return {boolean }
-   */
-  public getDeleted(): boolean {
-    return this.deleted;
   }
 
 }
