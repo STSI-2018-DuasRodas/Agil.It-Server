@@ -1,4 +1,4 @@
-import { Entity, Column, UpdateDateColumn, CreateDateColumn, OneToMany, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm";
 import { User } from "../User";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { WorkerRequest } from "./WorkerRequest";
@@ -9,9 +9,11 @@ import { BaseClass } from "../BaseClass";
 export class MaintenanceWorker extends BaseClass {
 
   @ManyToOne(type => User, user => user.getId)
+  @JoinColumn()
   private user : User;
   
-  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getMaintenanceWorker, {cascade: false})
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false})
+  @JoinColumn()
   private maintenanceOrder : MaintenanceOrder;
   
   @Column()
@@ -20,10 +22,10 @@ export class MaintenanceWorker extends BaseClass {
   @Column()
   private isActive: boolean = false;
   
-  @OneToMany(type => WorkerRequest, workerRequest => workerRequest.getId, {cascade: false})
+  @OneToMany(type => WorkerRequest, workerRequest => workerRequest.getMaintenanceWorker, {cascade: false})
   private workerRequest: Array<WorkerRequest>;
 
-  @OneToMany(type => WorkedTime, workedTime => workedTime.getId, {cascade: false})
+  @OneToMany(type => WorkedTime, workedTime => workedTime.getMaintenanceWorker, {cascade: false})
   private workedTime: Array<WorkedTime>;
 
   /**

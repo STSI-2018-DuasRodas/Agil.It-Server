@@ -30,6 +30,14 @@ export abstract class BaseClass {
   }
 
   /**
+   * Setter Id
+   * @param {number } value
+   */
+  public setId(value: number) {
+    this.id = value;
+  }
+
+  /**
    * Getter Id
    * @return {number }
    */
@@ -97,7 +105,7 @@ export abstract class BaseClass {
    * Setter updatedBy
    * @param {number } value
    */
-  protected setUpdatedBy(value: number) {
+  public setUpdatedBy(value: number) {
     this.updatedBy = value;
   }
 

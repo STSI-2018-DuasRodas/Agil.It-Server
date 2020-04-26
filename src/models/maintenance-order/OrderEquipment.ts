@@ -1,6 +1,6 @@
 import { Equipment } from "../Equipment";
 import { SuperiorEquipment } from "../SuperiorEquipment";
-import { OneToOne, ManyToOne, Column, Entity, OneToMany, PrimaryColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
+import { ManyToOne, Entity, OneToMany, JoinColumn } from "typeorm";
 import { OrderOperation } from "./OrderOperation";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { InstallationArea } from "../InstallationArea";
@@ -9,10 +9,12 @@ import { BaseClass } from "../BaseClass";
 @Entity('order_equipment')
 export class OrderEquipment extends BaseClass {
 
-  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: false})
+  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: true})
+  @JoinColumn()
   private maintenanceOrder : MaintenanceOrder;
   
   @ManyToOne( type => Equipment, equipment => equipment.getId, {cascade: false, nullable: false})
+  @JoinColumn()
   private equipment: Equipment;
   
   @ManyToOne(
@@ -20,6 +22,7 @@ export class OrderEquipment extends BaseClass {
     (superiorEquipment) => superiorEquipment.getId,
     { nullable: true }
   )
+  @JoinColumn()
   private superiorEquipment: SuperiorEquipment;
 
   @ManyToOne(
@@ -27,9 +30,10 @@ export class OrderEquipment extends BaseClass {
     (installationArea) => installationArea.getId,
     { nullable: false, cascade: false }
   )
+  @JoinColumn()
   private installationArea: InstallationArea;
   
-  @OneToMany(type => OrderOperation, orderOperation => orderOperation.getOrderEquipment, {onDelete: "CASCADE"})
+  @OneToMany(type => OrderOperation, orderOperation => orderOperation.getOrderEquipment, {cascade: false, nullable: true})
   private orderOperation: Array<OrderOperation>;
 
   constructor() {

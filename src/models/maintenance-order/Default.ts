@@ -1,4 +1,4 @@
-import { ChildEntity, OneToOne, Column, ManyToOne } from "typeorm";
+import { ChildEntity, OneToMany, Column, ManyToOne, JoinColumn } from "typeorm";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { OrderEquipment } from "./OrderEquipment";
 import { DefectOrigin } from "../DefectOrigin";
@@ -7,22 +7,25 @@ import { DefectSymptom } from "../DefectSymptom";
 @ChildEntity()
 export class Default extends MaintenanceOrder {
 
-  constructor() {
+  constructor(
+    defectOrigin: DefectOrigin | undefined = undefined,
+    defectOriginNote: string | undefined = undefined,
+    defectSymptom: DefectSymptom | undefined = undefined,
+    defectSymptomNote: string | undefined = undefined,
+  ) {
     super();
+    this.defectOrigin = defectOrigin;
+    this.defectOriginNote = defectOriginNote;
+    this.defectSymptom = defectSymptom;
+    this.defectSymptomNote = defectSymptomNote;
   }
-
-  @OneToOne(
-    (type) => OrderEquipment,
-    (orderEquipment) => orderEquipment.getId,
-    { cascade: true }
-  )
-  private orderEquipment: OrderEquipment;
 
   @ManyToOne(
     (type) => DefectOrigin,
     (defectOrigin) => defectOrigin.getId,
     { nullable: true }
   )
+  @JoinColumn()
   private defectOrigin: DefectOrigin;
 
   @Column({
@@ -36,6 +39,7 @@ export class Default extends MaintenanceOrder {
     (defectSymptom) => defectSymptom.getId,
     { nullable: true }
   )
+  @JoinColumn()
   private defectSymptom: DefectSymptom;
 
   @Column({
@@ -43,22 +47,6 @@ export class Default extends MaintenanceOrder {
     length: '255'
   })
   private defectSymptomNote: string = '';
-
-  /**
-   * Getter orderEquipment
-   * @return {OrderEquipment }
-   */
-  public getOrderEquipment(): OrderEquipment {
-    return this.orderEquipment;
-  }
-
-  /**
-   * Setter orderEquipment
-   * @param {OrderEquipment } value
-   */
-  public setOrderEquipment(value: OrderEquipment) {
-    this.orderEquipment = value;
-  }
 
   /**
    * Getter defectOrigin

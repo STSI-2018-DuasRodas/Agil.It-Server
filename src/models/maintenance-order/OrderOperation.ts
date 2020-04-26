@@ -5,16 +5,17 @@ import { DefaultObservation } from "../DefaultObservation";
 import { OrderComponent } from "./OrderComponent";
 
 @Entity("order_operation")
-export abstract class OrderOperation extends CrudClass {
+export class OrderOperation extends CrudClass {
 
-  @ManyToOne(type => OrderEquipment, orderEquipment => orderEquipment.getOrderOperation, { cascade: false })
+  @ManyToOne(type => OrderEquipment, orderEquipment => orderEquipment.getId, {cascade: false, nullable: true})
+  @JoinColumn()
   private orderEquipment: OrderEquipment;
 
-  @OneToMany(type => OrderComponent, orderComponent => orderComponent.getMaintenanceOrder, { cascade: false, nullable: true })
+  @OneToMany(type => OrderComponent, orderComponent => orderComponent.getOrderOperation, { cascade: false, nullable: true })
   private orderComponent: Array<OrderComponent>;
 
   @Column()
-  private operationNumber: string;
+  private operationNumber: number;
 
   @Column({ type: "int" })
   private planningTime: number;
@@ -32,6 +33,7 @@ export abstract class OrderOperation extends CrudClass {
   private note: string;
 
   @ManyToOne(type => DefaultObservation, defaultObservation => defaultObservation.getId, { nullable: true })
+  @JoinColumn()
   private defaultObservation: DefaultObservation | null = null
 
   constructor() {
@@ -48,9 +50,9 @@ export abstract class OrderOperation extends CrudClass {
 
   /**
    * Getter operationNumber
-   * @return {string}
+   * @return {number}
    */
-  public getOperationNumber(): string {
+  public getOperationNumber(): number {
     return this.operationNumber;
   }
 
@@ -96,9 +98,9 @@ export abstract class OrderOperation extends CrudClass {
 
   /**
    * Setter operationNumber
-   * @param {string} value
+   * @param {number} value
    */
-  public setOperationNumber(value: string) {
+  public setOperationNumber(value: number) {
     this.operationNumber = value;
   }
 

@@ -7,14 +7,12 @@ import * as helmet from "helmet";
 import {Routes} from "./routes";
 import { Collection } from "./routes/Collection";
 import { Route } from "./routes/Route";
-import { UserController } from "./controllers/User";
-import { User } from "./models/User";
 import { Seeder } from './seeds/Seeder'
 
 createConnection().then(async connection => {
 
   // Execute Mock
-  await Seeder.Executar()
+  await Seeder.Executar(true);
 
   // create express app
   const app = express();

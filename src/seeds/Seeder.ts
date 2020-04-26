@@ -20,25 +20,25 @@ import { MaintenanceOrder } from "./MaintenanceOrder";
 
 export class Seeder {
 
-  public static async Executar() : Promise<any> {
-    await User.Seed();
-    await DefaultObservation.Seed();
-    await DefaultOperation.Seed();
-    await MachineType.Seed();
-    await DefectOrigin.Seed();
-    await DefectSymptom.Seed();
-    await Equipment.Seed();
-    await Sector.Seed();
-    await InstallationArea.Seed();
-    await MeasurementUnit.Seed();
-    await Item.Seed();
-    await MachineComponent.Seed();
-    await OrderClassification.Seed();
-    await OrderLayout.Seed();
-    await OrderType.Seed();
-    await SecurityParam.Seed();
-    await SuperiorEquipment.Seed();
-    await WorkCenter.Seed();
-    await MaintenanceOrder.Seed();
+  public static async Executar(log: Boolean = true) : Promise<any> {
+    await User.Seed(log);
+    await DefaultObservation.Seed(log);
+    await DefaultOperation.Seed(log);
+    await MachineType.Seed(log);
+    await DefectOrigin.Seed(log);
+    await DefectSymptom.Seed(log);
+    await Equipment.Seed(log);
+    await Sector.Seed(log);
+    await InstallationArea.Seed(log);
+    await MeasurementUnit.Seed(log);
+    await Item.Seed(log);
+    await MachineComponent.Seed(log);
+    await OrderClassification.Seed(log);
+    await OrderLayout.Seed(log);
+    await OrderType.Seed(log);
+    await SecurityParam.Seed(log);
+    await SuperiorEquipment.Seed(log);
+    await WorkCenter.Seed(log);
+    await MaintenanceOrder.Seed(log);
   }
 }

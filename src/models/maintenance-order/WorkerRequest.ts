@@ -1,4 +1,4 @@
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
 import { User } from "../User";
 import { MaintenanceWorker } from "./MaintenanceWorker";
 import { WorkerRequestStatus } from "../enum/WorkerRequestStatus";
@@ -11,9 +11,11 @@ export class WorkerRequest {
   private id: any;
 
   @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getId)
+  @JoinColumn()
   private maintenanceWorker: MaintenanceWorker;
 
   @ManyToOne(type => User, user => user.getId)
+  @JoinColumn()
   private requestedBy: User;
 
   @Column({

@@ -29,9 +29,9 @@ export class SecurityParam extends Seed {
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 2,
       "description":"Luvas de Proteção",
-      "entityClass": "",
-      "entityId": "",
-      "useAlways": true,
+      "entityClass": SecurityParamEntity.WORK_CENTER,
+      "entityId": 2,
+      "useAlways": false,
       "deleted": false,
       "createdBy": 1,
       "updatedBy": 1,
@@ -42,8 +42,8 @@ export class SecurityParam extends Seed {
     await this.controller.getRepositoryEntity().save(<Model><unknown>{
       "id": 3,
       "description":"Sapato de Proteção",
-      "entityClass": "",
-      "entityId": "",
+      "entityClass": null,
+      "entityId": null,
       "useAlways": true,
       "deleted": false,
       "createdBy": 1,

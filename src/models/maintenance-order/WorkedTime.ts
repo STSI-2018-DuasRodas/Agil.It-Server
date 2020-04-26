@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, Column, JoinColumn } from "typeorm";
 import { MaintenanceWorker } from "./MaintenanceWorker";
-import { User } from "../User";
 
 @Entity('maintenance_worker_time')
 export class WorkedTime {
@@ -8,7 +7,8 @@ export class WorkedTime {
   @PrimaryGeneratedColumn("uuid")
   private id: any;
 
-  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getWorkedTime)
+  @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getId)
+  @JoinColumn()
   private maintenanceWorker: MaintenanceWorker;
 
   @Column()

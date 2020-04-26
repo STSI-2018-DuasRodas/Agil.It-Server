@@ -1,5 +1,5 @@
 import { BaseClass } from "../BaseClass"
-import { Entity, ManyToOne, JoinColumn, Column } from "typeorm"
+import { Entity, ManyToOne, Column, JoinColumn } from "typeorm"
 import { Item } from "../Item";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { OrderOperation } from "./OrderOperation";
@@ -7,13 +7,12 @@ import { OrderOperation } from "./OrderOperation";
 @Entity("order_component")
 export class OrderComponent extends BaseClass {
 
-  @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.getId, {cascade: false, nullable: false})
-  private maintenanceOrder : MaintenanceOrder;
-
   @ManyToOne(type => OrderOperation, orderOperation => orderOperation.getId, {cascade: false, nullable: true})
+  @JoinColumn()
   private orderOperation : OrderOperation;
 
   @ManyToOne(type => Item, item => item.getId, {cascade: false, nullable: false})
+  @JoinColumn()
   private item : Item;
 
   @Column({type: "int"})
@@ -25,14 +24,6 @@ export class OrderComponent extends BaseClass {
   constructor() {
     super();
   }
-
-  /**
-   * Getter maintenanceOrder
-   * @return {MaintenanceOrder}
-   */
-	public getMaintenanceOrder(): MaintenanceOrder {
-		return this.maintenanceOrder;
-	}
 
   /**
    * Getter item
@@ -56,14 +47,6 @@ export class OrderComponent extends BaseClass {
    */
 	public getCanBeDeleted(): boolean {
 		return this.canBeDeleted;
-	}
-
-    /**
-     * Setter maintenanceOrder
-     * @param {MaintenanceOrder} value
-     */
-	public setMaintenanceOrder(value: MaintenanceOrder) {
-		this.maintenanceOrder = value;
 	}
 
   /**

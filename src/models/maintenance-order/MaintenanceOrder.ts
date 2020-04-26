@@ -1,4 +1,4 @@
-import { Column, OneToOne, ManyToOne, Entity, TableInheritance, OneToMany } from "typeorm";
+import { Column, ManyToOne, Entity, TableInheritance, OneToMany, JoinColumn } from "typeorm";
 import { BaseClass } from "../BaseClass";
 import { OrderType } from "../OrderType";
 import { OrderClassification } from "../OrderClassification";
@@ -7,6 +7,8 @@ import { MaintenanceWorker } from "./MaintenanceWorker";
 import { OrderComponent } from "./OrderComponent";
 import { OrderStatus } from "../enum/OrderStatus";
 import { OrderLayout } from "../OrderLayout";
+import { OrderSignature } from "./OrderSignature";
+import { OrderEquipment } from "./OrderEquipment";
 
 @Entity("maintenance_order")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -20,6 +22,7 @@ export abstract class MaintenanceOrder extends BaseClass {
     (orderType) => orderType.getId,
     { nullable: false, cascade: false }
   )
+  @JoinColumn()
   private orderType: OrderType = new OrderType();
 
   @ManyToOne(
@@ -27,6 +30,7 @@ export abstract class MaintenanceOrder extends BaseClass {
     (orderClassification) => orderClassification.getId,
     { nullable: false, cascade: false }
   )
+  @JoinColumn()
   private orderClassification: OrderClassification = new OrderClassification();
 
   @ManyToOne(
@@ -34,6 +38,7 @@ export abstract class MaintenanceOrder extends BaseClass {
     (orderLayout) => orderLayout.getId,
     { nullable: false, cascade: false }
   )
+  @JoinColumn()
   private orderLayout: OrderLayout;
 
   @Column({
@@ -56,18 +61,21 @@ export abstract class MaintenanceOrder extends BaseClass {
   @Column()
   private isStopped: boolean = true;
 
-  @OneToMany(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getMaintenanceOrder)
-  private maintenanceWorker: Array<MaintenanceWorker>;
-
-  @OneToMany(type => OrderComponent, orderComponent => orderComponent.getMaintenanceOrder, { cascade: false, nullable: true })
-  private orderComponent: Array<OrderComponent>;
+  @OneToMany(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.getMaintenanceOrder, { cascade: false, nullable: true })
+  private maintenanceWorker: Array<MaintenanceWorker> | null = null;
+  
+  @OneToMany(type => OrderSignature, orderSignature => orderSignature.getMaintenanceOrder, { cascade: false, nullable: true })
+  private orderSignature: Array<OrderSignature>;
 
   @Column({ type: 'boolean', default: false })
   private exported: boolean = false;
 
   @Column()
   private openedDate: Date;
-
+  
+  @OneToMany(type => OrderEquipment, orderEquipment => orderEquipment.getMaintenanceOrder, { cascade: true,  nullable: true })
+  private orderEquipment: Array<OrderEquipment>;
+  
   constructor() {
     super();
   }
@@ -114,9 +122,9 @@ export abstract class MaintenanceOrder extends BaseClass {
 
   /**
    * Getter maintenanceWorker
-   * @return {Array<MaintenanceWorker>}
+   * @return {Array<MaintenanceWorker> | null}
    */
-  public getMaintenanceWorker(): Array<MaintenanceWorker> {
+  public getMaintenanceWorker(): Array<MaintenanceWorker> | null {
     return this.maintenanceWorker;
   }
 
@@ -162,9 +170,9 @@ export abstract class MaintenanceOrder extends BaseClass {
 
   /**
    * Setter maintenanceWorker
-   * @param {Array<MaintenanceWorker>} value
+   * @param {Array<MaintenanceWorker> | null} value
    */
-  public setMaintenanceWorker(value: Array<MaintenanceWorker>) {
+  public setMaintenanceWorker(value: Array<MaintenanceWorker> | null) {
     this.maintenanceWorker = value;
   }
 
@@ -183,21 +191,21 @@ export abstract class MaintenanceOrder extends BaseClass {
   public setNeedStopping(value: boolean) {
     this.needStopping = value;
   }
-
+  
   /**
-   * Getter orderComponent
-   * @return {Array<OrderComponent>}
+   * Getter orderSignature
+   * @return {Array<OrderSignature>}
    */
-  public getOrderComponent(): Array<OrderComponent> {
-    return this.orderComponent;
+  public getOrderSignature(): Array<OrderSignature> {
+    return this.orderSignature;
   }
 
   /**
-   * Setter orderComponent
-   * @param {Array<OrderComponent>} value
+   * Setter orderSignature
+   * @param {Array<OrderSignature>} value
    */
-  public setOrderComponent(value: Array<OrderComponent>) {
-    this.orderComponent = value;
+  public setOrderSignature(value: Array<OrderSignature>) {
+    this.orderSignature = value;
   }
 
   /**
@@ -264,5 +272,21 @@ export abstract class MaintenanceOrder extends BaseClass {
   public setOpenedDate(value: Date) {
     this.openedDate = value;
   }
+  
+  /**
+   * Getter orderEquipment
+   * @return {Array<OrderEquipment> }
+   */
+	public getOrderEquipment(): Array<OrderEquipment>  {
+		return this.orderEquipment;
+	}
+
+  /**
+   * Setter orderEquipment
+   * @param {Array<OrderEquipment> } value
+   */
+	public setOrderEquipment(value: Array<OrderEquipment> ) {
+		this.orderEquipment = value;
+	}
 
 }
