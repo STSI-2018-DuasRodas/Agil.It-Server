@@ -38,7 +38,7 @@ export class MaintenanceOrder extends Seed {
 
   public async Mock() {
   
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 200; i++) {
       await MaintenanceOrder.CreateOrder();
     }
 
@@ -104,7 +104,11 @@ export class MaintenanceOrder extends Seed {
   
   public static async loadOrderEquipment(order: Model) {
 
-    const equipmentQty: number = this.getRandomNumber(1,3);
+    let equipmentQty: number = this.getRandomNumber(1,3);
+
+    if (order.orderLayout.orderLayout === EnumOrderLayout.DEFAULT) {
+      equipmentQty = 1;
+    }
 
     for (let i = 0; i < equipmentQty; i++) {
       await this.CreateOrderEquipment(order)
@@ -296,18 +300,18 @@ export class MaintenanceOrder extends Seed {
 
   public static getRandomOrderPriority(): OrderPriority
   {
-    const arrayKeys = Object.keys(OrderPriority);
-    const key = this.getRandomNumber(0, arrayKeys.length - 1)
+    const arrayValues = Object.values(OrderPriority);
+    const index = this.getRandomNumber(0, arrayValues.length - 1)
 
-    return OrderPriority[key];
+    return arrayValues[index];
   }
   
   public static getRandomOrderStatus(): OrderStatus
   {
-    const arrayKeys = Object.keys(OrderStatus);
-    const key = this.getRandomNumber(0, arrayKeys.length - 1)
+    const arrayValues = Object.values(OrderStatus);
+    const index = this.getRandomNumber(0, arrayValues.length - 1)
 
-    return OrderStatus[key];
+    return arrayValues[index];
   }
 
   public static getRandomNumber(min : number = 0, max: number = 3): number {
