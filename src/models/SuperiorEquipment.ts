@@ -11,7 +11,7 @@ export class SuperiorEquipment extends CrudClass {
     { nullable: false }
   )
   @JoinColumn()
-  public installationArea: InstallationArea;
+  public installationArea: InstallationArea = undefined;
 
   constructor() {
     super();

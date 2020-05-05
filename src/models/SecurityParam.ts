@@ -6,13 +6,13 @@ import { SecurityParamEntity } from "./enum/SecurityParamEntity";
 export class SecurityParam extends CrudClass {
 
   @Column({nullable: true})
-  public entityClass: SecurityParamEntity;
+  public entityClass: SecurityParamEntity = undefined;
 
   @Column({ type: "int", nullable: true })
-  public entityId: number;
+  public entityId: number = undefined;
 
   @Column()
-  public useAlways: boolean;
+  public useAlways: boolean = undefined;
 
   constructor() {
     super()

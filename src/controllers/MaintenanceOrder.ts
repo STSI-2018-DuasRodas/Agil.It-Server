@@ -4,6 +4,7 @@ import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import JWT from "../config/JWT";
+import { MaintenanceWorker } from "../models/maintenance-order/MaintenanceWorker";
 
 export class MaintenanceOrderController {
 
@@ -62,7 +63,7 @@ export class MaintenanceOrderController {
   public async getOrder(request: Request, response: Response, next: NextFunction) {
     let orderId = request.params.id;
 
-    return this.getRepositoryEntity().find({
+    return this.getRepositoryEntity().findOne({
       relations: this.getAllRelations(),
       where: { id: orderId }
     });
@@ -73,8 +74,6 @@ export class MaintenanceOrderController {
 
     const token = <string>request.headers["token"];
     this.updateFields(token, order);
-
-    
 
     //Validade if the parameters are ok
     const error = await this.validate(order)
@@ -140,7 +139,7 @@ export class MaintenanceOrderController {
     const token = <string>request.headers["token"];
     this.updateFields(token, order);
 
-    order["setDeleted"](true);
+    order["deleted"] = true;
     const errors = await validate(order);
     if (errors.length > 0) {
       return {
@@ -152,7 +151,9 @@ export class MaintenanceOrderController {
     let result = await this.getRepositoryEntity().update(request.params.id,order)
     if (!result) return { "success":false, "error":"Erro ao deletar a ordem" }
 
-
+    order.maintenanceWorker.forEach((maintenanceWorker: MaintenanceWorker) => {
+      const maintenanceOrderController = new MaintenanceOrderController()
+    })
 
     return await this.getRepositoryEntity().findOne(request.params.id);
   }

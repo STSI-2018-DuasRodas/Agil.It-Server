@@ -14,7 +14,7 @@ export class MaintenanceWorker extends BaseClass {
   
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.id, {cascade: false})
   @JoinColumn()
-  public maintenanceOrder : MaintenanceOrder;
+  public maintenanceOrder : MaintenanceOrder | undefined = undefined;
   
   @Column()
   public isMain: boolean = false;

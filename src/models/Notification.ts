@@ -6,37 +6,37 @@ import { User } from "./User";
 export class Notification {
   
   @PrimaryGeneratedColumn("uuid")
-  public id: any;
+  public id: any = undefined;
 
   @Column()
-  public title: string;
+  public title: string = undefined;
 
   @Column()
-  public description: string;
+  public description: string = undefined;
 
   @Column()
-  public icon: string;
+  public icon: string = undefined;
 
   @Column()
-  artefact: string;
+  artefact: string = undefined;
   
   @Column()
-  artefactId: string;
+  artefactId: string = undefined;
 
   @Column({
     type: "enum",
     enum: NotificatoinStatus,
     default: NotificatoinStatus.NEW
   })
-  public status: NotificatoinStatus;
+  public status: NotificatoinStatus = NotificatoinStatus.NEW;
 
   @ManyToOne(type => User, user => user.id)
-  public user: User;
+  public user: User = undefined;
 
   @CreateDateColumn()
-  public createdAt: Date | undefined;
+  public createdAt: Date | undefined = undefined;
 
   @UpdateDateColumn()
-  public updatedAt: Date | undefined;
+  public updatedAt: Date | undefined = undefined;
   
 }

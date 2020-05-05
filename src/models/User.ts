@@ -27,7 +27,7 @@ export class User extends BaseClass {
     enum: UserRole
   })
   @IsNotEmpty()
-  public role: UserRole | undefined;
+  public role: UserRole | undefined = undefined;
 
   @Column()
   @IsNotEmpty()
@@ -35,7 +35,7 @@ export class User extends BaseClass {
 
   @Column("date")
   @IsNotEmpty()
-  public birthDate: Date | undefined;
+  public birthDate: Date | undefined = undefined;
 
   @Column()
   public forceChangePassword: boolean = false;
@@ -65,7 +65,7 @@ export class User extends BaseClass {
     enum: Gender
   })
   @IsNotEmpty()
-  public gender: Gender;
+  public gender: Gender = undefined;
 
   constructor() {
     super();

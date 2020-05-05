@@ -5,32 +5,32 @@ import { MaintenanceWorker } from "./MaintenanceWorker";
 export class WorkedTime {
 
   @PrimaryGeneratedColumn("uuid")
-  public id: any;
+  public id: any = undefined;
 
   @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.id)
   @JoinColumn()
-  public maintenanceWorker: MaintenanceWorker;
+  public maintenanceWorker: MaintenanceWorker = undefined;
 
   @Column()
-  public startedWork: Date;
+  public startedWork: Date = undefined;
 
   @Column()
-  public finishedWork: Date;
+  public finishedWork: Date = undefined;
 
   @Column({ type: "int" })
-  public intervalTime: number;
+  public intervalTime: number = undefined;
 
   @CreateDateColumn()
-  public createdAt: Date | undefined;
+  public createdAt: Date | undefined = undefined;
 
   @Column()
-  public createdBy: number | undefined;
+  public createdBy: number | undefined = undefined;
 
   @UpdateDateColumn()
-  public updatedAt: Date | undefined;
+  public updatedAt: Date | undefined = undefined;
 
   @Column()
-  public updatedBy: number | undefined;
+  public updatedBy: number | undefined = undefined;
 
   @Column({
     type: Boolean,

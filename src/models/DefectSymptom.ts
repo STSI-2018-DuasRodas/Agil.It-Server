@@ -11,7 +11,7 @@ export class DefectSymptom extends CrudClass {
     { nullable: false },
   )
   @JoinColumn()
-  public machineType: MachineType;
+  public machineType: MachineType = undefined;
 
   constructor() {
     super();

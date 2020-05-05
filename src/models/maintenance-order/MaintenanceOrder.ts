@@ -38,7 +38,7 @@ export abstract class MaintenanceOrder extends BaseClass {
     { nullable: false, cascade: false }
   )
   @JoinColumn()
-  public orderLayout: OrderLayout;
+  public orderLayout: OrderLayout | undefined = undefined;
 
   @Column({
     type: "enum",
@@ -55,10 +55,10 @@ export abstract class MaintenanceOrder extends BaseClass {
   public orderStatus: OrderStatus = OrderStatus.CREATED
 
   @Column()
-  public needStopping: boolean = true;
+  public needStopping: boolean = false;
 
   @Column()
-  public isStopped: boolean = true;
+  public isStopped: boolean = false;
 
   @OneToMany(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.maintenanceOrder, { cascade: false, nullable: true })
   public maintenanceWorker: Array<MaintenanceWorker>;
@@ -70,7 +70,7 @@ export abstract class MaintenanceOrder extends BaseClass {
   public exported: boolean = false;
 
   @Column()
-  public openedDate: Date;
+  public openedDate: Date | undefined = undefined;
   
   @OneToMany(type => OrderEquipment, orderEquipment => orderEquipment.maintenanceOrder, { cascade: true,  nullable: true })
   public orderEquipment: Array<OrderEquipment>;

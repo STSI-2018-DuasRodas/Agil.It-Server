@@ -3,22 +3,22 @@ import { CreateDateColumn, UpdateDateColumn, Column, PrimaryGeneratedColumn } fr
 export abstract class BaseClass {
 
   @PrimaryGeneratedColumn()
-  public id: number | undefined;
+  public id: number | undefined = undefined;
 
   @Column({default: ''})
   public integrationID: string = '';
 
   @CreateDateColumn()
-  public createdAt: Date | undefined;
+  public createdAt: Date | undefined = undefined;
 
   @Column()
-  public createdBy: number | undefined;
+  public createdBy: number | undefined = undefined;
 
   @UpdateDateColumn()
-  public updatedAt: Date | undefined;
+  public updatedAt: Date | undefined = undefined;
 
   @Column()
-  public updatedBy: number | undefined;
+  public updatedBy: number | undefined = undefined;
 
   @Column({
     type: Boolean,

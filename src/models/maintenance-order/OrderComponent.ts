@@ -8,17 +8,17 @@ export class OrderComponent extends BaseClass {
 
   @ManyToOne(type => OrderOperation, orderOperation => orderOperation.id, {cascade: false, nullable: true})
   @JoinColumn()
-  public orderOperation : OrderOperation;
+  public orderOperation : OrderOperation = undefined;
 
   @ManyToOne(type => Item, item => item.id, {cascade: false, nullable: false})
   @JoinColumn()
-  public item : Item;
+  public item : Item = undefined;
 
   @Column({type: "int"})
-  public quantity: number;
+  public quantity: number = 0;
 
   @Column()
-  public canBeDeleted: boolean;
+  public canBeDeleted: boolean = false;
 
   constructor() {
     super();

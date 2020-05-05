@@ -8,46 +8,46 @@ import { SignatureStatus } from "../enum/SignatureStatus";
 export class OrderSignature {
 
   @PrimaryGeneratedColumn("uuid")
-  public id: any;
+  public id: any = undefined;
 
   @ManyToOne(type => User, user => user.id)
-  public user: User;
+  public user: User = undefined;
 
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.id)
   @JoinColumn()
-  public maintenanceOrder: MaintenanceOrder;
+  public maintenanceOrder: MaintenanceOrder = undefined;
 
   @Column({
     type: "enum",
     enum: SignatureRole,
     nullable: false
   })
-  public signatureRole: SignatureRole;
+  public signatureRole: SignatureRole = undefined;
 
   @Column({
     type: "enum",
     enum: SignatureStatus,
     default: SignatureStatus.NEW
   })
-  public signatureStatus: SignatureStatus;
+  public signatureStatus: SignatureStatus = undefined;
 
   @Column({
     type: 'varchar',
     length: '255'
   })
-  public note: string;
+  public note: string = '';
 
   @CreateDateColumn()
-  public createdAt: Date | undefined;
+  public createdAt: Date | undefined = undefined;
 
   @Column()
-  public createdBy: number | undefined;
+  public createdBy: number | undefined = undefined;
 
   @UpdateDateColumn()
-  public updatedAt: Date | undefined;
+  public updatedAt: Date | undefined = undefined;
 
   @Column()
-  public updatedBy: number | undefined;
+  public updatedBy: number | undefined = undefined;
 
   @Column({
     type: Boolean,

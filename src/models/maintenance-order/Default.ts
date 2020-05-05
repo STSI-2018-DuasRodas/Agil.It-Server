@@ -26,7 +26,7 @@ export class Default extends MaintenanceOrder {
     { nullable: true }
   )
   @JoinColumn()
-  public defectOrigin: DefectOrigin;
+  public defectOrigin: DefectOrigin | undefined = undefined;
 
   @Column({
     type: 'varchar',
@@ -40,7 +40,7 @@ export class Default extends MaintenanceOrder {
     { nullable: true }
   )
   @JoinColumn()
-  public defectSymptom: DefectSymptom;
+  public defectSymptom: DefectSymptom | undefined = undefined;
 
   @Column({
     type: 'varchar',

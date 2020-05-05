@@ -11,11 +11,11 @@ export class OrderEquipment extends BaseClass {
 
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.id, {cascade: false, nullable: true})
   @JoinColumn()
-  public maintenanceOrder : MaintenanceOrder;
+  public maintenanceOrder : MaintenanceOrder = undefined;
   
   @ManyToOne( type => Equipment, equipment => equipment.id, {cascade: false, nullable: false})
   @JoinColumn()
-  public equipment: Equipment;
+  public equipment: Equipment = undefined;
   
   @ManyToOne(
     (type) => SuperiorEquipment,
@@ -23,7 +23,7 @@ export class OrderEquipment extends BaseClass {
     { nullable: true }
   )
   @JoinColumn()
-  public superiorEquipment: SuperiorEquipment;
+  public superiorEquipment: SuperiorEquipment = undefined;
 
   @ManyToOne(
     (type) => InstallationArea,
@@ -31,7 +31,7 @@ export class OrderEquipment extends BaseClass {
     { nullable: false, cascade: false }
   )
   @JoinColumn()
-  public installationArea: InstallationArea;
+  public installationArea: InstallationArea = undefined;
   
   @OneToMany(type => OrderOperation, orderOperation => orderOperation.orderEquipment, {cascade: false, nullable: true})
   public orderOperation: Array<OrderOperation>;

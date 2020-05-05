@@ -1,8 +1,9 @@
-import {Repository} from 'typeorm';
+import {Repository, Entity} from 'typeorm';
 import {NextFunction, Request, Response} from "express";
 import { validate } from "class-validator";
 import * as jwt from "jsonwebtoken";
 import JWT from "../config/JWT";
+import { RequestType } from '../models/enum/RequestType';
 
 export class CrudController<Entity> {
 
@@ -30,15 +31,25 @@ export class CrudController<Entity> {
 
 
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.getRepositoryEntity().find({
+    
+    const where = {
+      deleted: false,
+      ...this.getWhereConditions(request.params, request.query, this.getRepositoryEntity().create()),
+    }
+    
+    const { skip, take } = request.headers;
+
+    return this.getRepositoryEntity().find(<any>{
       relations: this.includes(),
-      where: { deleted: false}
+      where,
+      skip,
+      take,
     });
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
     return this.getRepositoryEntity().findOne(request.params.id, {
-      relations: this.includes()
+      relations: this.includes(),
     });
   }
 
@@ -53,7 +64,7 @@ export class CrudController<Entity> {
           description: description
         }
       })
-      entity = await this.getRepositoryEntity().merge(entity, request.body)
+      entity = this.getRepositoryEntity().merge(entity, request.body)
     } catch (error) {
       entity = this.getRepositoryEntity().create(<Entity>request.body)
     }
@@ -129,7 +140,7 @@ export class CrudController<Entity> {
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
 
-    entity["setDeleted"](true);
+    entity["deleted"] = true;
     const errors = await validate(entity);
     if (errors.length > 0) {
       return {
@@ -174,6 +185,35 @@ export class CrudController<Entity> {
     });
 
     return errorList
+  }
+
+  public getWhereConditions(params: any = {}, query: any = {}, entity: any) {
+
+    let filterObject = {};
+
+    const entries = {
+      ...query,
+      ...params,
+    };
+
+    const keys = Object.keys(entries);
+
+    keys.forEach(key => {
+
+      let keyProperty = '';
+
+      if(key.length > 2 && key.substr(key.length-2,2) == 'Id') {
+        keyProperty=key.substr(0,key.length-2)
+      } else {
+        keyProperty=key
+      }
+
+      if (entity.hasOwnProperty(keyProperty)) {
+        filterObject[keyProperty]=entries[key];
+      }
+    });
+
+    return filterObject;
   }
 
   public includes() {

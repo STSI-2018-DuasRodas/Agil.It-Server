@@ -9,22 +9,22 @@ export class OrderOperation extends CrudClass {
 
   @ManyToOne(type => OrderEquipment, orderEquipment => orderEquipment.id, {cascade: false, nullable: true})
   @JoinColumn()
-  public orderEquipment: OrderEquipment;
+  public orderEquipment: OrderEquipment = undefined;
 
   @OneToMany(type => OrderComponent, orderComponent => orderComponent.orderOperation, { cascade: false, nullable: true })
   public orderComponent: Array<OrderComponent>;
 
   @Column()
-  public operationNumber: number;
+  public operationNumber: number = undefined;
 
   @Column({ type: "int" })
-  public planningTime: number;
+  public planningTime: number = 0;
 
   @Column({ type: "int" })
-  public executeTime: number;
+  public executeTime: number = 0;
 
   @Column()
-  public executed: boolean;
+  public executed: boolean = false;
 
   @Column({
     type: 'varchar',

@@ -5,7 +5,7 @@ export enum OrderStatus {
   PAUSED = 'paused',
   STOPPED = 'stopped',
   CANCELED = 'canceled',
-  SIGNATURE_PENDING = 'signaturePending',
-  SIGNATURED = 'Signatured',
+  SIGNATURE_PENDING = 'signature-pending',
+  SIGNATURED = 'signatured',
   FINISHED = 'finished'
 }

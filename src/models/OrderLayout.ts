@@ -10,6 +10,6 @@ export class OrderLayout extends CrudClass {
     enum: EnumOrderLayout,
     nullable: false
   })
-  public orderLayout: EnumOrderLayout;
+  public orderLayout: EnumOrderLayout = undefined;
 
 }
