@@ -18,46 +18,22 @@ export class MaintenanceOrderController {
 		return this.repositoryEntity;
   }
 
-  public async getOrdersByMaintener(request: Request, response: Response, next: NextFunction) {
-
-    let maintenerId = request.params.id;
-
-    const arrayOfOrders = await this.getRepositoryEntity().find({
-      select: <any>this.fieldsResume(),
-      join: {
-        alias: 'order',
-        leftJoin: {
-          maintenanceWorker: 'order.maintenanceWorker',
-        },
-        leftJoinAndSelect: {
-          maintenanceEquipment: 'order.orderEquipment',
-          orderLayout: 'order.orderLayout',
-          equipment : 'maintenanceEquipment.equipment',
-        }
-      },
-      where: (qb: SelectQueryBuilder<MaintenanceOrder>) => {
-        qb.where({
-          deleted: false,
-        }).andWhere('maintenanceWorker.userId = :id', {id: maintenerId});
-      }
-    });
-
-    return arrayOfOrders.map((order) => {
-      return this.removeProperties(order, this.fieldsToIgnoreResume())
-    })
-  }
-
   public async all(request: Request, response: Response, next: NextFunction) {
+
+    const where = {
+      deleted: false,
+      ...this.getWhereConditions(request.params, request.query, this.getRepositoryEntity().create()),
+    };
 
     const arrayOfOrders = await this.getRepositoryEntity().find({
       select: <any>this.fieldsResume(),
       relations: ['orderLayout', 'orderEquipment', 'orderEquipment.equipment', 'maintenanceWorker', 'maintenanceWorker.user'],
-      where: { deleted: false }
+      where,
     });
 
     return arrayOfOrders.map((order) => {
       return this.removeProperties(order, this.fieldsToIgnoreResume())
-    })
+    });
   }
 
   public async getOrder(request: Request, response: Response, next: NextFunction) {
@@ -93,17 +69,20 @@ export class MaintenanceOrderController {
       }
     }
 
-    await this.getRepositoryEntity().save(order);
+    return await this.getRepositoryEntity().save(order);
   }
   
   public async updateOrder(request: Request, response: Response, next: NextFunction) {
     let order: MaintenanceOrder
 
     try {
-      order = await this.getRepositoryEntity().findOneOrFail(request.params.id);
+      order = await this.getRepositoryEntity().findOneOrFail(request.params.id,{ relations: [...this.getOrderRelations()]});
       order = this.getRepositoryEntity().merge(order, request.body)
     } catch (error) {
-      return { "success":false, "error":`Ordem ${request.params.id} não encontrada` };
+      throw {
+        message: `Ordem ${request.params.id} não encontrada`,
+        details: error
+      };
     }
 
     const token = <string>request.headers["token"];
@@ -156,6 +135,85 @@ export class MaintenanceOrderController {
     })
 
     return await this.getRepositoryEntity().findOne(request.params.id);
+  }
+
+  public async getOrdersByMaintener(request: Request, response: Response, next: NextFunction) {
+    // route: order-mainteners/:id/orders
+
+    let maintenerId = request.params.id;
+    const where = {
+      deleted: false,
+      ...this.getWhereConditions({}, request.query, this.getRepositoryEntity().create()),
+    }
+
+    const arrayOfOrders = await this.getRepositoryEntity().find({
+      select: <any>this.fieldsResume(),
+      join: {
+        alias: 'order',
+        leftJoin: {
+          maintenanceWorker: 'order.maintenanceWorker',
+        },
+        leftJoinAndSelect: {
+          maintenanceEquipment: 'order.orderEquipment',
+          orderLayout: 'order.orderLayout',
+          equipment : 'maintenanceEquipment.equipment',
+        }
+      },
+      where: (qb: SelectQueryBuilder<MaintenanceOrder>) => {
+        qb.where({
+          where,
+        }).andWhere('maintenanceWorker.userId = :id', {id: maintenerId});
+      }
+    });
+
+    return arrayOfOrders.map((order) => {
+      return this.removeProperties(order, this.fieldsToIgnoreResume())
+    })
+  }
+
+  public async getOrderMainteners(request: Request, response: Response, next: NextFunction) {
+    // route: maintenance-orders/:id/mainteners
+    const orderId = request.params.id;
+
+    return this.getRepositoryEntity().findOne({
+      select: ['maintenanceWorker'],
+      relations: this.getMaintenanceWorkerRelations(),
+      where: { id: orderId }
+    });
+  }
+  
+  public async getOrderSignatures(request: Request, response: Response, next: NextFunction) {
+    // route: maintenance-orders/:id/signatures
+    const orderId = request.params.id;
+  }
+
+  public getWhereConditions(params: any = {}, query: any = {}, entity: any) {
+
+    let filterObject = {};
+
+    const entries = {
+      ...query,
+      ...params,
+    };
+
+    const keys = Object.keys(entries);
+
+    keys.forEach(key => {
+
+      let keyProperty = '';
+
+      if(key.length > 2 && key.substr(key.length-2,2) == 'Id') {
+        keyProperty=key.substr(0,key.length-2)
+      } else {
+        keyProperty=key
+      }
+
+      if (entity.hasOwnProperty(keyProperty)) {
+        filterObject[keyProperty]=entries[key];
+      }
+    });
+
+    return filterObject;
   }
 
   updateFields(token:string, entity : MaintenanceOrder) {

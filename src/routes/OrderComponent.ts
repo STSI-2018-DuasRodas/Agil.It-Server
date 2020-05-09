@@ -4,7 +4,7 @@ import { ConfigCrudRoutes } from "./ConfigCrudRoutes";
 
 export class OrderComponentCollection extends Collection {
   constructor() {
-    super('/maintenance-orders/:maintenanceOrderId/components', OrderComponentController);
+    super('/order-components', OrderComponentController);
     this.addBaseCrudRoutes(new ConfigCrudRoutes())
   }
 

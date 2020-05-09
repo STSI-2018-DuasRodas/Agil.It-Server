@@ -7,5 +7,8 @@ export class OrderComponentController extends CrudController<OrderComponent> {
   constructor() {
     super(getRepository(OrderComponent))
   }
-  
+
+  public includes() {
+    return [ 'orderOperation', 'item' ];
+  }
 }

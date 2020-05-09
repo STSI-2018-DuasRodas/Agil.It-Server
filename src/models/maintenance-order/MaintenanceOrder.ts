@@ -70,7 +70,7 @@ export abstract class MaintenanceOrder extends BaseClass {
   public exported: boolean = false;
 
   @Column()
-  public openedDate: Date | undefined = undefined;
+  public openedDate: Date = new Date();
   
   @OneToMany(type => OrderEquipment, orderEquipment => orderEquipment.maintenanceOrder, { cascade: true,  nullable: true })
   public orderEquipment: Array<OrderEquipment>;

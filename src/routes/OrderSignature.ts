@@ -4,7 +4,7 @@ import { ConfigCrudRoutes } from "./ConfigCrudRoutes";
 
 export class OrderSignatureCollection extends Collection {
   constructor() {
-    super('/maintenance-orders/:maintenanceOrderId/signatures', OrderSignatureController);
+    super('/order-signatures', OrderSignatureController);
     this.addBaseCrudRoutes(new ConfigCrudRoutes())
   }
 
