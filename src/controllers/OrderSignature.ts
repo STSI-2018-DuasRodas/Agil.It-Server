@@ -8,4 +8,10 @@ export class OrderSignatureController extends CrudController<OrderSignature> {
     super(getRepository(OrderSignature))
   }
   
+  public includes() {
+    return [
+      'user',
+      'maintenanceOrder',
+    ]
+  }
 }

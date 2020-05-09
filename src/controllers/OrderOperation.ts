@@ -1,6 +1,8 @@
 import { getRepository } from "typeorm";
+import { NextFunction, Request, Response } from "express";
 import { OrderOperation } from "../models/maintenance-order/OrderOperation";
 import { CrudController } from "./CrudController";
+import { OrderComponentController } from "./OrderComponent";
 
 export class OrderOperationController extends CrudController<OrderOperation> {
 
@@ -8,8 +10,22 @@ export class OrderOperationController extends CrudController<OrderOperation> {
     super(getRepository(OrderOperation))
   }
 
+  public async getOperationComponents(request: Request, response: Response, next: NextFunction) {
+    // route: order-operations/:orderOperationId/components
+  }
+
   public includes() {
-    return ["orderEquipment", "orderComponent", "defaultObservation"]
+    const orderComponent = new OrderComponentController();
+    const includes = [
+      'maintenanceOrder',
+      'equipment',
+      'superiorEquipment',
+      'installationArea',
+      'orderOperation',
+      ...this.addChildIncludes('orderOperation', 'orderComponent', orderComponent.includes()),
+    ]
+
+    return includes;
   }
   
 }

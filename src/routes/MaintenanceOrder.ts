@@ -21,6 +21,27 @@ export class MaintenanceOrderCollection extends Collection {
 
     this.addRoute(new Route(
       Method.GET,
+      `${this.getRouteWithId()}/mainteners`,
+      this.getController(),
+      'getOrderMainteners'
+    ))
+
+    this.addRoute(new Route(
+      Method.GET,
+      `${this.getRouteWithId()}/equipments`,
+      this.getController(),
+      'getOrderEquipments'
+    ))
+    
+    this.addRoute(new Route(
+      Method.GET,
+      `${this.getRouteWithId()}/signatures`,
+      this.getController(),
+      'getOrderSignatures'
+    ))
+
+    this.addRoute(new Route(
+      Method.GET,
       this.getRoute(),
       this.getController(),
       'all'

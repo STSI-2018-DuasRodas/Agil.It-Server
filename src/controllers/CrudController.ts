@@ -219,4 +219,19 @@ export class CrudController<Entity> {
   public includes() {
     return [];
   }
+  
+  public addChildIncludes(parentName: string, childName: string, arrayChild: any = []): any {
+    const arrayIncludes = [ childName ];
+
+    arrayChild.forEach((childRelation: string) => {
+      // Ignora a relação com o pai
+      if (childRelation == parentName) {
+        return
+      }
+
+      arrayIncludes.push(`${childName}.${childRelation}}`)
+    });
+
+    return arrayIncludes;
+  }
 }
