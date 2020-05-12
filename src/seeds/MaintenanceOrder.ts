@@ -51,9 +51,7 @@ export class MaintenanceOrder extends Seed {
   }
 
   public static async CreateOrder() {
-    console.log('CreateOrder 1')
     const orderNumber: string = this.getOrderNumber(await this.ObterOrderId());
-    console.log('CreateOrder 2')
     const layoutId: number = this.getRandomNumber(1,3);
     const orderTypeId: number = this.getRandomNumber(1,3);
     const orderClassificationId: number = this.getRandomNumber(1,3);
@@ -104,12 +102,8 @@ export class MaintenanceOrder extends Seed {
     order.defectOrigin=defectOrigin
     order.defectSymptom=defectSymptom
     
-    console.log('pre controller')
-
     const controller = new MaintenanceOrderController();
-    console.log('pre save')
     await controller.getRepositoryEntity().save(order);
-    console.log('pos save')
     await this.loadOrderEquipment(order);
     await this.loadWorkers(order);
   }
@@ -345,12 +339,10 @@ export class MaintenanceOrder extends Seed {
 
   public static getOrderNumber(orderId: number): string
   {
-    console.log('getOrderNumber 1')
     const prefixo = 'AGL';
     const number = orderId.toString().padStart(6,'0')
 
     const orderNumber = `${prefixo}-${number}`;
-    console.log('getOrderNumber 2')
     return orderNumber;
   }
 
@@ -389,8 +381,6 @@ export class MaintenanceOrder extends Seed {
 
   public static getRandomDate(year: number | null | undefined, month: number | null | undefined = null) {
     
-    return new Date();
-    /*
     if (typeof year !== 'number') {
       year = new Date().getFullYear();
     }
@@ -401,15 +391,13 @@ export class MaintenanceOrder extends Seed {
     
     const initDate = new Date(`${year}-${month ? month : '01'}-01 00:00:00`).getTime()
     const endDate = (month
-      ? new Date(`${year}-${month + 1}-01 00:00:00`).getTime() - 1000
-      : new Date().getTime()
+      ? new Date(`${year}-${month + 1}-01 00:00:00`).getTime() - 1000  /* gordura para voltar 1 dia (pegar último dia do mês) */
+      : new Date().getTime() /* hoje */
     )
 
-    const offset = this.getRandomNumber(0,(initDate-endDate));
+    const offset = this.getRandomNumber(initDate,endDate);
     
     return new Date(initDate + offset);
-    
-    */
   }
 
   public static inRange(value: number, min: number, max: number): Boolean
