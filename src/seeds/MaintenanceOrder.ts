@@ -51,7 +51,9 @@ export class MaintenanceOrder extends Seed {
   }
 
   public static async CreateOrder() {
+    console.log('CreateOrder 1')
     const orderNumber: string = this.getOrderNumber(await this.ObterOrderId());
+    console.log('CreateOrder 2')
     const layoutId: number = this.getRandomNumber(1,3);
     const orderTypeId: number = this.getRandomNumber(1,3);
     const orderClassificationId: number = this.getRandomNumber(1,3);
@@ -93,20 +95,21 @@ export class MaintenanceOrder extends Seed {
     order.orderStatus = status;
     order.priority = priority;
 
-    if (order instanceof Default) {
-      const defectSymptomId: number = this.getRandomNumber(1,3);
-      const defectOriginId: number = this.getRandomNumber(1,3);
+    const defectSymptomId: number = this.getRandomNumber(1,3);
+    const defectOriginId: number = this.getRandomNumber(1,3);
 
-      const defectOrigin: DefectOrigin = await this.getDefectOrigin(defectOriginId);
-      const defectSymptom: DefectSymptom = await this.getDefectSymptom(defectSymptomId);
+    const defectOrigin: DefectOrigin = await this.getDefectOrigin(defectOriginId);
+    const defectSymptom: DefectSymptom = await this.getDefectSymptom(defectSymptomId);
 
-      order.defectOrigin=defectOrigin
-      order.defectSymptom=defectSymptom
-    }
+    order.defectOrigin=defectOrigin
+    order.defectSymptom=defectSymptom
     
-    const controller = new MaintenanceOrderController();
-    await controller.getRepositoryEntity().save(order);
+    console.log('pre controller')
 
+    const controller = new MaintenanceOrderController();
+    console.log('pre save')
+    await controller.getRepositoryEntity().save(order);
+    console.log('pos save')
     await this.loadOrderEquipment(order);
     await this.loadWorkers(order);
   }
@@ -262,11 +265,15 @@ export class MaintenanceOrder extends Seed {
     const date = this.getRandomDate(2020)
     const started = this.getRandomNumber(3600,30000)
     const finished = this.getRandomNumber(started, started + 30000)
+    const createdBy: number = 1;
+    const updatedBy: number = 1;
 
     workedTime.maintenanceWorker = maintenanceWorker;
     workedTime.startedWork = new Date(date.getTime() + started)
     workedTime.finishedWork = new Date(date.getTime() + finished)
     workedTime.intervalTime = (finished - started) <  10000? 0 : Math.trunc(this.getRandomNumber(100,300)/5);
+    workedTime.createdBy = createdBy;
+    workedTime.updatedBy = updatedBy;
 
     workedTime.description = `Trabalhado na manutenção das ${workedTime.startedWork.getHours()}:${workedTime.startedWork.getMinutes()} até às ${workedTime.finishedWork.getHours()}:${workedTime.finishedWork.getMinutes()}.`
 
@@ -338,10 +345,12 @@ export class MaintenanceOrder extends Seed {
 
   public static getOrderNumber(orderId: number): string
   {
+    console.log('getOrderNumber 1')
     const prefixo = 'AGL';
     const number = orderId.toString().padStart(6,'0')
 
     const orderNumber = `${prefixo}-${number}`;
+    console.log('getOrderNumber 2')
     return orderNumber;
   }
 
