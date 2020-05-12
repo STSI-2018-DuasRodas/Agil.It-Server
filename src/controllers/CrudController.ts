@@ -55,24 +55,10 @@ export class CrudController<Entity> {
 
   async save(request: Request, response: Response, next: NextFunction) {
 
-    let description = request.body.description;
-    let entity: Entity
-    try {
-      entity = await this.getRepositoryEntity().findOneOrFail({
-        where: {
-          deleted: false,
-          description: description
-        }
-      })
-      entity = this.getRepositoryEntity().merge(entity, request.body)
-    } catch (error) {
-      entity = this.getRepositoryEntity().create(<Entity>request.body)
-    }
+    let entity: Entity = await this.getEntityByDescription(request.body)
 
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);
-
-    
 
     //Validade if the parameters are ok
     const error = await this.validate(entity)
@@ -92,7 +78,11 @@ export class CrudController<Entity> {
       }
     }
 
-    return this.getRepositoryEntity().save(entity);
+    await this.getRepositoryEntity().save(entity);
+
+    return await this.getRepositoryEntity().findOne(entity["id"],{
+      relations: this.includes(),
+    });
   }
 
   async update(request: Request, response: Response, next: NextFunction) {
@@ -120,7 +110,9 @@ export class CrudController<Entity> {
     let result = await this.getRepositoryEntity().update(request.params.id,entity)
     if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
 
-    return await this.getRepositoryEntity().findOne(request.params.id);
+    return await this.getRepositoryEntity().findOne(request.params.id,{
+      relations: this.includes(),
+    });
   }
   
   async remove(request: Request, response: Response, next: NextFunction) {
@@ -229,9 +221,36 @@ export class CrudController<Entity> {
         return
       }
 
-      arrayIncludes.push(`${childName}.${childRelation}}`)
+      arrayIncludes.push(`${childName}.${childRelation}`)
     });
 
     return arrayIncludes;
+  }
+
+  public validateGetbyDescription() : boolean {
+    return true;
+  }
+
+  public async getEntityByDescription(body: any): Promise<any> {
+    let entity: Entity
+
+    if (!this.validateGetbyDescription()) {
+      return this.getRepositoryEntity().create(<Entity>body)
+    }
+
+    try {
+      
+      entity = await this.getRepositoryEntity().findOneOrFail({
+        where: {
+          deleted: false,
+          description: body.description,
+        }
+      })
+      entity = this.getRepositoryEntity().merge(entity, body)
+    } catch (error) {
+      entity = this.getRepositoryEntity().create(<Entity>body)
+    }
+
+    return entity;
   }
 }

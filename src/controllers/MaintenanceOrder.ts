@@ -54,7 +54,7 @@ export class MaintenanceOrderController {
     //Validade if the parameters are ok
     const error = await this.validate(order)
     if (error !== undefined) {
-      return {
+      throw {
         success: false,
         error: error
       }
@@ -63,7 +63,7 @@ export class MaintenanceOrderController {
     if (order["integrationID"] != "") {
       try {
         await this.getRepositoryEntity().findOneOrFail({where: {integrationID: order["integrationID"]}});
-        return {"success":false,"error":`Registro com o integrationID ${order["integrationID"]} já existe.`};
+        throw {"success":false,"error":`Registro com o integrationID ${order["integrationID"]} já existe.`};
       } catch (error) {
         // Não está duplicado
       }
@@ -90,14 +90,14 @@ export class MaintenanceOrderController {
 
     const errors = await validate(order);
     if (errors.length > 0) {
-      return {
+      throw {
         "success":false,
         "error":errors
       };
     }
 
     let result = await this.getRepositoryEntity().update(request.params.id,order)
-    if (!result) return { "success":false, "error":`Erro ao executar a atualização da ordem ${request.params.id}` }
+    if (!result) throw { "success":false, "error":`Erro ao executar a atualização da ordem ${request.params.id}` }
 
     return await this.getRepositoryEntity().findOne(request.params.id, {relations: this.getAllRelations()});
   }
@@ -108,11 +108,11 @@ export class MaintenanceOrderController {
     try {
       order = await this.getRepositoryEntity().findOneOrFail(request.params.id, {relations: this.getAllRelations()});
     } catch (error) {
-      return { "success":false, "error":`Ordem ${request.params.id} não encontrada` };
+      throw { "success":false, "error":`Ordem ${request.params.id} não encontrada` };
     }
 
     if (order["deleted"] === true) {
-      return { "success":false, "error":`Ordem ${request.params.id} já está excluída` };
+      throw { "success":false, "error":`Ordem ${request.params.id} já está excluída` };
     }
 
     const token = <string>request.headers["token"];
@@ -121,14 +121,14 @@ export class MaintenanceOrderController {
     order["deleted"] = true;
     const errors = await validate(order);
     if (errors.length > 0) {
-      return {
+      throw {
         "success":false,
         "error":errors
       };
     }
 
     let result = await this.getRepositoryEntity().update(request.params.id,order)
-    if (!result) return { "success":false, "error":"Erro ao deletar a ordem" }
+    if (!result) throw { "success":false, "error":"Erro ao deletar a ordem" }
 
     order.maintenanceWorker.forEach((maintenanceWorker: MaintenanceWorker) => {
       const maintenanceOrderController = new MaintenanceOrderController()
@@ -284,6 +284,8 @@ export class MaintenanceOrderController {
       'orderType',
       'orderClassification',
       'orderLayout',
+      'defectOrigin',
+      'defectSymptom',
     ];
   }
 
