@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, Column, JoinColumn } from "typeorm";
 import { MaintenanceWorker } from "./MaintenanceWorker";
+import { IsNotEmpty } from "class-validator";
 
 @Entity('maintenance_worker_time')
 export class WorkedTime {
@@ -7,6 +8,12 @@ export class WorkedTime {
   @PrimaryGeneratedColumn("uuid")
   public id: any = undefined;
 
+  @Column({nullable: false})
+  @IsNotEmpty({
+    message:'Descrição: Campo obrigatório.'
+  })
+  public description: string = '';
+  
   @ManyToOne(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.id)
   @JoinColumn()
   public maintenanceWorker: MaintenanceWorker = undefined;

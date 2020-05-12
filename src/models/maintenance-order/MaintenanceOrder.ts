@@ -8,6 +8,8 @@ import { OrderStatus } from "../enum/OrderStatus";
 import { OrderLayout } from "../OrderLayout";
 import { OrderSignature } from "./OrderSignature";
 import { OrderEquipment } from "./OrderEquipment";
+import { DefectSymptom } from "../DefectSymptom";
+import { DefectOrigin } from "../DefectOrigin";
 
 @Entity("maintenance_order")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
@@ -75,6 +77,35 @@ export abstract class MaintenanceOrder extends BaseClass {
   @OneToMany(type => OrderEquipment, orderEquipment => orderEquipment.maintenanceOrder, { cascade: true,  nullable: true })
   public orderEquipment: Array<OrderEquipment>;
   
+  
+  @ManyToOne(
+    (type) => DefectOrigin,
+    (defectOrigin) => defectOrigin.id,
+    { nullable: true }
+  )
+  @JoinColumn()
+  public defectOrigin: DefectOrigin | undefined = undefined;
+
+  @Column({
+    type: 'varchar',
+    length: '255'
+  })
+  public defectOriginNote: string = '';
+
+  @ManyToOne(
+    (type) => DefectSymptom,
+    (defectSymptom) => defectSymptom.id,
+    { nullable: true }
+  )
+  @JoinColumn()
+  public defectSymptom: DefectSymptom | undefined = undefined;
+
+  @Column({
+    type: 'varchar',
+    length: '255'
+  })
+  public defectSymptomNote: string = '';
+
   constructor() {
     super();
   }

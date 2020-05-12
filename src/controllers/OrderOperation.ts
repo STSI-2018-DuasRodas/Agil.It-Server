@@ -17,15 +17,16 @@ export class OrderOperationController extends CrudController<OrderOperation> {
   public includes() {
     const orderComponent = new OrderComponentController();
     const includes = [
-      'maintenanceOrder',
-      'equipment',
-      'superiorEquipment',
-      'installationArea',
-      'orderOperation',
+      'orderEquipment',
+      'defaultObservation',
       ...this.addChildIncludes('orderOperation', 'orderComponent', orderComponent.includes()),
     ]
 
     return includes;
+  }
+
+  public validateGetbyDescription() : boolean {
+    return false;
   }
   
 }

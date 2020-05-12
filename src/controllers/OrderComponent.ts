@@ -9,6 +9,6 @@ export class OrderComponentController extends CrudController<OrderComponent> {
   }
 
   public includes() {
-    return [ 'orderOperation', 'item' ];
+    return ['item' ];
   }
 }

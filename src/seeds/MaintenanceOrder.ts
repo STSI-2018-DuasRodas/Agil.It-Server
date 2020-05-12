@@ -28,6 +28,12 @@ import { MaintenanceWorkerController } from '../controllers/MaintenanceWorker';
 import { UserController } from '../controllers/User';
 import { OrderType } from '../models/OrderType';
 import { OrderClassification } from '../models/OrderClassification';
+import { DefectOriginController } from '../controllers/DefectOrigin';
+import { DefectSymptomController } from '../controllers/DefectSymptom';
+import { DefectSymptom } from '../models/DefectSymptom';
+import { DefectOrigin } from '../models/DefectOrigin';
+import { WorkedTime } from '../models/maintenance-order/WorkedTime';
+import { WorkedTimeController } from '../controllers/WorkedTime';
 
 export class MaintenanceOrder extends Seed {
 
@@ -86,6 +92,17 @@ export class MaintenanceOrder extends Seed {
     order.openedDate = openedDate;
     order.orderStatus = status;
     order.priority = priority;
+
+    if (order instanceof Default) {
+      const defectSymptomId: number = this.getRandomNumber(1,3);
+      const defectOriginId: number = this.getRandomNumber(1,3);
+
+      const defectOrigin: DefectOrigin = await this.getDefectOrigin(defectOriginId);
+      const defectSymptom: DefectSymptom = await this.getDefectSymptom(defectSymptomId);
+
+      order.defectOrigin=defectOrigin
+      order.defectSymptom=defectSymptom
+    }
     
     const controller = new MaintenanceOrderController();
     await controller.getRepositoryEntity().save(order);
@@ -235,6 +252,26 @@ export class MaintenanceOrder extends Seed {
     
     const controller = new MaintenanceWorkerController();
     await controller.getRepositoryEntity().save(maintenanceWorker);
+
+    await this.CreateWorkedTime(maintenanceWorker);
+  }
+
+  public static async CreateWorkedTime(maintenanceWorker: MaintenanceWorker): Promise<any> {
+    const workedTime = new WorkedTime();
+
+    const date = this.getRandomDate(2020)
+    const started = this.getRandomNumber(3600,30000)
+    const finished = this.getRandomNumber(started, started + 30000)
+
+    workedTime.maintenanceWorker = maintenanceWorker;
+    workedTime.startedWork = new Date(date.getTime() + started)
+    workedTime.finishedWork = new Date(date.getTime() + finished)
+    workedTime.intervalTime = (finished - started) <  10000? 0 : Math.trunc(this.getRandomNumber(100,300)/5);
+
+    workedTime.description = `Trabalhado na manutenção das ${workedTime.startedWork.getHours()}:${workedTime.startedWork.getMinutes()} até às ${workedTime.finishedWork.getHours()}:${workedTime.finishedWork.getMinutes()}.`
+
+    const controller = new WorkedTimeController();
+    await controller.getRepositoryEntity().save(workedTime);
   }
 
   public static async ObterOrderId() {
@@ -287,6 +324,16 @@ export class MaintenanceOrder extends Seed {
   public static async getUser(userId: number): Promise<any> {
     const controller = new UserController();
     return await controller.getRepositoryEntity().findOne(userId);
+  }
+
+  public static async getDefectOrigin(defectOriginId): Promise<any> {
+    const controller = new DefectOriginController();
+    return await controller.getRepositoryEntity().findOne(defectOriginId);
+  }
+  
+  public static async getDefectSymptom(defectSymptomId): Promise<any> {
+    const controller = new DefectSymptomController();
+    return await controller.getRepositoryEntity().findOne(defectSymptomId);
   }
 
   public static getOrderNumber(orderId: number): string
