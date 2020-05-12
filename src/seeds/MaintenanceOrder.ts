@@ -380,6 +380,8 @@ export class MaintenanceOrder extends Seed {
 
   public static getRandomDate(year: number | null | undefined, month: number | null | undefined = null) {
     
+    return new Date();
+    /*
     if (typeof year !== 'number') {
       year = new Date().getFullYear();
     }
@@ -390,13 +392,15 @@ export class MaintenanceOrder extends Seed {
     
     const initDate = new Date(`${year}-${month ? month : '01'}-01 00:00:00`).getTime()
     const endDate = (month
-      ? new Date(`${year}-${month + 1}-01 00:00:00`).getTime() - 1000  /* gordura para voltar 1 dia (pegar último dia do mês) */
-      : new Date().getTime() /* hoje */
+      ? new Date(`${year}-${month + 1}-01 00:00:00`).getTime() - 1000
+      : new Date().getTime()
     )
 
     const offset = this.getRandomNumber(0,(initDate-endDate));
     
     return new Date(initDate + offset);
+    
+    */
   }
 
   public static inRange(value: number, min: number, max: number): Boolean
