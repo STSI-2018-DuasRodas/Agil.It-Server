@@ -394,7 +394,7 @@ export class MaintenanceOrder extends Seed {
       : new Date().getTime() /* hoje */
     )
 
-    const offset = this.getRandomNumber(initDate,endDate);
+    const offset = this.getRandomNumber(0,(initDate-endDate));
     
     return new Date(initDate + offset);
   }
