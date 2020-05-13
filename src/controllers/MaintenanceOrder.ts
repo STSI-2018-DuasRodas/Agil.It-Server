@@ -303,6 +303,7 @@ export class MaintenanceOrderController {
     return [
       'orderEquipment',
       'orderEquipment.equipment',
+      'orderEquipment.equipment.machineType',
       'orderEquipment.superiorEquipment',
       'orderEquipment.installationArea',
       ...this.getOrderOperationsRelations(),
