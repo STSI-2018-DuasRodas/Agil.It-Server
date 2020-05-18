@@ -30,7 +30,7 @@ export class OrderOperation extends CrudClass {
     type: 'varchar',
     length: '255'
   })
-  public note: string;
+  public note: string = '';
 
   @ManyToOne(type => DefaultObservation, defaultObservation => defaultObservation.id, { nullable: true })
   @JoinColumn()
