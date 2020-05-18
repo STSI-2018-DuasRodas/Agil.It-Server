@@ -25,4 +25,8 @@ export class MaintenanceWorkerController extends CrudController<MaintenanceWorke
       'maintenanceOrder',
     ]
   }
+  
+  public validateGetbyDescription() : boolean {
+    return false;
+  }
 }

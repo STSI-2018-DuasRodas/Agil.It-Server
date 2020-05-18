@@ -127,7 +127,7 @@ export class MaintenanceOrderController {
       };
     }
 
-    let result = await this.getRepositoryEntity().update(request.params.id,order)
+    let result = await this.getRepositoryEntity().save(order)
     if (!result) throw { "success":false, "error":"Erro ao deletar a ordem" }
 
     order.maintenanceWorker.forEach((maintenanceWorker: MaintenanceWorker) => {
@@ -276,6 +276,7 @@ export class MaintenanceOrderController {
       ...this.getOrderRelations(),
       ...this.getMaintenanceWorkerRelations(),
       ...this.getOrderEquipmentRelations(),
+      ...this.getOrderSignatureRelations(),
     ];
   }
 
@@ -316,6 +317,13 @@ export class MaintenanceOrderController {
       'orderEquipment.orderOperation.defaultObservation',
       'orderEquipment.orderOperation.orderComponent',
       'orderEquipment.orderOperation.orderComponent.item',
+    ];
+  }
+
+  public getOrderSignatureRelations() {
+    return [
+      "orderSignature",
+      "orderSignature.user",
     ];
   }
 

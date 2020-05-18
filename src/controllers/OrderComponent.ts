@@ -11,4 +11,8 @@ export class OrderComponentController extends CrudController<OrderComponent> {
   public includes() {
     return ['item' ];
   }
+  
+  public validateGetbyDescription() : boolean {
+    return false;
+  }
 }

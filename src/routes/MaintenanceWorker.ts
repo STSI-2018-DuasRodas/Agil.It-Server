@@ -7,7 +7,7 @@ import { Route } from "./Route";
 export class MaintenanceWorkerCollection extends Collection {
   constructor() {
     super('/order-mainteners', MaintenanceWorkerController);
-    this.addBaseCrudRoutes(new ConfigCrudRoutes(true,false))
+    this.addBaseCrudRoutes(new ConfigCrudRoutes())
     this.loadRoutes();
   }
 

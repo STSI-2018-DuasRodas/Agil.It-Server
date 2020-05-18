@@ -90,7 +90,9 @@ export class CrudController<Entity> {
     let entity: Entity
 
     try {
-      entity = await this.getRepositoryEntity().findOneOrFail(request.params.id);
+      entity = await this.getRepositoryEntity().findOneOrFail(request.params.id, {
+        relations: this.includes(),
+      });
       entity = this.getRepositoryEntity().merge(entity, request.body)
     } catch (error) {
       return {"success":false,"error":`Registro ${request.params.id} não encontrado`};
@@ -107,7 +109,7 @@ export class CrudController<Entity> {
       };
     }
 
-    let result = await this.getRepositoryEntity().update(request.params.id,entity)
+    let result = await this.getRepositoryEntity().save(entity)
     if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
 
     return await this.getRepositoryEntity().findOne(request.params.id,{
@@ -120,7 +122,9 @@ export class CrudController<Entity> {
     let entity: Entity
 
     try {
-      entity = await this.getRepositoryEntity().findOneOrFail(request.params.id);
+      entity = await this.getRepositoryEntity().findOneOrFail(request.params.id, {
+        relations: this.includes(),
+      });
     } catch (error) {
       return {"success":false,"error":`Registro com o integrationID ${entity["integrationID"]} já existe.`};
     }
@@ -141,7 +145,7 @@ export class CrudController<Entity> {
       };
     }
 
-    let result = await this.getRepositoryEntity().update(request.params.id,entity)
+    let result = await this.getRepositoryEntity().save(entity)
     if (!result) return {"success":false,"error":"Erro ao executar a Query para atualizar o registro"}
 
     return await this.getRepositoryEntity().findOne(request.params.id);
