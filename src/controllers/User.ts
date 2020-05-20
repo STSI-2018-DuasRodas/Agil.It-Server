@@ -54,19 +54,7 @@ export class UserController extends CrudController<User> {
 
   async save(request: Request, response: Response, next: NextFunction) {
 
-    let name = request.body.name
-    let entity: User
-    try {
-      entity = await this.getRepositoryEntity().findOneOrFail({
-        where: {
-          deleted: false,
-          name: name
-        }
-      })
-      entity = this.getRepositoryEntity().merge(entity, request.body)
-    } catch (error) {
-      entity = this.getRepositoryEntity().create(<User>request.body)
-    }
+    let entity: User = this.getRepositoryEntity().create(<User>request.body)
 
     const token = <string>request.headers["token"];
     this.updateFields(token, entity);

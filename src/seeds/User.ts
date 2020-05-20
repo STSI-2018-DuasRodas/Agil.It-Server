@@ -79,6 +79,23 @@ export class User extends Seed {
       "createdAt": "2020-06-04 22:16:46",
       "updatedAt": "2020-06-04 22:16:46"
     })
+    
+    await this.controller.getRepositoryEntity().save(<Model><unknown>{
+      "id": 5,  
+      "name": "agilit",
+      "email": "integratino-agilit",
+      "password": "agilit",
+      "role": "integration",
+      "birthDate": "1977-06-03 22:16:46",
+      "contact": "4733707700",
+      "forceChangePassword": false,
+      "employeeBadge": "integratino-agilit",
+      "gender": "male",
+      "createdBy": 1,
+      "updatedBy": 1,
+      "createdAt": "2020-06-04 22:16:46",
+      "updatedAt": "2020-06-04 22:16:46"
+    })
     /**/
   }
 }
