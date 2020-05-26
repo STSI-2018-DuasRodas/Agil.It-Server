@@ -69,7 +69,7 @@ export class CrudController<Entity> {
       }
     }
     
-    if (entity["integrationID"] != "") {
+    if (entity["integrationID"] && entity["integrationID"] != "") {
       try {
         await this.getRepositoryEntity().findOneOrFail({where: {integrationID: entity["integrationID"]}});
         return {"success":false,"error":`Registro com o integrationID ${entity["integrationID"]} já existe.`};

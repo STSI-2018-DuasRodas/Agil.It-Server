@@ -22,25 +22,22 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
 
     const userController = new UserController()
 
-    try {
-      userController.getRepositoryEntity().findOneOrFail({
-        where: {
-          "name" : username,
-          "password" : password,
-          "role": "integration",
-          "deleted": false
-        }
-      });
-
-      //Call the next middleware or controller
+    userController.getRepositoryEntity().findOneOrFail({
+      where: {
+        "name": username,
+        "password": password,
+        "role": "integration",
+        "deleted": false
+      }
+    }).then(data => {
+      console.log('data -> ', data)
       next();
       return;
-
-    } catch(error) {
+    }).catch(err => {
+      console.log('err -> ', err)
       return response.status(401).send();
-    }
-  }
-
+    })
+  } else {
     //Get the jwt token from the request's header
     const token = <string>request.headers["token"];
     let jwtPayload;
@@ -69,4 +66,5 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
 
     //Call the next middleware or controller
     next();
-  };
+  }
+};
