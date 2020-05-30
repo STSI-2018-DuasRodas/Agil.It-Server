@@ -5,6 +5,8 @@ import { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import JWT from "../config/JWT";
 import { MaintenanceWorker } from "../models/maintenance-order/MaintenanceWorker";
+import { getIntegrionUser } from '../middlewares/checkJwt';
+import { User } from "../models/User";
 
 export class MaintenanceOrderController {
 
@@ -31,9 +33,7 @@ export class MaintenanceOrderController {
       where,
     });
 
-    return arrayOfOrders.map((order) => {
-      return this.removeProperties(order, this.fieldsToIgnoreResume())
-    });
+    return arrayOfOrders.map((order) => this.removeProperties(order, this.fieldsToIgnoreResume()));
   }
 
   public async getOrder(request: Request, response: Response, next: NextFunction) {
@@ -49,21 +49,20 @@ export class MaintenanceOrderController {
     const order = this.getRepositoryEntity().create(<MaintenanceOrder>request.body);
 
     const token = <string>request.headers["token"];
-    this.updateFields(token, order);
+    const authorization = <string>request.headers["authorization"];
+
+    await this.updateFields(token, authorization, order);
 
     //Validade if the parameters are ok
     const error = await this.validate(order)
     if (error !== undefined) {
-      throw {
-        success: false,
-        error: error
-      }
+      throw error;
     }
     
     if (order["integrationID"] != "") {
       try {
         await this.getRepositoryEntity().findOneOrFail({where: {integrationID: order["integrationID"]}});
-        throw {"success":false,"error":`Registro com o integrationID ${order["integrationID"]} já existe.`};
+        throw `Registro com o integrationID ${order["integrationID"]} já existe.`;
       } catch (error) {
         // Não está duplicado
       }
@@ -79,25 +78,21 @@ export class MaintenanceOrderController {
       order = await this.getRepositoryEntity().findOneOrFail(request.params.id,{ relations: [...this.getOrderRelations()]});
       order = this.getRepositoryEntity().merge(order, request.body)
     } catch (error) {
-      throw {
-        message: `Ordem ${request.params.id} não encontrada`,
-        details: error
-      };
+      throw `Ordem ${request.params.id} não encontrada`;
     }
 
     const token = <string>request.headers["token"];
-    this.updateFields(token, order);
+    const authorization = <string>request.headers["authorization"];
+
+    await this.updateFields(token, authorization, order);
 
     const errors = await validate(order);
     if (errors.length > 0) {
-      throw {
-        "success":false,
-        "error":errors
-      };
+      throw errors;
     }
 
     let result = await this.getRepositoryEntity().update(request.params.id,order)
-    if (!result) throw { "success":false, "error":`Erro ao executar a atualização da ordem ${request.params.id}` }
+    if (!result) throw `Erro ao executar a atualização da ordem ${request.params.id}`;
 
     return await this.getRepositoryEntity().findOne(request.params.id, {relations: this.getAllRelations()});
   }
@@ -108,27 +103,26 @@ export class MaintenanceOrderController {
     try {
       order = await this.getRepositoryEntity().findOneOrFail(request.params.id, {relations: this.getAllRelations()});
     } catch (error) {
-      throw { "success":false, "error":`Ordem ${request.params.id} não encontrada` };
+      throw `Ordem ${request.params.id} não encontrada`;
     }
 
     if (order["deleted"] === true) {
-      throw { "success":false, "error":`Ordem ${request.params.id} já está excluída` };
+      throw `Ordem ${request.params.id} já está excluída`;
     }
 
     const token = <string>request.headers["token"];
-    this.updateFields(token, order);
+    const authorization = <string>request.headers["authorization"];
+
+    await this.updateFields(token, authorization, order);
 
     order["deleted"] = true;
     const errors = await validate(order);
     if (errors.length > 0) {
-      throw {
-        "success":false,
-        "error":errors
-      };
+      throw errors;
     }
 
     let result = await this.getRepositoryEntity().save(order)
-    if (!result) throw { "success":false, "error":"Erro ao deletar a ordem" }
+    if (!result) throw "Erro ao deletar a ordem";
 
     order.maintenanceWorker.forEach((maintenanceWorker: MaintenanceWorker) => {
       const maintenanceOrderController = new MaintenanceOrderController()
@@ -166,9 +160,7 @@ export class MaintenanceOrderController {
       }
     });
 
-    return arrayOfOrders.map((order) => {
-      return this.removeProperties(order, this.fieldsToIgnoreResume())
-    })
+    return arrayOfOrders.map((order) => this.removeProperties(order, this.fieldsToIgnoreResume()))
   }
 
   public async getOrderMainteners(request: Request, response: Response, next: NextFunction) {
@@ -216,10 +208,18 @@ export class MaintenanceOrderController {
     return filterObject;
   }
 
-  updateFields(token:string, entity : MaintenanceOrder) {
-    let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
-    const { userId } = jwtPayload;
+  async updateFields(token:string, authorization:string, entity :MaintenanceOrder) {
 
+    let userId;
+
+    if (token) {
+      let jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
+      userId = jwtPayload.userId;
+    } else {
+      const user:User = await getIntegrionUser(authorization)
+      userId= user.id;
+    }
+    
     entity["updatedBy"] = userId;
     if (entity["createdBy"] === undefined) {
       entity["createdBy"] = userId;

@@ -2,40 +2,27 @@ import { Request, Response, NextFunction } from "express";
 import * as jwt from "jsonwebtoken";
 import JWT from "../config/JWT";
 import { UserController } from "../controllers/User";
+import { User } from "../models/User";
 
 export const checkJwt = (request: Request, response: Response, next: NextFunction) => {
 
   const authorization = <string>request.headers["authorization"];
 
   if (authorization) {    // The Authorization was passed in so now we validate it
-
-    let tmp = authorization.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
-
-    let buf = Buffer.from(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
-    let plain_auth = buf.toString();        // read it back out as a string
-
-    // At this point plain_auth = "username:password"
-
-    let creds = plain_auth.split(':');      // split on a ':'
-    let username = creds[0];
-    let password = creds[1];
-
-    const userController = new UserController()
-
-    userController.getRepositoryEntity().findOneOrFail({
-      where: {
-        "name": username,
-        "password": password,
-        "role": "integration",
-        "deleted": false
+    this.checkIntegration(authorization)
+    .then(valid => {
+      if (valid === true) {
+        next();
+        return;
+      } else {
+        response.status(401).send();
+        return;  
       }
-    }).then(data => {
-      console.log('data -> ', data)
-      next();
-      return;
     }).catch(err => {
-      console.log('err -> ', err)
-      return response.status(401).send();
+      response.status(500).send({
+        "success": false,
+        "error": err.message
+      });
     })
   } else {
     //Get the jwt token from the request's header
@@ -68,3 +55,45 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
     next();
   }
 };
+
+export const checkIntegration = (async authorization => {
+  try {
+    const user = await getIntegrionUser(authorization);
+    if (user instanceof User) return true;
+
+    return false;
+  } catch(err) {
+    return false;
+  }
+});
+
+export const getIntegrionUser = (async authorization => {
+
+  try {
+
+    let tmp = authorization.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
+
+    let buf = Buffer.from(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
+    let plain_auth = buf.toString();        // read it back out as a string
+
+    // At this point plain_auth = "username:password"
+
+    let creds = plain_auth.split(':');      // split on a ':'
+    let username = creds[0];
+    let password = creds[1];
+
+    const userController = new UserController()
+
+    return await userController.getRepositoryEntity().findOneOrFail({
+      where: {
+        "name": username,
+        "password": password,
+        "role": "integration",
+        "deleted": false
+      }
+    })
+  } catch (err) {
+    console.log("err", err)
+    return undefined
+  }
+});

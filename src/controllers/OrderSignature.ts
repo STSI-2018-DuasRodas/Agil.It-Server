@@ -14,4 +14,8 @@ export class OrderSignatureController extends CrudController<OrderSignature> {
       'maintenanceOrder',
     ]
   }
+  
+  public validateGetbyDescription() : boolean {
+    return false;
+  }
 }

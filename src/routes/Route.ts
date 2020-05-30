@@ -86,13 +86,13 @@ export class Route {
           })
           .catch(err => {
             if (err !== null && err !== undefined) {
-              res.status(200).json(ResponseAPI.getResponseObject(false, err))
+              res.status(400).json(ResponseAPI.getResponseObject(false, err))
               if (logResponses) {
                 console.log("error => ", err)
                 console.log(ResponseAPI.getResponseObject(false, err))
               }
             } else {
-              res.status(200).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
+              res.status(400).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
               if (logResponses) {
                 console.log("error => ", err)
                 console.log(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
@@ -100,10 +100,8 @@ export class Route {
             }
           })
         } else if (result !== null && result !== undefined) {
-          console.log('not promisse => ', result)
           res.json(result);
         } else {
-          console.log('null or undefined => ', result)
           res.json({
             success: false,
             error: 'Erro inesperado'
