@@ -1,3 +1,6 @@
+import { OrderEquipmentController } from './OrderEquipment';
+import { OrderSignatureController } from './OrderSignature';
+import { MaintenanceWorkerController } from './MaintenanceWorker';
 import { getRepository, Repository, SelectQueryBuilder } from "typeorm";
 import { validate } from "class-validator";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
@@ -7,7 +10,7 @@ import JWT from "../config/JWT";
 import { MaintenanceWorker } from "../models/maintenance-order/MaintenanceWorker";
 import { getIntegrionUser } from '../middlewares/checkJwt';
 import { User } from "../models/User";
-
+import { v4 as uuid } from 'uuid';
 export class MaintenanceOrderController {
 
   private repositoryEntity : Repository<MaintenanceOrder>;
@@ -53,22 +56,8 @@ export class MaintenanceOrderController {
 
     await this.updateFields(token, authorization, order);
 
-    //Validade if the parameters are ok
-    const error = await this.validate(order)
-    if (error !== undefined) {
-      throw error;
-    }
-    
-    if (order["integrationID"] != "") {
-      try {
-        await this.getRepositoryEntity().findOneOrFail({where: {integrationID: order["integrationID"]}});
-        throw `Registro com o integrationID ${order["integrationID"]} já existe.`;
-      } catch (error) {
-        // Não está duplicado
-      }
-    }
+    return await this.saveOrder(order)
 
-    return await this.getRepositoryEntity().save(order);
   }
   
   public async updateOrder(request: Request, response: Response, next: NextFunction) {
@@ -86,17 +75,51 @@ export class MaintenanceOrderController {
 
     await this.updateFields(token, authorization, order);
 
-    const errors = await validate(order);
-    if (errors.length > 0) {
-      throw errors;
-    }
-
-    let result = await this.getRepositoryEntity().update(request.params.id,order)
-    if (!result) throw `Erro ao executar a atualização da ordem ${request.params.id}`;
-
-    return await this.getRepositoryEntity().findOne(request.params.id, {relations: this.getAllRelations()});
+    return await this.saveOrder(order)
+    
   }
   
+  public async saveOrder(order: MaintenanceOrder) {
+
+    //Validade if the parameters are ok
+    const error = await this.validate(order)
+    if (error !== undefined) {
+      throw error;
+    }
+    
+    const isInserting = typeof order['id'] !== 'number'
+
+    if (order["integrationID"] != '' && isInserting) {
+
+      try {
+        const integrationId = order["integrationID"];
+        await this.getRepositoryEntity().findOneOrFail({
+          where: {
+            integrationID: integrationId,
+            deleted: false,
+          }
+        });
+
+        throw `Registro com o integrationID ${integrationId} já existe.`;
+      } catch (error) {
+        if (typeof error === "string" && error.substr(0,28) === "Registro com o integrationID") {
+          throw error;
+        }
+      }
+    }
+
+    const preSave = await this.preSave(order, isInserting)
+
+    let orderSaved: MaintenanceOrder;
+
+    orderSaved = await this.getRepositoryEntity().save(order);
+    await this.posSave(orderSaved, isInserting, preSave)
+
+    return await this.getRepositoryEntity().findOne(orderSaved["id"], {
+      relations: this.getAllRelations(),
+    });
+  }
+
   public async deleteOrder(request: Request, response: Response, next: NextFunction) {
     let order: MaintenanceOrder
 
@@ -116,6 +139,11 @@ export class MaintenanceOrderController {
     await this.updateFields(token, authorization, order);
 
     order["deleted"] = true;
+    
+    if (order["integrationID"] != "") {
+      order["integrationID"] = `${order['integrationID']}-uuid-${uuid()}`
+    }
+
     const errors = await validate(order);
     if (errors.length > 0) {
       throw errors;
@@ -251,6 +279,7 @@ export class MaintenanceOrderController {
   public fieldsResume() {
     return [
       'id',
+      'description',
       'orderNumber',
       'openedDate',
       'priority',
@@ -263,8 +292,6 @@ export class MaintenanceOrderController {
     return [
       'integrationID',
       'deleted',
-      'orderType',
-      'orderClassification',
       'needStopping',
       'isStopped',
       'exported',
@@ -282,8 +309,6 @@ export class MaintenanceOrderController {
 
   public getOrderRelations() {
     return [
-      'orderType',
-      'orderClassification',
       'orderLayout',
       'defectOrigin',
       'defectSymptom',
@@ -335,5 +360,120 @@ export class MaintenanceOrderController {
     });
 
     return order;
+  }
+  
+  /**
+    @param { MaintenanceOrder } order entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+  */
+  public async preSave(order: MaintenanceOrder, isInserting: boolean) {
+    return this.getAndRemoveSubTables(order)
+  }
+
+
+  /**
+    @param { MaintenanceOrder } order entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+    @param { any } preSave retorno do método preSave
+  */
+  public async posSave(order: MaintenanceOrder, isInserting: boolean, preSave: any) {
+    const userId = order['updatedBy'];
+    const subTables = this.mountSubTablesData(preSave)
+
+    for (let index = 0; index < subTables.length; index++) {
+      const table = subTables[index];
+
+      const { data, log } = table;
+      const controller = table.instance()
+
+      if (!Array.isArray(data)) continue;
+
+      for (let i = 0; i < data.length; i++) {
+        const obj = data[i];
+        
+        if (typeof obj !== 'object' || obj === null) continue
+
+        obj['updatedBy'] = userId;
+        if (obj['createdBy'] === undefined) {
+          obj['createdBy'] = userId;
+        }
+
+        obj['maintenanceOrder'] = order;
+
+        await controller.saveEntity(obj)
+      }
+    };
+  }
+
+
+  /**
+    @param { MaintenanceOrder } order entidade que está sendo deletado
+  */
+  public async preDelete(order: MaintenanceOrder) {
+    return this.getAndRemoveSubTables(order)
+  }
+
+  /**
+    @param { MaintenanceOrder } order entidade que está sendo deletado
+    @param { any } preDelete retorno do método preDelete
+  */
+  public async posDelete(order: MaintenanceOrder, preDelete: any) {
+    /*
+    const userId = order['updatedBy'];
+    const subTables = this.mountSubTablesData(preDelete)
+
+    subTables.forEach(async (table: any) => {
+      
+      const { data } = table;
+      const controller = table.instance()
+
+      if (!Array.isArray(data)) return;
+
+      for (let i = 0; i < data.length; i++) {
+        const obj = data[i];
+        
+        obj['updatedBy'] = userId;
+
+        await controller.removeEntity(obj)
+      }
+
+    });
+    /**/
+  }
+
+  public getAndRemoveSubTables(order: MaintenanceOrder) {
+    const { maintenanceWorker, orderSignature, orderEquipment } = order;
+
+    delete order['orderSignature'];
+    delete order['orderEquipment'];
+    delete order['maintenanceWorker'];
+
+    return {
+      orderSignature,
+      orderEquipment,
+      maintenanceWorker,
+    };
+  }
+
+  public mountSubTablesData(subTables) {
+    const { maintenanceWorker, orderSignature, orderEquipment } = subTables;
+
+    return [
+      {
+        'instance': () => new MaintenanceWorkerController(),
+        'data': maintenanceWorker,
+        'log': 'maintenanceWorker',
+      },
+      {
+        'instance': () => new OrderSignatureController(),
+        'data': orderSignature,
+        'log': 'orderSignature',
+      },
+      {
+        'instance': () => new OrderEquipmentController(),
+        'data': orderEquipment,
+        'log': 'orderEquipment',
+      },
+    ];
   }
 }

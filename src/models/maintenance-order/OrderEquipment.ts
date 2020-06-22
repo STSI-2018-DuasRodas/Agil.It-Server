@@ -5,16 +5,23 @@ import { OrderOperation } from "./OrderOperation";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { InstallationArea } from "../InstallationArea";
 import { BaseClass } from "../BaseClass";
+import { IsNotEmpty } from "class-validator";
 
 @Entity('order_equipment')
 export class OrderEquipment extends BaseClass {
 
   @ManyToOne(type => MaintenanceOrder, maintenanceOrder => maintenanceOrder.id, {cascade: false, nullable: true})
   @JoinColumn()
+  @IsNotEmpty({
+    message:'Ordem: Campo obrigatório.'
+  })
   public maintenanceOrder : MaintenanceOrder = undefined;
   
   @ManyToOne( type => Equipment, equipment => equipment.id, {cascade: false, nullable: false})
   @JoinColumn()
+  @IsNotEmpty({
+    message:'Equipamento: Campo obrigatório.'
+  })
   public equipment: Equipment = undefined;
   
   @ManyToOne(
@@ -31,6 +38,9 @@ export class OrderEquipment extends BaseClass {
     { nullable: false, cascade: false }
   )
   @JoinColumn()
+  @IsNotEmpty({
+    message:'Área da Instalação: Campo obrigatório.'
+  })
   public installationArea: InstallationArea = undefined;
   
   @OneToMany(type => OrderOperation, orderOperation => orderOperation.orderEquipment, {cascade: false, nullable: true})

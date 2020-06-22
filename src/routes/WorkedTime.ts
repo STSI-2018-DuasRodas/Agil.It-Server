@@ -4,7 +4,7 @@ import { ConfigCrudRoutes } from "./ConfigCrudRoutes";
 
 export class WorkedTimeCollection extends Collection {
   constructor() {
-    super('/maintenance-orders/:maintenanceOrderId/worked-times', WorkedTimeController);
+    super('/worked-times', WorkedTimeController);
     this.addBaseCrudRoutes(new ConfigCrudRoutes())
   }
 

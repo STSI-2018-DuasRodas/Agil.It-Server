@@ -9,10 +9,7 @@ import { Sector } from "./Sector";
 import { InstallationArea } from "./InstallationArea";
 import { MeasurementUnit } from "./MeasurementUnit";
 import { Item } from "./Item";
-import { MachineComponent } from "./MachineComponent";
-import { OrderClassification } from "./OrderClassification";
 import { OrderLayout } from "./OrderLayout";
-import { OrderType } from "./OrderType";
 import { SecurityParam } from "./SecurityParam";
 import { SuperiorEquipment } from "./SuperiorEquipment";
 import { WorkCenter } from "./WorkCenter";
@@ -21,6 +18,7 @@ import { MaintenanceOrder } from "./MaintenanceOrder";
 export class Seeder {
 
   public static async Executar(log: Boolean = true) : Promise<any> {
+    //*
     await User.Seed(log);
     await DefaultObservation.Seed(log);
     await DefaultOperation.Seed(log);
@@ -30,15 +28,16 @@ export class Seeder {
     await Equipment.Seed(log);
     await Sector.Seed(log);
     await InstallationArea.Seed(log);
+    
+    //*/
+    await WorkCenter.Seed(log);
+    //*/
     await MeasurementUnit.Seed(log);
     await Item.Seed(log);
-    await MachineComponent.Seed(log);
-    await OrderClassification.Seed(log);
     await OrderLayout.Seed(log);
-    await OrderType.Seed(log);
     await SecurityParam.Seed(log);
     await SuperiorEquipment.Seed(log);
-    await WorkCenter.Seed(log);
     await MaintenanceOrder.Seed(log);
+    /**/
   }
 }

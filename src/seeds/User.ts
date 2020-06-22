@@ -1,101 +1,95 @@
+import { UserRole } from './../models/enum/UserRole';
+import { Gender } from './../models/enum/Gender';
 import { User as Model } from '../models/User';
 import { UserController } from '../controllers/User';
-import { Seed } from "./Seed";
+import { Seed } from './Seed';
 
 export class User extends Seed {
 
-  public static Seed(log: Boolean = true) {
+  public static async Seed(log: Boolean = true) {
     const user = new User(UserController);
-    return user.Executar(log);
+    await user.Executar(log);
   }
-
+  
   public async Mock() {
-    //*
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 1,  
-      "name": "Julio",
-      "email": "julio",
-      "password": "julio123",
-      "role": "maintainer",
-      "birthDate": "1977-06-03 22:16:46",
-      "contact": "4733707700",
-      "forceChangePassword": false,
-      "employeeBadge": 1234,
-      "gender": "male",
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
+    const users = User.getUsers()
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 2,  
-      "name": "Lucas",
-      "email": "lucas",
-      "password": "lucas123",
-      "role": "administrator",
-      "birthDate": "1977-06-03 22:16:46",
-      "contact": "4733707700",
-      "forceChangePassword": false,
-      "employeeBadge": 1121,
-      "gender": "male",
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 3,  
-      "name": "Márcio",
-      "email": "marcio",
-      "password": "marcio123",
-      "role": "sector_leader",
-      "birthDate": "1977-06-03 22:16:46",
-      "contact": "4733707700",
-      "forceChangePassword": false,
-      "employeeBadge": 3314,
-      "gender": "male",
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 4,  
-      "name": "José Francisco",
-      "email": "josef",
-      "password": "josef123",
-      "role": "maintainer_leader",
-      "birthDate": "1977-06-03 22:16:46",
-      "contact": "4733707700",
-      "forceChangePassword": false,
-      "employeeBadge": 9945,
-      "gender": "male",
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-    
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 5,  
-      "name": "agilit",
-      "email": "integratino-agilit",
-      "password": "agilit",
-      "role": "integration",
-      "birthDate": "1977-06-03 22:16:46",
-      "contact": "4733707700",
-      "forceChangePassword": false,
-      "employeeBadge": "integratino-agilit",
-      "gender": "male",
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-    /**/
+    for (let i = 0; i < users.length; i++) {
+      await this.CadastrarCrud({
+        ...users[i],
+      });
+    }
+  }
+  
+  public static getUsers() {
+    return [
+      {
+        'name': 'Julio',
+        'email': 'julio',
+        'password': 'julio123',
+        'role': UserRole.MAINTAINER,
+        'birthDate': '1977-06-03 22:16:46',
+        'contact': '4733707700',
+        'forceChangePassword': false,
+        'employeeBadge': 1234,
+        'gender': Gender.MALE,
+      },
+      {
+        'name': 'Lucas',
+        'email': 'lucas',
+        'password': 'lucas123',
+        'role': UserRole.ADMINISTRATOR,
+        'birthDate': '1977-06-03 22:16:46',
+        'contact': '4733707700',
+        'forceChangePassword': false,
+        'employeeBadge': 1121,
+        'gender': Gender.MALE,
+      },
+      {
+        'name': 'Márcio',
+        'email': 'marcio',
+        'password': 'marcio123',
+        'role': UserRole.SECTOR_LEADER,
+        'birthDate': '1977-06-03 22:16:46',
+        'contact': '4733707700',
+        'forceChangePassword': false,
+        'employeeBadge': 3314,
+        'gender': Gender.MALE,
+      },
+      {
+        'name': 'José Francisco',
+        'email': 'josef',
+        'password': 'josef123',
+        'role': UserRole.MAINTAINER_LEADER,
+        'birthDate': '1977-06-03 22:16:46',
+        'contact': '4733707700',
+        'forceChangePassword': false,
+        'employeeBadge': 9945,
+        'gender': Gender.MALE,
+      },
+      {
+        'name': 'agilit',
+        'email': 'integration-agilit',
+        'password': 'agilit',
+        'role': UserRole.INTEGRATION,
+        'birthDate': '1977-06-03 22:16:46',
+        'contact': '4733707700',
+        'forceChangePassword': false,
+        'employeeBadge': 'integration-agilit',
+        'gender': Gender.OTHER,
+      },
+      {
+        'name': 'Natália',
+        'email': 'natalia@senai.com.br',
+        'password': 'natalia123',
+        'role': UserRole.USER,
+        'birthDate': '1977-06-03 22:16:46',
+        'contact': '4733707700',
+        'forceChangePassword': false,
+        'employeeBadge': 8845,
+        'gender': Gender.FEMALE,
+      },
+    ]
   }
 }

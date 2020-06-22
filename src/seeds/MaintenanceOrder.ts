@@ -1,3 +1,4 @@
+import { Length } from 'class-validator';
 import { MaintenanceOrder as Model } from '../models/maintenance-order/MaintenanceOrder';
 import { MaintenanceOrderController } from '../controllers/MaintenanceOrder';
 import { Seed } from "./Seed";
@@ -10,8 +11,6 @@ import { OrderLayout as EnumOrderLayout } from "../models/enum/OrderLayout"
 import { Default } from '../models/maintenance-order/Default';
 import { List } from '../models/maintenance-order/List';
 import { Route } from '../models/maintenance-order/Route';
-import { OrderClassificationController } from '../controllers/OrderClassification';
-import { OrderTypeController } from '../controllers/OrderType';
 import { OrderLayoutController } from '../controllers/OrderLayout';
 import { MaintenanceWorker } from '../models/maintenance-order/MaintenanceWorker';
 import { Item } from '../models/Item';
@@ -21,25 +20,20 @@ import { SuperiorEquipmentController } from '../controllers/SuperiorEquipment';
 import { InstallationAreaController } from '../controllers/InstallationArea';
 import { OrderOperation } from '../models/maintenance-order/OrderOperation';
 import { DefaultObservationController } from '../controllers/DefaultObservation';
-import { OrderOperationController } from '../controllers/OrderOperation';
-import { OrderEquipmentController } from '../controllers/OrderEquipment';
-import { OrderComponentController } from '../controllers/OrderComponent';
-import { MaintenanceWorkerController } from '../controllers/MaintenanceWorker';
 import { UserController } from '../controllers/User';
-import { OrderType } from '../models/OrderType';
-import { OrderClassification } from '../models/OrderClassification';
 import { DefectOriginController } from '../controllers/DefectOrigin';
 import { DefectSymptomController } from '../controllers/DefectSymptom';
 import { DefectSymptom } from '../models/DefectSymptom';
 import { DefectOrigin } from '../models/DefectOrigin';
 import { WorkedTime } from '../models/maintenance-order/WorkedTime';
 import { WorkedTimeController } from '../controllers/WorkedTime';
+import { User } from '../models/User';
 
 export class MaintenanceOrder extends Seed {
 
-  public static Seed(log: Boolean = true) {
+  public static async Seed(log: Boolean = true) {
     const maintenanceOrder = new MaintenanceOrder(MaintenanceOrderController);
-    return maintenanceOrder.Executar(log);
+    await maintenanceOrder.Executar(log);
   }
 
   public async Mock() {
@@ -51,39 +45,51 @@ export class MaintenanceOrder extends Seed {
   }
 
   public static async CreateOrder() {
+
+    const order = await MaintenanceOrder.GenerateOrder();
+
+    const controller = new MaintenanceOrderController();
+
+    const savedOrder = await controller.saveOrder(order)
+
+
+    if(Array.isArray(savedOrder.maintenanceWorker) && savedOrder.maintenanceWorker.length) {
+      savedOrder.maintenanceWorker.forEach((maintenanceWorker: MaintenanceWorker) => {
+        this.CreateWorkedTime(maintenanceWorker);
+      });
+    }
+  }
+
+  public static async GenerateOrder() {
     const orderNumber: string = this.getOrderNumber(await this.ObterOrderId());
-    const layoutId: number = this.getRandomNumber(1,3);
-    const orderTypeId: number = this.getRandomNumber(1,3);
-    const orderClassificationId: number = this.getRandomNumber(1,3);
+    const layoutId: number = this.getRandomNumber(1,4);
     const priority: OrderPriority = this.getRandomOrderPriority();
     const status: OrderStatus = this.getRandomOrderStatus();
     const needStopping: boolean = this.getRandomBoolean();
     const isStopped: boolean = this.getRandomBoolean();
     const exported: boolean = false;
     const openedDate: Date = this.getRandomDate(2020);
-    const createdBy: number = 1;
-    const updatedBy: number = 1;
+    const description: string = this.getRandomDescription()
+    const createdBy: number = 5;
+    const updatedBy: number = 5;
+    const solicitationUserId: number = 6;
 
     const layout: OrderLayout = await this.getOrderLayout(layoutId);
-    const orderType: OrderType = await this.getOrderType(orderTypeId);
-    const orderClassification: OrderClassification = await this.getOrderClassification(orderClassificationId);
 
     let order: Model;
 
     if (layout.orderLayout === EnumOrderLayout.DEFAULT) {
-      order = new Default()
+      order = new Default();
 
     } else if(layout.orderLayout === EnumOrderLayout.LIST) {
-      order = new List()
+      order = new List();
 
     } else {
-      order = new Route()
+      order = new Route();
     }
 
     order.orderNumber = orderNumber;
     order.orderLayout = layout;
-    order.orderType = orderType;
-    order.orderClassification = orderClassification;
     order.createdBy = createdBy;
     order.updatedBy = updatedBy;
     order.exported = exported;
@@ -92,83 +98,93 @@ export class MaintenanceOrder extends Seed {
     order.openedDate = openedDate;
     order.orderStatus = status;
     order.priority = priority;
+    order.description = description;
 
     const defectSymptomId: number = this.getRandomNumber(1,3);
     const defectOriginId: number = this.getRandomNumber(1,3);
 
     const defectOrigin: DefectOrigin = await this.getDefectOrigin(defectOriginId);
     const defectSymptom: DefectSymptom = await this.getDefectSymptom(defectSymptomId);
+    const solicitationUser: User = await this.getUser(solicitationUserId);
 
-    order.defectOrigin=defectOrigin
-    order.defectSymptom=defectSymptom
+    order.defectOrigin=defectOrigin;
+    order.defectSymptom=defectSymptom;
+    order.solicitationUser = solicitationUser;
     
-    const controller = new MaintenanceOrderController();
-    await controller.getRepositoryEntity().save(order);
-    await this.loadOrderEquipment(order);
-    await this.loadWorkers(order);
+    order.maintenanceWorker = await MaintenanceOrder.GenerateWorkers();
+    order.orderEquipment = await MaintenanceOrder.GenerateOrderEquipment(order.orderLayout.orderLayout);
+    order.maintenanceWorker = await MaintenanceOrder.GenerateWorkers();
+    
+    if (Array.isArray(order.maintenanceWorker) && order.maintenanceWorker.length) {
+      if (order.orderStatus === OrderStatus.CREATED) {
+        order.orderStatus = OrderStatus.ASSUMED;
+      }
+    } else {
+      order.orderStatus = OrderStatus.CREATED;
+    }
+
+    return order;
   }
 
-  public static async loadOrderComponents(orderOperation: OrderOperation) {
+  public static async loadOrderComponents() {
     const componentsQty: number = this.getRandomNumber(0,3);
+    const components = [];
 
     for (let i = 0; i < componentsQty; i++) {
-      await this.CreateOrderComponent(orderOperation);
+      components.push(await this.CreateOrderComponent());
     }
+
+    return components;
   }
   
-  public static async loadOrderEquipment(order: Model) {
-
+  public static async GenerateOrderEquipment(orderLayout: EnumOrderLayout) {
     let equipmentQty: number = this.getRandomNumber(1,3);
+    const equipments = [];
 
-    if (order.orderLayout.orderLayout === EnumOrderLayout.DEFAULT) {
+    if (orderLayout === EnumOrderLayout.DEFAULT) {
       equipmentQty = 1;
     }
 
     for (let i = 0; i < equipmentQty; i++) {
-      await this.CreateOrderEquipment(order)
+      equipments.push(await this.CreateOrderEquipment());
     }
+
+    return equipments;
   }
 
-  public static async loadWorkers(order: Model) {
+  public static async GenerateWorkers() {
     const workersQty: number = this.getRandomNumber(0,3);
+    const workers = [];
 
     for (let i = 0; i < workersQty; i++) {
       const isMain = (i === 0)  // Apenas o primeiro é o principal
-      await this.CreateWorker(order, isMain)
+      workers.push(await this.CreateWorker(isMain));
     }
+
+    return workers;
   }
   
-  public static async CreateOrderComponent(orderOperation: OrderOperation): Promise<any> {
+  public static async CreateOrderComponent(): Promise<any> {
 
     const itemId: number = this.getRandomNumber(1,3);
     const quantity: number = this.getRandomNumber(1,10);
     const canBeDeleted: boolean = this.getRandomBoolean();
-    const createdBy: number = 1;
-    const updatedBy: number = 1;
     
     const item: Item = await this.getItem(itemId);
 
     const orderComponent = new OrderComponent();
-    orderComponent.createdBy = createdBy;
-    orderComponent.updatedBy = updatedBy;
     orderComponent.canBeDeleted = canBeDeleted;
     orderComponent.item = item;
     orderComponent.quantity = quantity;
-    orderComponent.orderOperation = orderOperation
-
-    const controller = new OrderComponentController();
-    await controller.getRepositoryEntity().save(orderComponent);
 
     return orderComponent;
   }
   
-  public static async CreateOrderEquipment(order: Model): Promise<any> {
+  public static async CreateOrderEquipment(): Promise<any> {
 
     const equipmentId: number = this.getRandomNumber(1,3);
     const superiorEquipmentId: number = this.getRandomNumber(1,3);
     const installationAreaId: number = this.getRandomNumber(1,3);
-    const createdBy: number = 1;
-    const updatedBy: number = 1;
 
     const equipment = await this.getEquipment(equipmentId)
     const superiorEquipment = await this.getSuperiorEquipment(superiorEquipmentId)
@@ -180,33 +196,30 @@ export class MaintenanceOrder extends Seed {
     orderEquipment.equipment = equipment;
     orderEquipment.installationArea = installationArea;
     orderEquipment.superiorEquipment = superiorEquipment;
-    orderEquipment.createdBy = createdBy;
-    orderEquipment.updatedBy = updatedBy;
-    orderEquipment.maintenanceOrder = order;
     
-    const controller = new OrderEquipmentController();
-    await controller.getRepositoryEntity().save(orderEquipment);
+    orderEquipment.orderOperation = await this.loadOrderOperations();
 
-    this.loadOrderOperations(orderEquipment);
+    return orderEquipment;
   }
 
-  public static async loadOrderOperations(orderEquipment: OrderEquipment): Promise<any> {
+  public static async loadOrderOperations(): Promise<any> {
     const operationsQty: number = this.getRandomNumber(0,3);
+    const operations = [];
 
     for (let i = 0; i < operationsQty; i++) {
-      await this.CreateOperation(orderEquipment,i+1);
+      operations.push(await this.CreateOperation(i+1));
     }
+
+    return operations;
   }
   
-  public static async CreateOperation(orderEquipment: OrderEquipment, operationNumber: number): Promise<any> {
+  public static async CreateOperation(operationNumber: number): Promise<any> {
 
     const planningTime:number = this.getRandomNumber(15,300);
     let executeTime:number = this.getRandomNumber(0,(planningTime * 1.5));
     const executed = ((executeTime/planningTime) >= 0.85)  // Ter feito pelo menos 85% do trabalho
     const description: string = this.getRandomDescription()
     const defaultObservationId: number = this.getRandomNumber(1,3);
-    const createdBy: number = 1;
-    const updatedBy: number = 1;
 
     if (!executed) executeTime = 0;
 
@@ -220,22 +233,16 @@ export class MaintenanceOrder extends Seed {
     operation.operationNumber = operationNumber;
     operation.defaultObservation = defaultObservation;
     operation.description = description;
-    operation.createdBy = createdBy;
-    operation.updatedBy = updatedBy;
-    operation.orderEquipment = orderEquipment;
 
-    const controller = new OrderOperationController();
-    await controller.getRepositoryEntity().save(operation);
+    operation.orderComponent = await this.loadOrderComponents();
 
-    this.loadOrderComponents(operation);
+    return operation;
   }
 
-  public static async CreateWorker(order: Model, isMain: boolean): Promise<any> {
+  public static async CreateWorker(isMain: boolean): Promise<any> {
     
     const userId: number = this.getRandomNumber(1,4);
     const isActive: boolean = isMain ? true : this.getRandomBoolean()
-    const createdBy: number = 1;
-    const updatedBy: number = 1;
 
     const user = await this.getUser(userId);
 
@@ -243,36 +250,30 @@ export class MaintenanceOrder extends Seed {
     maintenanceWorker.user = user;
     maintenanceWorker.isActive = isActive;
     maintenanceWorker.isMain = isMain;
-    maintenanceWorker.createdBy = createdBy;
-    maintenanceWorker.updatedBy = updatedBy;
-    maintenanceWorker.maintenanceOrder = order;
-    
-    const controller = new MaintenanceWorkerController();
-    await controller.getRepositoryEntity().save(maintenanceWorker);
 
-    await this.CreateWorkedTime(maintenanceWorker);
+    return maintenanceWorker;
   }
 
   public static async CreateWorkedTime(maintenanceWorker: MaintenanceWorker): Promise<any> {
     const workedTime = new WorkedTime();
 
     const date = this.getRandomDate(2020)
-    const started = this.getRandomNumber(3600,30000)
-    const finished = this.getRandomNumber(started, started + 30000)
-    const createdBy: number = 1;
-    const updatedBy: number = 1;
+    const started = this.getRandomNumber(3600000, 30000000)
+    const finished = this.getRandomNumber(started, started + 30000000)
+    const createdBy: number = maintenanceWorker.user.id;
+    const updatedBy: number = maintenanceWorker.user.id;
 
     workedTime.maintenanceWorker = maintenanceWorker;
     workedTime.startedWork = new Date(date.getTime() + started)
     workedTime.finishedWork = new Date(date.getTime() + finished)
-    workedTime.intervalTime = (finished - started) <  10000? 0 : Math.trunc(this.getRandomNumber(100,300)/5);
+    workedTime.intervalTime = (finished - started) <  10000000 ? 0 : this.arredondarEmCinco(Math.trunc(this.getRandomNumber(100,300)/5));
     workedTime.createdBy = createdBy;
     workedTime.updatedBy = updatedBy;
 
     workedTime.description = `Trabalhado na manutenção das ${workedTime.startedWork.getHours()}:${workedTime.startedWork.getMinutes()} até às ${workedTime.finishedWork.getHours()}:${workedTime.finishedWork.getMinutes()}.`
 
     const controller = new WorkedTimeController();
-    await controller.getRepositoryEntity().save(workedTime);
+    await controller.saveEntity(workedTime);
   }
 
   public static async ObterOrderId() {
@@ -285,16 +286,6 @@ export class MaintenanceOrder extends Seed {
   public static async getOrderLayout(layoutId: number): Promise<any> {
     const controller = new OrderLayoutController();
     return await controller.getRepositoryEntity().findOne(layoutId);
-  }
-  
-  public static async getOrderType(orderTypeId: number): Promise<any> {
-    const controller = new OrderTypeController();
-    return await controller.getRepositoryEntity().findOne(orderTypeId);
-  }
-  
-  public static async getOrderClassification(orderClassificationId: number): Promise<any> {
-    const controller = new OrderClassificationController();
-    return await controller.getRepositoryEntity().findOne(orderClassificationId);
   }
   
   public static async getItem(itemId: number): Promise<any> {
@@ -395,7 +386,7 @@ export class MaintenanceOrder extends Seed {
       : new Date().getTime() /* hoje */
     )
 
-    const offset = this.getRandomNumber(initDate,endDate);
+    const offset = this.getRandomNumber(1,(endDate-initDate));
     
     return new Date(initDate + offset);
   }
@@ -423,5 +414,14 @@ export class MaintenanceOrder extends Seed {
       "Trocar a caldeira",
       "Soldar o componente",
     ];
+  }
+
+  public static arredondarEmCinco(valor: number) {
+
+    while(valor%5 !== 0) {
+      valor++
+    }
+
+    return valor;
   }
 }

@@ -4,42 +4,28 @@ import { Seed } from "./Seed";
 
 export class MeasurementUnit extends Seed {
 
-  public static Seed(log: Boolean = true) {
+  public static async Seed(log: Boolean = true) {
     const measurementUnit = new MeasurementUnit(MeasurementUnitController);
-    return measurementUnit.Executar(log);
+    await measurementUnit.Executar(log);
   }
 
   public async Mock() {
-    //*
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 1,
-      "description":"Unidade",
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 2,
-      "description":"Metros",
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-    
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 3,
-      "description":"Cartucho",
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
+    const measurementUnits = MeasurementUnit.getMeasurementUnits()
+  
+    for (let i = 0; i < measurementUnits.length; i++) {
+      await this.CadastrarCrud({
+        description: measurementUnits[i],
+      });
+    }
+  }
+  
+  public static getMeasurementUnits() {
+    return [
+      'kg',
+      'L',
+      'M',
+      'UN',
+    ]
   }
 }

@@ -40,4 +40,14 @@ export class Seed {
     let dataClass = this.constructor.toString().match(/\w+/g)
     return dataClass![1];
   }
+
+  public async CadastrarCrud(properties)
+  {
+    const standardObject = {
+      'createdBy': 1,
+      'updatedBy': 1,
+      ...properties
+    }
+    return await this.controller.getRepositoryEntity().save(standardObject)
+  }
 }

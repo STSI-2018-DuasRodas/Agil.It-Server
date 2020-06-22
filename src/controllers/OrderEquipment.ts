@@ -30,4 +30,53 @@ export class OrderEquipmentController extends CrudController<OrderEquipment> {
   public validateGetbyDescription() : boolean {
     return false;
   }
+  
+  /**
+    @param { OrderEquipment } orderEquipment entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+  */
+  public async preSave(orderEquipment: any, isInserting: boolean) {
+    const { orderOperation } = orderEquipment;
+
+    delete orderEquipment['orderOperation'];
+
+    return { orderOperation };
+  }
+
+  /**
+    @param { OrderEquipment } orderEquipment entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+    @param { any } preSave retorno do método preSave
+  */
+  public async posSave(orderEquipment: any, isInserting: boolean, preSave: any) {
+    const { orderOperation } = preSave;
+
+    if(Array.isArray(orderOperation)) {
+      const controller = new OrderOperationController();
+      const userId = orderEquipment['updatedBy'];
+
+      for (let i = 0; i < orderOperation.length; i++) {
+        const obj = orderOperation[i];
+        
+        if (typeof obj !== 'object' || obj === null) continue
+
+        obj['updatedBy'] = userId;
+        if (obj['createdBy'] === undefined) {
+          obj['createdBy'] = userId;
+        }
+
+        obj['orderEquipment'] = orderEquipment;
+
+        await controller.saveEntity(obj);
+      }
+    }
+  }
+
+  /**
+    @param { OrderEquipment } orderEquipment entidade que está sendo deletado
+  */
+  public async preDelete(orderEquipment: any) {
+    delete orderEquipment['orderOperation'];
+    return {};
+  }
 }

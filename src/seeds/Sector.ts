@@ -4,42 +4,90 @@ import { Seed } from "./Seed";
 
 export class Sector extends Seed {
 
-  public static Seed(log: Boolean = true) {
+  public static async Seed(log: Boolean = true) {
     const sector = new Sector(SectorController);
-    return sector.Executar(log);
+    await sector.Executar(log);
   }
 
   public async Mock() {
-    //*
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 1,
-      "description":"Galpão 2",
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
+    const sectors = Sector.getSectors()
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 2,
-      "description":"Ala 3",
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-    
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 3,
-      "description":"Sala Administrativa",
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
+    for (let i = 0; i < sectors.length; i++) {
+      await this.CadastrarCrud({
+        description: sectors[i],
+      });
+    }
+  }
+
+  public static getSectors() {
+    return [
+      'ALMOXARIFADO',
+      'CAMARA CENTRAL REFRIGERADA',
+      'FRACIONAMENTO',
+      'TRANSPORTE INTERNO',
+      'AROMAS EM PÓ',
+      'COBERTURA',
+      'EMUSTAB',
+      'RECHEIOS',
+      'PASTAS E VARIEGATOS',
+      'CONDIMENTO',
+      'CONDIMENTOS',
+      'CORANTES/REVENDA',
+      'ANÁLISE FISICO SENSORIAL',
+      'ANÁLISE DE PRODUTOS',
+      'ANÁLISE QUI/MICR/CRO',
+      'ANÁLISE MICROBIOLOGIA',
+      'APLICAÇÃO DE PRODUTO',
+      'ATEND. A CLIENTES',
+      'CENTRO TEC. E ADM.',
+      'CONSELHO CFM',
+      'DESENVOLVIMENTO DE PRODUTOS',
+      'DESEN E PESQUISA DE PRODUTO',
+      'FLAVORISTAS',
+      'INFRAESTRUTURA DE TI',
+      'AERONAVES',
+      'INOVAÇÃO/TECN. JGA -USINA PILOTO',
+      'INOVAÇÃO CENTER',
+      'MARKETING',
+      'PESAGEM E PREPARAÇÃO DE AMOSTRAS',
+      'TRADE MARKETING - AMOSTRAS',
+      'VENDAS AROMAS',
+      'ASSISTENCIA TÉCNICA FRIGORIFICA',
+      'S A DESTILARIA',
+      'S A DESTILARIA SCHOTT',
+      'DISTRIBUIÇÃO E ARMAZENAGEM',
+      'EMULSÕES E LÍQUIDOS',
+      'ESSENCIAS',
+      'S A ESSÊNCIAS',
+      'FLOCOS BABY FOOD',
+      'GORDURA ANIMAL',
+      'S.A. DEGELO',
+      'DESIDRATADOS',
+      'S A FLOCOS',
+      'S A MAFOR',
+      'S A EXTRATO DE MALTE/SUCOS',
+      'ADMINISTRATIVO MANUTENÇÃO',
+      'GERAÇÃO DE ENERGIA ELETRICA',
+      'CENTRAL DE MOAGEM',
+      'S A HVP LEVEDO',
+      'LINHA DE MOLHOS',
+      'GERENCIA REC. HUMANOS',
+      'MEDICINA DO TRABALHO',
+      'REFEITÓRIO',
+      'SEG. MEDICINA/TRABALHO',
+      'ZELADORIA',
+      'CALDEIRAS',
+      'FAZENDA S A CITRUS',
+      'ESTAÇÃO DE TRATAMENTO AFLUENTE',
+      'ESTAÇÃO DE TRATAMENTO EFLUENTE',
+      'SERVIÇOS GERAIS',
+      'CASEIRO',
+      'SORVETINA',
+      'SPRAY 2 E 4',
+      'SPRAY 5 6 7 8 9',
+      'SPRAY 8',
+      'SPRAY 5 6 9',
+    ];
   }
 }

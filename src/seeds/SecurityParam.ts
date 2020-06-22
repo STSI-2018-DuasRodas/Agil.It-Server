@@ -5,51 +5,42 @@ import { SecurityParamEntity } from '../models/enum/SecurityParamEntity';
 
 export class SecurityParam extends Seed {
 
-  public static Seed(log: Boolean = true) {
+  public static async Seed(log: Boolean = true) {
     const securityParam = new SecurityParam(SecurityParamController);
-    return securityParam.Executar(log);
+    await securityParam.Executar(log);
   }
 
   public async Mock() {
-    //*
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 1,
-      "description":"Mascara de Calor",
-      "entityClass": SecurityParamEntity.MACHINE_TYPE,
-      "entityId": 1,
-      "useAlways": false,
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
+    const securityParams = SecurityParam.getSecurityParams()
 
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 2,
-      "description":"Luvas de Proteção",
-      "entityClass": SecurityParamEntity.WORK_CENTER,
-      "entityId": 2,
-      "useAlways": false,
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
-    
-    await this.controller.getRepositoryEntity().save(<Model><unknown>{
-      "id": 3,
-      "description":"Sapato de Proteção",
-      "entityClass": null,
-      "entityId": null,
-      "useAlways": true,
-      "deleted": false,
-      "createdBy": 1,
-      "updatedBy": 1,
-      "createdAt": "2020-06-04 22:16:46",
-      "updatedAt": "2020-06-04 22:16:46"
-    })
+    for (let i = 0; i < securityParams.length; i++) {
+      await this.CadastrarCrud({
+        ...securityParams[i],
+      });
+    }
+  }
+  
+  public static getSecurityParams() {
+    return [
+      {
+        "description":"Mascara de Calor",
+        "entityClass": SecurityParamEntity.MACHINE_TYPE,
+        "entityId": 1,
+        "useAlways": false,
+      },
+      {
+        "description":"Luvas de Proteção",
+        "entityClass": SecurityParamEntity.WORK_CENTER,
+        "entityId": 2,
+        "useAlways": false,
+      },
+      {
+        "description":"Sapato de Proteção",
+        "entityClass": null,
+        "entityId": null,
+        "useAlways": true,
+      },
+    ]
   }
 }

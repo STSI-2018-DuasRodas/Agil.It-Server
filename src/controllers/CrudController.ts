@@ -1,11 +1,12 @@
 import { UserRole } from './../models/enum/UserRole';
-import {Repository, Entity, AdvancedConsoleLogger, Not} from 'typeorm';
+import {Repository, Not} from 'typeorm';
 import {NextFunction, Request, Response} from "express";
 import { validate } from "class-validator";
 import * as jwt from "jsonwebtoken";
 import JWT from "../config/JWT";
 import { getIntegrionUser } from '../middlewares/checkJwt';
 import { User } from '../models/User';
+import { v4 as uuid } from 'uuid';
 
 export class CrudController<Entity> {
 
@@ -65,40 +66,7 @@ export class CrudController<Entity> {
 
     await this.updateFields(token, authorization, entity);
 
-    //Validade if the parameters are ok
-    const error = await this.validate(entity)
-    if (error !== undefined) {
-      throw error
-    }
-
-    if (entity["integrationID"] && entity["integrationID"] != "") {
-      try {
-        const integrationId = entity["integrationID"];
-        await this.getRepositoryEntity().findOneOrFail({
-          where: {
-            integrationID: integrationId,
-            deleted: false,
-          }
-        });
-
-        throw `Registro com o integrationID ${integrationId} já existe.`;
-      } catch (error) {
-        if (typeof error === "string" && error.substr(0,28) === "Registro com o integrationID") {
-          throw error;
-        }
-      }
-    }
-
-    const includes = this.includes()
-    let entitySaved: Entity;
-
-    entitySaved = await this.getRepositoryEntity().save(entity);
-
-    if (includes.length === 0) return entitySaved;
-
-    return await this.getRepositoryEntity().findOne(entity["id"],{
-      relations: includes,
-    });
+    return await this.saveEntity(entity)
   }
 
   async update(request: Request, response: Response, next: NextFunction) {
@@ -119,23 +87,55 @@ export class CrudController<Entity> {
 
     await this.updateFields(token, authorization, entity);
 
-    const errors = await validate(entity);
-    if (errors.length > 0) {
-      throw errors;
+    return await this.saveEntity(entity)
+  }
+  
+  async saveEntity(entity: Entity) {
+
+    //Validade if the parameters are ok
+    const error = await this.validate(entity)
+    if (error !== undefined) {
+      throw error
     }
+
+    const inserted: boolean = (typeof entity["id"] === 'number' || (typeof entity["id"] === 'string' && entity["id"].length > 0))
+    const isInserting: boolean = !inserted
+
+    if (entity['integrationID'] && entity['integrationID'] != '' && isInserting) {
+      try {
+        const integrationId = entity['integrationID'];
+        await this.getRepositoryEntity().findOneOrFail({
+          where: {
+            integrationID: integrationId,
+            deleted: false,
+          }
+        });
+
+        throw `Registro com o integrationID ${integrationId} já existe.`;
+      } catch (error) {
+        if (typeof error === "string" && error.substr(0,28) === "Registro com o integrationID") {
+          throw error;
+        }
+      }
+    }
+
+    const preSave = await this.preSave(entity, isInserting)
 
     const includes = this.includes()
     let entitySaved: Entity;
 
     entitySaved = await this.getRepositoryEntity().save(entity);
+    await this.posSave(entitySaved, isInserting, preSave)
 
-    if (includes.length === 0) return entitySaved;
-
-    return await this.getRepositoryEntity().findOne(request.params.id,{
-      relations: includes,
-    });
+    if (includes.length > 0) {
+      entitySaved = await this.getRepositoryEntity().findOne(entity["id"],{
+        relations: includes,
+      });
+    }
+    
+    return entitySaved;
   }
-  
+
   async remove(request: Request, response: Response, next: NextFunction) {
     
     let entity: Entity
@@ -157,16 +157,30 @@ export class CrudController<Entity> {
 
     await this.updateFields(token, authorization, entity);
 
+    return await this.removeEntity(entity);
+  }
+  
+  async removeEntity(entity: Entity) {
+    
     entity["deleted"] = true;
+    
+    if (entity['integrationID'] && entity['integrationID'] != '') {
+      entity["integrationID"] = `${entity['integrationID']}-uuid-${uuid()}`;
+    }
+
     const errors = await validate(entity);
     if (errors.length > 0) {
       throw errors;
     }
 
+    const preDelete = await this.preDelete(entity)
+    
     let result = await this.getRepositoryEntity().save(entity)
-    if (!result) throw "Erro ao executar a Query para atualizar o registro";
+    if (!result) throw "Erro ao deletar o registro";
 
-    return await this.getRepositoryEntity().findOne(request.params.id);
+    await this.posDelete(entity, preDelete)
+    
+    return await this.getRepositoryEntity().findOne(entity['id']);
   }
 
   async updateFields(token:string, authorization:string, entity :Entity) {
@@ -288,5 +302,39 @@ export class CrudController<Entity> {
     return {
       role: Not(UserRole.INTEGRATION),
     };
+  }
+
+  /**
+    @param { Entity } entity entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+  */
+  public async preSave(entity: any, isInserting: boolean) {
+    return {};
+  }
+  
+  
+  /**
+    @param { Entity } entity entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+    @param { any } preSave retorno do método preSave
+  */
+  public async posSave(entity: any, isInserting: boolean, preSave: any) {
+    
+  }
+  
+  
+  /**
+    @param { Entity } entity entidade que está sendo deletado
+  */
+  public async preDelete(entity: any) {
+    return {};
+  }
+  
+  /**
+    @param { Entity } entity entidade que está sendo deletado
+    @param { any } preDelete retorno do método preDelete
+  */
+  public async posDelete(entity: any, preDelete: any) {
+    
   }
 }

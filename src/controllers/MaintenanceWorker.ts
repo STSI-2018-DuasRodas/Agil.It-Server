@@ -29,4 +29,16 @@ export class MaintenanceWorkerController extends CrudController<MaintenanceWorke
   public validateGetbyDescription() : boolean {
     return false;
   }
+
+  public async preSave(worker: MaintenanceWorker, isInserting: boolean) {
+    delete worker['workedTime'];
+    delete worker['workerRequest'];
+    return {};
+  }
+
+  public async preDelete(worker: MaintenanceWorker) {
+    delete worker['workedTime'];
+    delete worker['workerRequest'];
+    return {};
+  }
 }

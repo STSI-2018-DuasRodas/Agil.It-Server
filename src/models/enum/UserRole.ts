@@ -3,5 +3,6 @@ export enum UserRole {
   MAINTAINER_LEADER = 'maintainer_leader',
   SECTOR_LEADER = 'sector_leader',
   MAINTAINER = 'maintainer',
-  INTEGRATION = 'integration'
+  USER = 'user',
+  INTEGRATION = 'integration',
 }

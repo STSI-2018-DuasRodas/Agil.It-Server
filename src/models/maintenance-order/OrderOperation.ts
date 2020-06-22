@@ -3,18 +3,25 @@ import { CrudClass } from "../CrudClass";
 import { OrderEquipment } from "./OrderEquipment";
 import { DefaultObservation } from "../DefaultObservation";
 import { OrderComponent } from "./OrderComponent";
+import { IsNotEmpty } from "class-validator";
 
 @Entity("order_operation")
 export class OrderOperation extends CrudClass {
 
   @ManyToOne(type => OrderEquipment, orderEquipment => orderEquipment.id, {cascade: false, nullable: true})
   @JoinColumn()
+  @IsNotEmpty({
+    message:'Equipamento da Ordem: Campo obrigatório.'
+  })
   public orderEquipment: OrderEquipment = undefined;
 
   @OneToMany(type => OrderComponent, orderComponent => orderComponent.orderOperation, { cascade: false, nullable: true })
   public orderComponent: Array<OrderComponent>;
 
   @Column()
+  @IsNotEmpty({
+    message:'Número da Operação: Campo obrigatório.'
+  })
   public operationNumber: number = undefined;
 
   @Column({ type: "int" })

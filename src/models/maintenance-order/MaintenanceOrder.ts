@@ -1,7 +1,5 @@
 import { Column, ManyToOne, Entity, TableInheritance, OneToMany, JoinColumn } from "typeorm";
 import { BaseClass } from "../BaseClass";
-import { OrderType } from "../OrderType";
-import { OrderClassification } from "../OrderClassification";
 import { OrderPriority } from "../enum/OrderPriority";
 import { MaintenanceWorker } from "./MaintenanceWorker";
 import { OrderStatus } from "../enum/OrderStatus";
@@ -10,29 +8,22 @@ import { OrderSignature } from "./OrderSignature";
 import { OrderEquipment } from "./OrderEquipment";
 import { DefectSymptom } from "../DefectSymptom";
 import { DefectOrigin } from "../DefectOrigin";
+import { IsNotEmpty } from "class-validator";
+import { User } from "../User";
 
 @Entity("maintenance_order")
 @TableInheritance({ column: { type: "varchar", name: "type" } })
 export abstract class MaintenanceOrder extends BaseClass {
 
+  
   @Column()
+  @IsNotEmpty({
+    message:'Número da Ordem: Campo obrigatório.'
+  })
   public orderNumber: string = '';
 
-  @ManyToOne(
-    (type) => OrderType,
-    (orderType) => orderType.id,
-    { nullable: false, cascade: false }
-  )
-  @JoinColumn()
-  public orderType: OrderType = new OrderType();
-
-  @ManyToOne(
-    (type) => OrderClassification,
-    (orderClassification) => orderClassification.id,
-    { nullable: false, cascade: false }
-  )
-  @JoinColumn()
-  public orderClassification: OrderClassification = new OrderClassification();
+  @Column()
+  public description: string = '';
 
   @ManyToOne(
     (type) => OrderLayout,
@@ -40,6 +31,9 @@ export abstract class MaintenanceOrder extends BaseClass {
     { nullable: false, cascade: false }
   )
   @JoinColumn()
+  @IsNotEmpty({
+    message:'Layout da Ordem: Campo obrigatório.'
+  })
   public orderLayout: OrderLayout | undefined = undefined;
 
   @Column({
@@ -106,8 +100,19 @@ export abstract class MaintenanceOrder extends BaseClass {
   })
   public defectSymptomNote: string = '';
 
+  @ManyToOne(
+    (type) => User,
+    (solicitationUser) => solicitationUser.id,
+    { nullable: false, cascade: false }
+  )
+  @JoinColumn()
+  @IsNotEmpty({
+    message:'Solicitante da Ordem de Manutenção: Campo obrigatório.'
+  })
+  public solicitationUser: User = undefined;
+
   constructor() {
     super();
   }
-  
+
 }

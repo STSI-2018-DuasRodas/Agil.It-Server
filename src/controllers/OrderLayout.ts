@@ -8,4 +8,7 @@ export class OrderLayoutController extends CrudController<OrderLayout> {
     super(getRepository(OrderLayout))
   }
 
+  public validateGetbyDescription() : boolean {
+    return false;
+  }
 }
