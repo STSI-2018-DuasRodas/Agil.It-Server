@@ -18,7 +18,9 @@ export class OrderEquipmentController extends CrudController<OrderEquipment> {
     const orderOperation = new OrderOperationController();
     const includes = [
       'equipment',
-      'equipment.machineType',      
+      'equipment.machineType',
+      'defectOrigin',
+      'defectSymptom',
       'superiorEquipment',
       'installationArea',
       ...this.addChildIncludes('orderEquipment', 'orderOperation', orderOperation.includes()),

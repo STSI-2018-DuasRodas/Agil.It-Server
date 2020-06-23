@@ -309,9 +309,9 @@ export class MaintenanceOrderController {
 
   public getOrderRelations() {
     return [
+      'workCenter',
       'orderLayout',
-      'defectOrigin',
-      'defectSymptom',
+      'solicitationUser',
     ];
   }
 
@@ -328,6 +328,8 @@ export class MaintenanceOrderController {
   public getOrderEquipmentRelations() {
     return [
       'orderEquipment',
+      'orderEquipment.defectOrigin',
+      'orderEquipment.defectSymptom',
       'orderEquipment.equipment',
       'orderEquipment.equipment.machineType',
       'orderEquipment.superiorEquipment',
@@ -383,7 +385,7 @@ export class MaintenanceOrderController {
     for (let index = 0; index < subTables.length; index++) {
       const table = subTables[index];
 
-      const { data, log } = table;
+      const { data } = table;
       const controller = table.instance()
 
       if (!Array.isArray(data)) continue;
@@ -462,17 +464,14 @@ export class MaintenanceOrderController {
       {
         'instance': () => new MaintenanceWorkerController(),
         'data': maintenanceWorker,
-        'log': 'maintenanceWorker',
       },
       {
         'instance': () => new OrderSignatureController(),
         'data': orderSignature,
-        'log': 'orderSignature',
       },
       {
         'instance': () => new OrderEquipmentController(),
         'data': orderEquipment,
-        'log': 'orderEquipment',
       },
     ];
   }

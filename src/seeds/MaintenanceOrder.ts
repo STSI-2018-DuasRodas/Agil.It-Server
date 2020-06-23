@@ -1,4 +1,4 @@
-import { Length } from 'class-validator';
+import { WorkCenter } from './../models/WorkCenter';
 import { MaintenanceOrder as Model } from '../models/maintenance-order/MaintenanceOrder';
 import { MaintenanceOrderController } from '../controllers/MaintenanceOrder';
 import { Seed } from "./Seed";
@@ -28,6 +28,7 @@ import { DefectOrigin } from '../models/DefectOrigin';
 import { WorkedTime } from '../models/maintenance-order/WorkedTime';
 import { WorkedTimeController } from '../controllers/WorkedTime';
 import { User } from '../models/User';
+import { WorkCenterController } from '../controllers/WorkCenter';
 
 export class MaintenanceOrder extends Seed {
 
@@ -73,6 +74,7 @@ export class MaintenanceOrder extends Seed {
     const createdBy: number = 5;
     const updatedBy: number = 5;
     const solicitationUserId: number = 6;
+    const workCenterId: number = this.getRandomNumber(1,6);
 
     const layout: OrderLayout = await this.getOrderLayout(layoutId);
 
@@ -100,15 +102,10 @@ export class MaintenanceOrder extends Seed {
     order.priority = priority;
     order.description = description;
 
-    const defectSymptomId: number = this.getRandomNumber(1,3);
-    const defectOriginId: number = this.getRandomNumber(1,3);
-
-    const defectOrigin: DefectOrigin = await this.getDefectOrigin(defectOriginId);
-    const defectSymptom: DefectSymptom = await this.getDefectSymptom(defectSymptomId);
     const solicitationUser: User = await this.getUser(solicitationUserId);
-
-    order.defectOrigin=defectOrigin;
-    order.defectSymptom=defectSymptom;
+    const workCenter: WorkCenter = await this.getWorkCenter(workCenterId);
+    
+    order.workCenter = workCenter
     order.solicitationUser = solicitationUser;
     
     order.maintenanceWorker = await MaintenanceOrder.GenerateWorkers();
@@ -191,12 +188,22 @@ export class MaintenanceOrder extends Seed {
     const installationArea = await this.getInstallationArea(installationAreaId)
 
 
+    const defectSymptomId: number = this.getRandomNumber(1,3);
+    const defectOriginId: number = this.getRandomNumber(1,3);
+
+    const defectOrigin: DefectOrigin = await this.getDefectOrigin(defectOriginId);
+    const defectSymptom: DefectSymptom = await this.getDefectSymptom(defectSymptomId);
+    
+    
     const orderEquipment = new OrderEquipment();
 
     orderEquipment.equipment = equipment;
     orderEquipment.installationArea = installationArea;
     orderEquipment.superiorEquipment = superiorEquipment;
-    
+
+    orderEquipment.defectOrigin=defectOrigin;
+    orderEquipment.defectSymptom=defectSymptom;
+
     orderEquipment.orderOperation = await this.loadOrderOperations();
 
     return orderEquipment;
@@ -316,6 +323,11 @@ export class MaintenanceOrder extends Seed {
   public static async getUser(userId: number): Promise<any> {
     const controller = new UserController();
     return await controller.getRepositoryEntity().findOne(userId);
+  }
+  
+  public static async getWorkCenter(workCenterId: number): Promise<any> {
+    const controller = new WorkCenterController();
+    return await controller.getRepositoryEntity().findOne(workCenterId);
   }
 
   public static async getDefectOrigin(defectOriginId): Promise<any> {
