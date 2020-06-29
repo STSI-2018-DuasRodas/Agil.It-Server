@@ -66,8 +66,6 @@ export class MaintenanceOrder extends Seed {
     const layoutId: number = this.getRandomNumber(1,4);
     const priority: OrderPriority = this.getRandomOrderPriority();
     const status: OrderStatus = this.getRandomOrderStatus();
-    const needStopping: boolean = this.getRandomBoolean();
-    const isStopped: boolean = this.getRandomBoolean();
     const exported: boolean = false;
     const openedDate: Date = this.getRandomDate(2020);
     const description: string = this.getRandomDescription()
@@ -95,8 +93,6 @@ export class MaintenanceOrder extends Seed {
     order.createdBy = createdBy;
     order.updatedBy = updatedBy;
     order.exported = exported;
-    order.isStopped = isStopped;
-    order.needStopping = needStopping;
     order.openedDate = openedDate;
     order.orderStatus = status;
     order.priority = priority;
@@ -182,6 +178,8 @@ export class MaintenanceOrder extends Seed {
     const equipmentId: number = this.getRandomNumber(1,3);
     const superiorEquipmentId: number = this.getRandomNumber(1,3);
     const installationAreaId: number = this.getRandomNumber(1,3);
+    const needStopping: boolean = this.getRandomBoolean();
+    const isStopped: boolean = this.getRandomBoolean();
 
     const equipment = await this.getEquipment(equipmentId)
     const superiorEquipment = await this.getSuperiorEquipment(superiorEquipmentId)
@@ -200,6 +198,8 @@ export class MaintenanceOrder extends Seed {
     orderEquipment.equipment = equipment;
     orderEquipment.installationArea = installationArea;
     orderEquipment.superiorEquipment = superiorEquipment;
+    orderEquipment.isStopped = isStopped;
+    orderEquipment.needStopping = needStopping;
 
     orderEquipment.defectOrigin=defectOrigin;
     orderEquipment.defectSymptom=defectSymptom;

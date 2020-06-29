@@ -98,20 +98,22 @@ export class CrudController<Entity> {
       throw error
     }
 
-    const inserted: boolean = (typeof entity["id"] === 'number' || (typeof entity["id"] === 'string' && entity["id"].length > 0))
+    const inserted: boolean = (typeof entity['id'] === 'number' || (typeof entity['id'] === 'string' && entity['id'].length > 0))
     const isInserting: boolean = !inserted
 
-    if (entity['integrationID'] && entity['integrationID'] != '' && isInserting) {
+    if (entity['integrationID'] && entity['integrationID'] != '') {
       try {
         const integrationId = entity['integrationID'];
-        await this.getRepositoryEntity().findOneOrFail({
+        const duplicated = await this.getRepositoryEntity().findOneOrFail({
           where: {
             integrationID: integrationId,
             deleted: false,
           }
         });
 
-        throw `Registro com o integrationID ${integrationId} já existe.`;
+        if (isInserting || (inserted && duplicated['id'] != entity['id'])) {
+          throw `Registro com o integrationID ${integrationId} já existe.`;
+        }
       } catch (error) {
         if (typeof error === "string" && error.substr(0,28) === "Registro com o integrationID") {
           throw error;

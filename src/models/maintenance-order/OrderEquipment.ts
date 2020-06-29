@@ -73,6 +73,12 @@ export class OrderEquipment extends BaseClass {
   })
   public defectSymptomNote: string = '';
 
+  @Column()
+  public needStopping: boolean = false;
+
+  @Column()
+  public isStopped: boolean = false;
+
   @OneToMany(type => OrderOperation, orderOperation => orderOperation.orderEquipment, {cascade: false, nullable: true})
   public orderOperation: Array<OrderOperation>;
 

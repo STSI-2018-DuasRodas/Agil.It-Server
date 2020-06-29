@@ -49,12 +49,6 @@ export abstract class MaintenanceOrder extends BaseClass {
   })
   public orderStatus: OrderStatus = OrderStatus.CREATED
 
-  @Column()
-  public needStopping: boolean = false;
-
-  @Column()
-  public isStopped: boolean = false;
-
   @OneToMany(type => MaintenanceWorker, maintenanceWorker => maintenanceWorker.maintenanceOrder, { cascade: false, nullable: true })
   public maintenanceWorker: Array<MaintenanceWorker>;
   

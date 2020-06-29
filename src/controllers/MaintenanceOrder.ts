@@ -93,12 +93,16 @@ export class MaintenanceOrderController {
 
       try {
         const integrationId = order["integrationID"];
-        await this.getRepositoryEntity().findOneOrFail({
+        const duplicated = await this.getRepositoryEntity().findOneOrFail({
           where: {
             integrationID: integrationId,
             deleted: false,
           }
         });
+
+        if (isInserting || (!isInserting && duplicated['id'] != order['id'])) {
+          throw `Registro com o integrationID ${integrationId} já existe.`;
+        }
 
         throw `Registro com o integrationID ${integrationId} já existe.`;
       } catch (error) {
@@ -292,8 +296,6 @@ export class MaintenanceOrderController {
     return [
       'integrationID',
       'deleted',
-      'needStopping',
-      'isStopped',
       'exported',
     ];
   }
