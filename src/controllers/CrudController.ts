@@ -1,5 +1,5 @@
 import { UserRole } from './../models/enum/UserRole';
-import {Repository, Not} from 'typeorm';
+import {Repository, Not, Between } from 'typeorm';
 import {NextFunction, Request, Response} from "express";
 import { validate } from "class-validator";
 import * as jwt from "jsonwebtoken";
@@ -247,7 +247,14 @@ export class CrudController<Entity> {
       }
 
       if (entity.hasOwnProperty(keyProperty)) {
-        filterObject[keyProperty]=entries[key];
+        const value = entries[key];
+
+        if (value.substring(0,7).toLowerCase() === 'between') {
+          const values = value.replace(/\(\)/g).split(',')
+          filterObject[keyProperty] = Between(values[0], values[1]);
+        } else {
+          filterObject[keyProperty] = value;
+        }
       }
     });
 

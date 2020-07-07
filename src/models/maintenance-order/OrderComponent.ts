@@ -14,7 +14,7 @@ export class OrderComponent extends BaseClass {
   @JoinColumn()
   public item : Item = undefined;
 
-  @Column({type: "int"})
+  @Column({type: "float"})
   public quantity: number = 0;
 
   @Column()
