@@ -348,6 +348,7 @@ export class MaintenanceOrderController {
       'orderEquipment.equipment.machineType',
       'orderEquipment.superiorEquipment',
       'orderEquipment.installationArea',
+      'orderEquipment.installationArea.sector',
       ...this.getOrderOperationsRelations(),
     ];
   }
