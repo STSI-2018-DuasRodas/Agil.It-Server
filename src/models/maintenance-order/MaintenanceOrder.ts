@@ -90,4 +90,7 @@ export abstract class MaintenanceOrder extends BaseClass {
     super();
   }
 
+  public getMainWorker(): MaintenanceWorker {
+    return (this.maintenanceWorker || []).find(maintenanceWorker => maintenanceWorker.isMain);
+  }
 }

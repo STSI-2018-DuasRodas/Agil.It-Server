@@ -1,7 +1,7 @@
 import { OrderEquipmentController } from './OrderEquipment';
 import { OrderSignatureController } from './OrderSignature';
 import { MaintenanceWorkerController } from './MaintenanceWorker';
-import { getRepository, Repository, SelectQueryBuilder, Between } from "typeorm";
+import { getRepository, Repository, SelectQueryBuilder, Between, In } from "typeorm";
 import { validate } from "class-validator";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import { NextFunction, Request, Response } from "express";
@@ -11,6 +11,11 @@ import { MaintenanceWorker } from "../models/maintenance-order/MaintenanceWorker
 import { getIntegrionUser } from '../middlewares/checkJwt';
 import { User } from "../models/User";
 import { v4 as uuid } from 'uuid';
+import { UserController } from './User';
+import { SignatureStatus } from '../models/enum/SignatureStatus';
+import { OrderStatus } from '../models/enum/OrderStatus';
+import { SignatureRole } from '../models/enum/SignatureRole';
+
 export class MaintenanceOrderController {
 
   private repositoryEntity : Repository<MaintenanceOrder>;
@@ -40,8 +45,29 @@ export class MaintenanceOrderController {
   }
 
   public async getOrder(request: Request, response: Response, next: NextFunction) {
-    let orderId = request.params.id;
+    const orderId = request.params.id;
+    const showDeleteds = request.query.showDeleteds;
 
+    const order: MaintenanceOrder = await this.getOrderById(orderId);
+
+    if (showDeleteds) return order;
+
+    order.maintenanceWorker = order.maintenanceWorker.filter(m => !m.deleted)
+    order.orderSignature = order.orderSignature.filter(o => !o.deleted);
+    order.orderEquipment = order.orderEquipment.filter(o => !o.deleted);
+
+    order.orderEquipment.forEach(orderEquipment => {
+      orderEquipment.orderOperation = orderEquipment.orderOperation.filter(operation => !operation.deleted);
+
+      orderEquipment.orderOperation.forEach(orderOperation => {
+        orderOperation.orderComponent.filter(orderComponent => !orderComponent.deleted)
+      });
+    });
+
+    return order;
+  }
+  
+  public async getOrderById(orderId) {
     return this.getRepositoryEntity().findOne({
       relations: this.getAllRelations(),
       where: { id: orderId }
@@ -186,9 +212,9 @@ export class MaintenanceOrderController {
         }
       },
       where: (qb: SelectQueryBuilder<MaintenanceOrder>) => {
-        qb.where({
-          where,
-        }).andWhere('maintenanceWorker.userId = :id', {id: maintenerId});
+        qb.where(
+          where
+        ).andWhere('maintenanceWorker.userId = :id', {id: maintenerId});
       }
     });
 
@@ -209,6 +235,67 @@ export class MaintenanceOrderController {
   public async getOrderSignatures(request: Request, response: Response, next: NextFunction) {
     // route: maintenance-orders/:id/signatures
     const orderId = request.params.id;
+  }
+
+  public async updateStatus(request: Request, response: Response, next: NextFunction) {
+    // route: [PUT] maintenance-orders/:id/status
+    const orderId = request.params.id;
+
+    const { userId, orderStatus: newStatus } = request.body;
+
+    if (!this.validateStatus(newStatus)) {
+      throw `Status informado não é válido. deveria ser um dos seguintes: ${Object.keys(OrderStatus).join(', ')}`
+    }
+
+    const maintenanceOrder = await this.getOrderById(orderId);
+    if (!maintenanceOrder) {
+      throw `Ordem ${orderId} não cadastrada`;
+    }
+
+    const currentStatus = maintenanceOrder.orderStatus;
+    const maintenanceWorker: MaintenanceWorker = maintenanceOrder.getMainWorker();
+
+    if (currentStatus === newStatus) {
+      return { status: newStatus };
+    }
+
+    if (currentStatus === 'created' && newStatus !== 'assumed') {
+      throw 'Ordem deveria ser assumida primeiro';
+    }
+
+    if (newStatus === 'assumed' && maintenanceWorker && maintenanceWorker.user.id !== userId) {
+      throw 'Ordem já está assumida por outro manutentor';
+    } else if (newStatus === 'assumed' && !maintenanceWorker) {
+      const newMaintener = new MaintenanceWorker();
+      newMaintener.isActive = true;
+      newMaintener.isMain = true;
+      newMaintener.user = await new UserController().get(userId);
+
+      if (!Array.isArray(maintenanceOrder.maintenanceWorker)) maintenanceOrder.maintenanceWorker = [];
+      maintenanceOrder.maintenanceWorker.push(newMaintener);
+    } else if (['signed', 'finished'].includes(newStatus)) {
+      const currentSignatures = (maintenanceOrder.orderSignature || []).filter(signature => {
+        if (signature.deleted === true) return false;
+        if (signature.signatureStatus !== SignatureStatus.SIGNED) return false;
+
+        return true;
+      })
+      
+      if (currentSignatures.length < 3) throw `Ordem ainda possui pendências de assinatura`
+
+      const pendingRoleSignatures = { ...SignatureRole };
+      currentSignatures.forEach(signature => {
+        delete pendingRoleSignatures[signature.signatureRole];
+      });
+
+      if (Object.keys(pendingRoleSignatures).length > 0) {
+        throw `Ordem com pendência de assinatura: ${Object.keys(pendingRoleSignatures).join(', ')}`
+      }
+    }
+
+    await this.saveOrder(maintenanceOrder);
+
+    return { status: newStatus };
   }
 
   public getWhereConditions(params: any = {}, query: any = {}, entity: any) {
@@ -243,6 +330,9 @@ export class MaintenanceOrderController {
           } else {
             filterObject[keyProperty] = Between(values[0], values[1]);
           }
+        } else if(value.substring(0,3).toLowerCase() === 'in(') {
+          const values = value.substring(3).replace(')', '').split(',')
+          filterObject[keyProperty] = In(values);
         } else {
           filterObject[keyProperty] = value;
         }
@@ -489,5 +579,9 @@ export class MaintenanceOrderController {
         'data': orderEquipment,
       },
     ];
+  }
+  
+  public validateStatus(status) {
+    return Object.values(OrderStatus).includes(status);
   }
 }

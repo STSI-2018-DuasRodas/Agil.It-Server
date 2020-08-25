@@ -78,31 +78,29 @@ export class Route {
                 console.log(ResponseAPI.getResponseObject(true, result))
               }
             } else {
-              res.status(200).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
+              res.status(400).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
               if (logResponses) {
                 console.log(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
               }
             }
           })
           .catch(err => {
-            if (err !== null && err !== undefined) {
-              res.status(400).json(ResponseAPI.getResponseObject(false, err))
-              if (logResponses) {
-                console.log("error => ", err)
-                console.log(ResponseAPI.getResponseObject(false, err))
-              }
-            } else {
-              res.status(400).json(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
-              if (logResponses) {
-                console.log("error => ", err)
-                console.log(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
-              }
+            res.status(400).json(ResponseAPI.getResponseObject(false, err || this.getErrorMessage()))
+            if (logResponses) {
+              console.log("error => ", err)
+              console.log(ResponseAPI.getResponseObject(false, err))
             }
           })
         } else if (result !== null && result !== undefined) {
-          res.json(result);
+          if (logResponses) {
+            console.log(ResponseAPI.getResponseObject(true, result))
+          }
+          res.status(200).json(result);
         } else {
-          res.json({
+          if (logResponses) {
+            console.log(ResponseAPI.getResponseObject(false, this.getErrorMessage()))
+          }
+          res.status(500).json({
             success: false,
             error: 'Erro inesperado'
           });

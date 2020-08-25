@@ -52,8 +52,12 @@ export class CrudController<Entity> {
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.getRepositoryEntity().findOne(request.params.id, {
-      relations: this.includes(),
+    return this.get(request.params.id);
+  }
+
+  async get(id, relations = this.includes()) {
+    return this.getRepositoryEntity().findOne(id, {
+      relations,
     });
   }
 
