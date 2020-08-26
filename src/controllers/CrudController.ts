@@ -1,5 +1,5 @@
 import { UserRole } from './../models/enum/UserRole';
-import {Repository, Not, Between } from 'typeorm';
+import {Repository, Not, Between, In, Like } from 'typeorm';
 import {NextFunction, Request, Response} from "express";
 import { validate } from "class-validator";
 import * as jwt from "jsonwebtoken";
@@ -98,7 +98,7 @@ export class CrudController<Entity> {
 
     //Validade if the parameters are ok
     const error = await this.validate(entity)
-    if (error !== undefined) {
+    if (error !== undefined) {      
       throw error
     }
 
@@ -256,6 +256,12 @@ export class CrudController<Entity> {
         if (value.substring(0,7).toLowerCase() === 'between') {
           const values = value.replace(/\(\)/g).split(',')
           filterObject[keyProperty] = Between(values[0], values[1]);
+        } else if(value.substring(0,3).toLowerCase() === 'in(') {
+          const values = value.substring(3).replace(')', '').split(',')
+          filterObject[keyProperty] = In(values);
+        } else if (value.substring(0,5).toLowerCase() === 'like(') {
+          const values = value.substring(5).replace(')', '')
+          filterObject[keyProperty] = Like(`%${values}%`);
         } else {
           filterObject[keyProperty] = value;
         }
@@ -292,7 +298,7 @@ export class CrudController<Entity> {
     let entity: Entity
 
     if (!this.validateGetbyDescription()) {
-      return this.getRepositoryEntity().create(<Entity>body)
+      return this.getRepositoryEntity().create(<Entity>body)      
     }
 
     try {
