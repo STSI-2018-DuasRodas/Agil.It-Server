@@ -1,5 +1,6 @@
 import { UserRole } from './../models/enum/UserRole';
-import {Repository, Not, Between, In, Like } from 'typeorm';
+import {Repository, Not } from 'typeorm';
+import { getValueWhereConditions } from './Utils';
 import {NextFunction, Request, Response} from "express";
 import { validate } from "class-validator";
 import * as jwt from "jsonwebtoken";
@@ -253,18 +254,7 @@ export class CrudController<Entity> {
       if (entity.hasOwnProperty(keyProperty)) {
         const value = entries[key];
 
-        if (value.substring(0,7).toLowerCase() === 'between') {
-          const values = value.replace(/\(\)/g).split(',')
-          filterObject[keyProperty] = Between(values[0], values[1]);
-        } else if(value.substring(0,3).toLowerCase() === 'in(') {
-          const values = value.substring(3).replace(')', '').split(',')
-          filterObject[keyProperty] = In(values);
-        } else if (value.substring(0,5).toLowerCase() === 'like(') {
-          const values = value.substring(5).replace(')', '')
-          filterObject[keyProperty] = Like(`%${values}%`);
-        } else {
-          filterObject[keyProperty] = value;
-        }
+        filterObject[keyProperty] = getValueWhereConditions(value);
       }
     });
 

@@ -1,7 +1,8 @@
 import { OrderEquipmentController } from './OrderEquipment';
 import { OrderSignatureController } from './OrderSignature';
 import { MaintenanceWorkerController } from './MaintenanceWorker';
-import { getRepository, Repository, SelectQueryBuilder, Between, In } from "typeorm";
+import { getRepository, Repository, SelectQueryBuilder } from "typeorm";
+import { getValueWhereConditions } from './Utils';
 import { validate } from "class-validator";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import { NextFunction, Request, Response } from "express";
@@ -322,20 +323,7 @@ export class MaintenanceOrderController {
       if (entity.hasOwnProperty(keyProperty)) {
         const value = entries[key];
 
-        if (value.substring(0,7).toLowerCase() === 'between') {
-          const values = value.substring(7).replace(/[\(\)]/g, '').split(',')
-
-          if (values[0] == values[1]) {
-            filterObject[keyProperty] = values[0];
-          } else {
-            filterObject[keyProperty] = Between(values[0], values[1]);
-          }
-        } else if(value.substring(0,3).toLowerCase() === 'in(') {
-          const values = value.substring(3).replace(')', '').split(',')
-          filterObject[keyProperty] = In(values);
-        } else {
-          filterObject[keyProperty] = value;
-        }
+        filterObject[keyProperty] = getValueWhereConditions(value);
       }
     });
 
