@@ -50,6 +50,7 @@ export class MaintenanceOrderController {
     const showDeleteds = request.query.showDeleteds;
 
     const order: MaintenanceOrder = await this.getOrderById(orderId);
+    if (!order) throw `Ordem ${orderId} não cadastrada`
 
     if (showDeleteds) return order;
 

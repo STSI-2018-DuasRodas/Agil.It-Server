@@ -21,3 +21,7 @@ export function getValueWhereConditions(arg: string = '') {
     return arg;
   }
 }
+
+export function flat(array: Array<any>) {
+  return array.reduce((acc, val) => acc.concat(val), []);
+}

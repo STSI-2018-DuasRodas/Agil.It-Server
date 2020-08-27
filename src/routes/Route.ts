@@ -85,10 +85,9 @@ export class Route {
             }
           })
           .catch(err => {
-            res.status(400).json(ResponseAPI.getResponseObject(false, err || this.getErrorMessage()))
+            res.status(400).json({ success: false, error: err})
             if (logResponses) {
-              console.log("error => ", err)
-              console.log(ResponseAPI.getResponseObject(false, err))
+              console.log("error => ", { success: false, error: err})
             }
           })
         } else if (result !== null && result !== undefined) {
