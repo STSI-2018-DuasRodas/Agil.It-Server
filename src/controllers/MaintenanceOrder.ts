@@ -31,7 +31,7 @@ export class MaintenanceOrderController {
 
   public async all(request: Request, response: Response, next: NextFunction) {
 
-    const filterByEquipment:any = request.query.orderEquipment;
+    const filterByEquipment:any = request.query.equipment;
 
     const where = {
       deleted: false,
@@ -45,11 +45,11 @@ export class MaintenanceOrderController {
         ? (qb: SelectQueryBuilder<MaintenanceOrder>) => {
           qb.where(
             where
-          ).andWhere('orderEquipment.equipment.id = :id', { id: filterByEquipment })
+          ).andWhere('MaintenanceOrder__orderEquipment__equipment.id = :id', { id: filterByEquipment })
         }
         : where,
     });
-
+    
     return arrayOfOrders.map((order) => this.removeProperties(order, this.fieldsToIgnoreResume()));
   }
 
