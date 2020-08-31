@@ -26,10 +26,11 @@ export class OrderSafetyParamsController {
 
     const params = {
       ...{ equipmentClass: 'equipment', equipmentValues: flat(maintenanceOrder.orderEquipment?.map(e => e.id)) },
+      ...{ sectorClass: 'sector', sectorValues: flat(maintenanceOrder.orderEquipment?.map(e => e.installationArea?.sector?.id)) },
       ...{ instalationAreaClass: 'instalation-area', instalationAreaValues: flat(maintenanceOrder.orderEquipment?.map(e => e.installationArea?.id)) },
       ...{ machineTypeClass: 'machine-type', machineTypeValues: flat(maintenanceOrder.orderEquipment?.map(e => e.equipment?.machineType?.id)) },
       ...{ superiorEquipmentClass: 'superior-equipment', superiorEquipmentValues: flat(maintenanceOrder.orderEquipment?.map(e => e.superiorEquipment?.id)) },
-      ...{ workCenterClass: 'work-center', workCenterValues: maintenanceOrder.workCenter?.id }
+      ...{ workCenterClass: 'work-center', workCenterValue: maintenanceOrder.workCenter?.id }
     }
 
     const query = `
@@ -39,10 +40,11 @@ export class OrderSafetyParamsController {
         useAlways = 1
         OR (
           entityClass = '${params.equipmentClass}' AND entityId in (${params.equipmentValues})
+          OR (entityClass = '${params.sectorClass}' AND entityId in (${params.sectorValues}))
           OR (entityClass = '${params.instalationAreaClass}' AND entityId in (${params.instalationAreaValues}))
           OR (entityClass = '${params.machineTypeClass}' AND entityId in (${params.machineTypeValues}))
           OR (entityClass = '${params.superiorEquipmentClass}' AND entityId in (${params.superiorEquipmentValues}))
-          OR (entityClass = '${params.workCenterClass}' AND entityId = ${params.workCenterValues})
+          OR (entityClass = '${params.workCenterClass}' AND entityId = ${params.workCenterValue})
         )
       )
     `
