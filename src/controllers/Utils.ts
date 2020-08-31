@@ -22,6 +22,15 @@ export function getValueWhereConditions(arg: string = '') {
   }
 }
 
+export function normalizeOrmKeyValue(obj, base) {
+  return Object.keys(obj)
+    .reduce((clone, key) => {
+      key.split('.').reduce((innerObj, innerKey, i, arr) => 
+        innerObj[innerKey] = (i+1 === arr.length) ? obj[key] : innerObj[innerKey] || {}, clone)
+      return clone;
+  }, Object.assign({}, base));
+}
+
 export function flat(array: Array<any>) {
   return array.reduce((acc, val) => acc.concat(val), []);
 }

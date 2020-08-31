@@ -2,7 +2,7 @@ import { OrderEquipmentController } from './OrderEquipment';
 import { OrderSignatureController } from './OrderSignature';
 import { MaintenanceWorkerController } from './MaintenanceWorker';
 import { getRepository, Repository, SelectQueryBuilder } from "typeorm";
-import { getValueWhereConditions } from './Utils';
+import { getValueWhereConditions, normalizeOrmKeyValue } from './Utils';
 import { validate } from "class-validator";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import { NextFunction, Request, Response } from "express";
@@ -31,6 +31,8 @@ export class MaintenanceOrderController {
 
   public async all(request: Request, response: Response, next: NextFunction) {
 
+    const filterByEquipment:any = request.query.orderEquipment;
+
     const where = {
       deleted: false,
       ...this.getWhereConditions(request.params, request.query, this.getRepositoryEntity().create()),
@@ -39,7 +41,13 @@ export class MaintenanceOrderController {
     const arrayOfOrders = await this.getRepositoryEntity().find({
       select: <any>this.fieldsResume(),
       relations: ['orderLayout', 'orderEquipment', 'orderEquipment.equipment', 'maintenanceWorker', 'maintenanceWorker.user'],
-      where,
+      where: filterByEquipment
+        ? (qb: SelectQueryBuilder<MaintenanceOrder>) => {
+          qb.where(
+            where
+          ).andWhere('orderEquipment.equipment.id = :id', { id: filterByEquipment })
+        }
+        : where,
     });
 
     return arrayOfOrders.map((order) => this.removeProperties(order, this.fieldsToIgnoreResume()));
@@ -321,10 +329,12 @@ export class MaintenanceOrderController {
         keyProperty=key
       }
 
-      if (entity.hasOwnProperty(keyProperty)) {
-        const value = entries[key];
+      const value = entries[key];
 
+      if (entity.hasOwnProperty(keyProperty)) {
         filterObject[keyProperty] = getValueWhereConditions(value);
+      } else if(keyProperty.includes('.')) {
+        filterObject = normalizeOrmKeyValue({[keyProperty]: getValueWhereConditions(value)}, filterObject);
       }
     });
 
