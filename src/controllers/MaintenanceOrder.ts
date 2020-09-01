@@ -33,21 +33,26 @@ export class MaintenanceOrderController {
 
     const filterByEquipment:any = request.query.equipment;
 
+    const { skip, take } = request.headers;
+
     const where = {
       deleted: false,
       ...this.getWhereConditions(request.params, request.query, this.getRepositoryEntity().create()),
+      ...(filterByEquipment ? { 'orderEquipment.equipment.id': filterByEquipment } : ''),
     };
 
-    const arrayOfOrders = await this.getRepositoryEntity().find({
+    const arrayOfOrders = await this.getRepositoryEntity().find(<any>{
       select: <any>this.fieldsResume(),
       relations: ['orderLayout', 'orderEquipment', 'orderEquipment.equipment', 'maintenanceWorker', 'maintenanceWorker.user'],
-      where: filterByEquipment
+      where: false
         ? (qb: SelectQueryBuilder<MaintenanceOrder>) => {
           qb.where(
             where
           ).andWhere('MaintenanceOrder__orderEquipment__equipment.id = :id', { id: filterByEquipment })
         }
         : where,
+        skip,
+        take,
     });
     
     return arrayOfOrders.map((order) => this.removeProperties(order, this.fieldsToIgnoreResume()));
@@ -62,9 +67,14 @@ export class MaintenanceOrderController {
 
     if (showDeleteds) return order;
 
-    order.maintenanceWorker = order.maintenanceWorker.filter(m => !m.deleted)
     order.orderSignature = order.orderSignature.filter(o => !o.deleted);
     order.orderEquipment = order.orderEquipment.filter(o => !o.deleted);
+    
+    order.maintenanceWorker = order.maintenanceWorker.filter(m => !m.deleted);
+
+    order.maintenanceWorker.forEach(maintenanceWorker => {
+      maintenanceWorker.workedTime = maintenanceWorker.workedTime.filter(m => !m.deleted);
+    })
 
     order.orderEquipment.forEach(orderEquipment => {
       orderEquipment.orderOperation = orderEquipment.orderOperation.filter(operation => !operation.deleted);
