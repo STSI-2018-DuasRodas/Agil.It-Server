@@ -2,7 +2,7 @@ import { OrderEquipmentController } from './OrderEquipment';
 import { OrderSignatureController } from './OrderSignature';
 import { MaintenanceWorkerController } from './MaintenanceWorker';
 import { getRepository, Repository, SelectQueryBuilder } from "typeorm";
-import { getValueWhereConditions, normalizeOrmKeyValue } from './Utils';
+import { getValueWhereConditions, normalizeOrmKeyValue, mountExtraConditions } from './Utils';
 import { validate } from "class-validator";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import { NextFunction, Request, Response } from "express";
@@ -31,41 +31,52 @@ export class MaintenanceOrderController {
 
   public async all(request: Request, response: Response, next: NextFunction) {
 
-    const filterByEquipment:any = request.query.equipment;
-
+    const { equipment, installationArea } = request.query;
     const { skip, take } = request.headers;
 
     const where = {
       deleted: false,
       ...this.getWhereConditions(request.params, request.query, this.getRepositoryEntity().create()),
-      ...(filterByEquipment ? { 'orderEquipment.equipment.id': filterByEquipment } : ''),
     };
 
-    const arrayOfOrders = await this.getRepositoryEntity().find(<any>{
-      select: <any>this.fieldsResume(),
-      relations: ['orderLayout', 'orderEquipment', 'orderEquipment.equipment', 'maintenanceWorker', 'maintenanceWorker.user'],
-      where: false
-        ? (qb: SelectQueryBuilder<MaintenanceOrder>) => {
-          qb.where(
-            where
-          ).andWhere('MaintenanceOrder__orderEquipment__equipment.id = :id', { id: filterByEquipment })
-        }
-        : where,
-        skip,
-        take,
+    // ? Connection is required to translate to correct sql syntax
+    const connection = this.getRepositoryEntity().manager.connection;
+
+    const extraConditions = [
+      ...(equipment ? [mountExtraConditions(connection ,'equipment.id', equipment)] : []),
+      ...(installationArea ? [mountExtraConditions(connection ,'installationArea.id', installationArea)] : []),
+    ];
+
+    const queryBuilder = this.getRepositoryEntity()
+      .createQueryBuilder('maintenanceOrder')
+      .leftJoinAndSelect('maintenanceOrder.orderLayout', 'orderLayout')
+      .leftJoinAndSelect('maintenanceOrder.orderEquipment', 'orderEquipment')
+      .leftJoinAndSelect('orderEquipment.equipment', 'equipment')
+      .leftJoinAndSelect('orderEquipment.installationArea', 'installationArea')
+      .where(where);
+    
+    extraConditions.forEach(condition => {
+      if (typeof condition === 'string')
+        queryBuilder.andWhere(condition);
+      else
+        queryBuilder.andWhere(condition.key, condition.value);
     });
+
+    const arrayOfOrders = await queryBuilder.skip(<any>skip)
+      .take(<any>take)
+      .getMany();
     
     return arrayOfOrders.map((order) => this.removeProperties(order, this.fieldsToIgnoreResume()));
   }
 
   public async getOrder(request: Request, response: Response, next: NextFunction) {
     const orderId = request.params.id;
-    const showDeleteds = request.query.showDeleteds;
+    const showDeletedFields = request.query.showDeletedFields;
 
     const order: MaintenanceOrder = await this.getOrderById(orderId);
     if (!order) throw `Ordem ${orderId} não cadastrada`
 
-    if (showDeleteds) return order;
+    if (showDeletedFields) return order;
 
     order.orderSignature = order.orderSignature.filter(o => !o.deleted);
     order.orderEquipment = order.orderEquipment.filter(o => !o.deleted);

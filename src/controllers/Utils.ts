@@ -1,4 +1,4 @@
-import { Between, In, Like } from "typeorm";
+import { Between, In, Like, FindOperator, Connection } from "typeorm";
 
 export function getValueWhereConditions(arg: string = '') {
   if (arg.substring(0,7).toLowerCase() === 'between') {
@@ -33,4 +33,34 @@ export function normalizeOrmKeyValue(obj, base) {
 
 export function flat(array: Array<any>) {
   return array.reduce((acc, val) => acc.concat(val), []);
+}
+
+export function mountExtraConditions(connection: Connection, prop: any, value: any) {
+  const strValue = String(value);
+  const whereCondition = getValueWhereConditions(strValue);
+
+  if (whereCondition instanceof FindOperator)
+    return whereCondition.toSql(connection, prop, treatFindOperatorValue(whereCondition));
+  
+  const propVarName = dotStructureToCamelCase(String(prop));
+  return { key: `${prop} = :${propVarName}`, value: { [propVarName]: value } };
+}
+
+function dotStructureToCamelCase(str: string) {
+  return str.replace(/\.([a-zA-Z])/g, (g) => g[1].toUpperCase());
+}
+
+function treatFindOperatorValue(FindOperator: FindOperator<any>): Array<any> {
+  const value = FindOperator.value;
+
+  if (Array.isArray(value)) {
+    return value.map(val => safeString(val));
+  }
+
+  return [safeString(value)];
+}
+
+function safeString(str: any) {
+  if (typeof str === 'string') return `'${str}'`;
+  return str;
 }
