@@ -256,16 +256,24 @@ export class MaintenanceOrderController {
     // route: maintenance-orders/:id/mainteners
     const orderId = request.params.id;
 
-    return this.getRepositoryEntity().findOne({
-      select: ['maintenanceWorker'],
-      relations: this.getMaintenanceWorkerRelations(),
-      where: { id: orderId }
-    });
+    return await new MaintenanceWorkerController().getRepositoryEntity()
+      .createQueryBuilder('maintenanceWorker')
+      .leftJoin('maintenanceWorker.maintenanceOrder', 'maintenanceOrder')
+      .where('maintenanceWorker.deleted = :deleted', { deleted: false })
+      .andWhere('maintenanceOrder.id = :maintenanceOrderId', { maintenanceOrderId: orderId })
+      .getMany();
   }
   
   public async getOrderSignatures(request: Request, response: Response, next: NextFunction) {
     // route: maintenance-orders/:id/signatures
     const orderId = request.params.id;
+
+    return await new OrderSignatureController().getRepositoryEntity()
+      .createQueryBuilder('signatureOrder')
+      .leftJoin('signatureOrder.maintenanceOrder', 'maintenanceOrder')
+      .where('signatureOrder.deleted = :deleted', { deleted: false })
+      .andWhere('maintenanceOrder.id = :maintenanceOrderId', { maintenanceOrderId: orderId })
+      .getMany();
   }
 
   public async updateStatus(request: Request, response: Response, next: NextFunction) {
