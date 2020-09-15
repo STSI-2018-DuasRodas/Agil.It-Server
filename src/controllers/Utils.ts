@@ -65,37 +65,59 @@ function safeString(str: any) {
   return str;
 }
 
-export function filterDeleteds(arrayData) {
-  if (!Array.isArray(arrayData)) return arrayData;
+export function filterDeleteds(data) {
+  if (Array.isArray(data)) return filterDeletedsArray(data);
+  return filterDeletedsObject(data);
+}
 
+function filterDeletedsArray(arrayData) {
   return arrayData.reduce((currentValue, data) => {
-    if (Array.isArray(data)) {
-      currentValue.push(filterDeleteds(data));
+
+    if (!arrayOrObject(data)) return currentValue;
+
+    const value = filterDeleteds(data);
+
+    if (!arrayOrObject(value) || (isObject(value) && Object.keys(value).length === 0)) {
       return currentValue;
     }
 
-    if (data === null || typeof data !== 'object') return currentValue;
-    
-    if (data['deleted']) return currentValue;
+    currentValue.push(value);
+    return currentValue;
+  }, []);
+}
 
-    const entries = Object.entries(data);
+function filterDeletedsObject(objectData) {
+  if (!isObject(objectData) || objectData['deleted']) return undefined;
 
-    for (const [key, value] of entries) {
-      if (!Array.isArray(value)) continue
-      
+  const entries = Object.entries(objectData);
+
+  const data = {};
+
+  for (const [key, value] of entries) {
+    if (!arrayOrObject(value)) {
+      data[key] = value;
+    } else {
       data[key] = filterDeleteds(value);
     }
+  }
 
-    currentValue.push(data);
-  }, [])
+  return data;
 }
 
 export function changeValuePerKey(object: object) {
   const newObj = {};
 
   for (const [key, value] of Object.entries(object)) {
-    newObj[value]=key;
+    newObj[value] = key;
   }
 
   return newObj;
+}
+
+export function arrayOrObject(value) {
+  return Array.isArray(value) || isObject(value);
+}
+
+export function isObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Date)
 }
