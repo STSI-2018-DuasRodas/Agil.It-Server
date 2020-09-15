@@ -41,10 +41,17 @@ export class MaintenanceOrderCollection extends Collection {
     ))
     
     this.addRoute(new Route(
+      Method.POST,
+      `${this.getRouteWithId()}/signatures`,
+      this.getController(),
+      'asignOrderRequst'
+    ))
+    
+    this.addRoute(new Route(
       Method.PUT,
       `${this.getRouteWithId()}/status`,
       this.getController(),
-      'updateStatus'
+      'updateStatusRequest'
     ))
 
     this.addRoute(new Route(

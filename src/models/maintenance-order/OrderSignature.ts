@@ -1,3 +1,4 @@
+import { UserRole } from './../enum/UserRole';
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn, UpdateDateColumn, JoinColumn } from "typeorm";
 import { MaintenanceOrder } from "./MaintenanceOrder";
 import { SignatureRole } from "../enum/SignatureRole";
@@ -55,4 +56,18 @@ export class OrderSignature {
   })
   public deleted: boolean = false;
  
+  /**
+   * getUserRole
+   */
+  public getUserRole(role: UserRole): SignatureRole {
+    if (role === UserRole.MAINTAINER) {
+      return SignatureRole.MAINTAINER
+    }
+
+    if (role === UserRole.ADMINISTRATOR) {
+      return SignatureRole.ADMINISTRATOR
+    }
+
+    return SignatureRole.LEADER;
+  }
 }

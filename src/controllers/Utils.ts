@@ -64,3 +64,38 @@ function safeString(str: any) {
   if (typeof str === 'string') return `'${str}'`;
   return str;
 }
+
+export function filterDeleteds(arrayData) {
+  if (!Array.isArray(arrayData)) return arrayData;
+
+  return arrayData.reduce((currentValue, data) => {
+    if (Array.isArray(data)) {
+      currentValue.push(filterDeleteds(data));
+      return currentValue;
+    }
+
+    if (data === null || typeof data !== 'object') return currentValue;
+    
+    if (data['deleted']) return currentValue;
+
+    const entries = Object.entries(data);
+
+    for (const [key, value] of entries) {
+      if (!Array.isArray(value)) continue
+      
+      data[key] = filterDeleteds(value);
+    }
+
+    currentValue.push(data);
+  }, [])
+}
+
+export function changeValuePerKey(object: object) {
+  const newObj = {};
+
+  for (const [key, value] of Object.entries(object)) {
+    newObj[value]=key;
+  }
+
+  return newObj;
+}

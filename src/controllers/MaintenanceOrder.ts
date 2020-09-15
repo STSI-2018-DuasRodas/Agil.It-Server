@@ -1,8 +1,9 @@
+import { OrderSignature } from './../models/maintenance-order/OrderSignature';
 import { OrderEquipmentController } from './OrderEquipment';
 import { OrderSignatureController } from './OrderSignature';
 import { MaintenanceWorkerController } from './MaintenanceWorker';
 import { getRepository, Repository, SelectQueryBuilder } from "typeorm";
-import { getValueWhereConditions, normalizeOrmKeyValue, mountExtraConditions } from './Utils';
+import { getValueWhereConditions, normalizeOrmKeyValue, mountExtraConditions, filterDeleteds, changeValuePerKey } from './Utils';
 import { validate } from "class-validator";
 import { MaintenanceOrder } from "../models/maintenance-order/MaintenanceOrder";
 import { NextFunction, Request, Response } from "express";
@@ -16,6 +17,7 @@ import { UserController } from './User';
 import { SignatureStatus } from '../models/enum/SignatureStatus';
 import { OrderStatus } from '../models/enum/OrderStatus';
 import { SignatureRole } from '../models/enum/SignatureRole';
+import { UserRole } from '../models/enum/UserRole';
 
 export class MaintenanceOrderController {
 
@@ -78,24 +80,7 @@ export class MaintenanceOrderController {
 
     if (showDeletedFields) return order;
 
-    order.orderSignature = order.orderSignature.filter(o => !o.deleted);
-    order.orderEquipment = order.orderEquipment.filter(o => !o.deleted);
-    
-    order.maintenanceWorker = order.maintenanceWorker.filter(m => !m.deleted);
-
-    order.maintenanceWorker.forEach(maintenanceWorker => {
-      maintenanceWorker.workedTime = maintenanceWorker.workedTime.filter(m => !m.deleted);
-    })
-
-    order.orderEquipment.forEach(orderEquipment => {
-      orderEquipment.orderOperation = orderEquipment.orderOperation.filter(operation => !operation.deleted);
-
-      orderEquipment.orderOperation.forEach(orderOperation => {
-        orderOperation.orderComponent.filter(orderComponent => !orderComponent.deleted)
-      });
-    });
-
-    return order;
+    return filterDeleteds(order);
   }
   
   public async getOrderById(orderId) {
@@ -213,10 +198,6 @@ export class MaintenanceOrderController {
     let result = await this.getRepositoryEntity().save(order)
     if (!result) throw "Erro ao deletar a ordem";
 
-    order.maintenanceWorker.forEach((maintenanceWorker: MaintenanceWorker) => {
-      const maintenanceOrderController = new MaintenanceOrderController()
-    })
-
     return await this.getRepositoryEntity().findOne(request.params.id);
   }
 
@@ -276,11 +257,16 @@ export class MaintenanceOrderController {
       .getMany();
   }
 
-  public async updateStatus(request: Request, response: Response, next: NextFunction) {
+  public async updateStatusRequest(request: Request, response: Response, next: NextFunction) {
     // route: [PUT] maintenance-orders/:id/status
     const orderId = request.params.id;
 
-    const { userId, orderStatus: newStatus } = request.body;
+    const { userId, orderStatus } = request.body;
+
+    return this.updateOrderStatus(orderId, userId, orderStatus);
+  }
+
+  public async updateOrderStatus(orderId: number | string, userId: number | string, newStatus: string) {
 
     if (!this.validateStatus(newStatus)) {
       throw `Status informado não é válido. deveria ser um dos seguintes: ${Object.keys(OrderStatus).join(', ')}`
@@ -322,21 +308,128 @@ export class MaintenanceOrderController {
       
       if (currentSignatures.length < 3) throw `Ordem ainda possui pendências de assinatura`
 
-      const pendingRoleSignatures = { ...SignatureRole };
-      currentSignatures.forEach(signature => {
-        delete pendingRoleSignatures[signature.signatureRole];
-      });
-
-      if (Object.keys(pendingRoleSignatures).length > 0) {
-        throw `Ordem com pendência de assinatura: ${Object.keys(pendingRoleSignatures).join(', ')}`
+      const { status, missingRoles } = this.validateOrderSigned(currentSignatures);
+      if (!status) {
+        throw `Ordem com pendência de assinatura: ${missingRoles.join(', ')}`
       }
     }
-
+    
     await this.saveOrder(maintenanceOrder);
 
     return { status: newStatus };
   }
 
+  public validateOrderSigned(signatures: Array<OrderSignature>, customSignatureRoles?: object): { status: boolean, missingRoles: Array<string>} {
+    
+    const pendingRoleSignatures = { ...(customSignatureRoles || changeValuePerKey(SignatureRole)) };
+
+    signatures.forEach(signature => {
+      if (signature.signatureStatus === SignatureStatus.SIGNED) {
+        delete pendingRoleSignatures[signature.signatureRole];
+      }
+    });
+
+    const missingRoles = Object.keys(pendingRoleSignatures);
+
+    return {
+      status: (missingRoles.length === 0),
+      missingRoles,
+     };
+  }
+  
+  public async asignOrderRequst(request: Request, response: Response, next: NextFunction) {
+    // route: [POST] maintenance-orders/:id/signatures
+    const orderId = request.params.id;
+
+    const { userId, status, note } = request.body;
+
+    return this.asignOrder(orderId, userId, status, note || '');
+  }
+
+  public async asignOrder(orderId: number | string, userId: number | string, status?: SignatureStatus, note?: string) {
+    if (!userId) {
+      throw 'usuário não informado (userId)!';
+    }
+
+    const user = await new UserController().get(userId);
+    if (!user) throw `Usuário ${userId} não cadastrado`;
+
+    const maintenanceOrder: MaintenanceOrder = await this.getOrderById(orderId);
+    if (!maintenanceOrder) throw `Ordem ${orderId} não cadastrada`;
+
+    await this.validateOrderSignature(user, maintenanceOrder);
+
+    const signature = new OrderSignature();
+    signature.user = user;
+    signature.signatureRole = signature.getUserRole(user.role);
+    signature.signatureStatus = SignatureStatus.SIGNED;
+    signature.note = note || '';
+    signature.signatureStatus = status || SignatureStatus.SIGNED;
+
+    maintenanceOrder.orderSignature.push(signature);
+    const { status: allSigned } = this.validateOrderSigned(maintenanceOrder.orderSignature);
+
+    let orderStatus: OrderStatus = maintenanceOrder.orderStatus;
+
+    if (!allSigned) {
+      orderStatus = OrderStatus.SIGNATURE_PENDING;
+      maintenanceOrder.orderStatus = orderStatus;
+    }
+
+    const savedOrder = await this.saveOrder(maintenanceOrder);
+
+    if (allSigned) {
+      await this.updateOrderStatus(orderId, userId, OrderStatus.SIGNATURED);
+      orderStatus = OrderStatus.SIGNATURED;
+    }
+
+    return {
+      ...savedOrder,
+      orderStatus,
+    };
+  }
+
+  public async validateOrderSignature(user: User, order: MaintenanceOrder) {
+    const maintenanceOrder: MaintenanceOrder = filterDeleteds(order);
+
+    if (maintenanceOrder.orderSignature.some(orderSignature => orderSignature.user.id === user.id && orderSignature.signatureStatus !== SignatureStatus.DENIED)) {
+      throw 'Usuário já assinou a ordem';
+    }
+
+    if (['CREATED', 'ASSUMED', 'CANCELED', 'SIGNATURED', 'FINISHED'].includes(maintenanceOrder.orderStatus)) {
+      throw 'Ordem não está em um status válido para assinatura!';
+    }
+
+    if (user.role === UserRole.INTEGRATION) {
+      throw 'Usuário não pode assinar a ordem';
+    } else if (user.role === UserRole.MAINTAINER) {
+      if (!maintenanceOrder.maintenanceWorker.some(maintenanceWorker => (maintenanceWorker.isMain && maintenanceWorker.user.id === user.id))) {
+        throw 'Apenas o manutentor principal pode assinar a ordem';
+      }
+
+    } else if(user.role === UserRole.ADMINISTRATOR) {
+      const pendingRoleSignatures = changeValuePerKey({ ...SignatureRole });
+      delete pendingRoleSignatures[SignatureRole.ADMINISTRATOR];
+
+      const { status, missingRoles } = this.validateOrderSigned(maintenanceOrder.orderSignature, pendingRoleSignatures);
+      if (!status) {
+        throw `O administrador só pode assinar quando os demais responsáveis já tiverem assinados! Ainda faltam as seguintes assinaturas: ${missingRoles.join(', ')}`;
+      }
+    } else {
+      if (maintenanceOrder.solicitationUser.id !== user.id) {
+        throw `Usuário não qualificado para assinar a ordem`;
+      }
+
+      if (!maintenanceOrder.orderSignature.some(orderSignature => orderSignature.signatureRole == SignatureRole.MAINTAINER && orderSignature.signatureStatus == SignatureStatus.SIGNED)) {
+        throw `Manutentor deve assinar a ordem primeiro`;
+      }
+
+      if (maintenanceOrder.orderSignature.some(orderSignature => orderSignature.signatureRole == SignatureRole.LEADER && orderSignature.signatureStatus != SignatureStatus.DENIED)) {
+        throw `Assinatura já realizada`;
+      }
+    }
+  }
+  
   public getWhereConditions(params: any = {}, query: any = {}, entity: any) {
 
     let filterObject = {};
