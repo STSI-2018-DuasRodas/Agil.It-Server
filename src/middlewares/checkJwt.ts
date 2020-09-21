@@ -71,27 +71,20 @@ export const getIntegrionUser = (async authorization => {
 
   try {
 
-    let tmp = authorization.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
+    const tmp = authorization.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
 
-    let buf = Buffer.from(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
-    let plain_auth = buf.toString();        // read it back out as a string
+    const buf = Buffer.from(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
+    const plain_auth = buf.toString();        // read it back out as a string
 
     // At this point plain_auth = "username:password"
 
-    let creds = plain_auth.split(':');      // split on a ':'
-    let username = creds[0];
-    let password = creds[1];
+    const creds = plain_auth.split(':');      // split on a ':'
+    const username = creds[0];
+    const password = creds[1];
 
     const userController = new UserController()
 
-    return await userController.getRepositoryEntity().findOneOrFail({
-      where: {
-        "name": username,
-        "password": password,
-        "role": "integration",
-        "deleted": false
-      }
-    })
+    return userController.getIntegrationUser(username, password);
   } catch (err) {
     console.log("err", err)
     return undefined
