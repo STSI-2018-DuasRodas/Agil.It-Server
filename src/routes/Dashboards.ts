@@ -9,7 +9,7 @@ export class DashboardsCollection extends Collection {
 
     this.addRoute(new Route(
       Method.GET,
-      `${this.getRoute()}/admin`,
+      `${this.getRoute()}/pending-orders`,
       this.getController(),
       'getAdminDashboard'
     ))
