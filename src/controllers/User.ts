@@ -38,7 +38,8 @@ export class UserController extends CrudController<User> {
         userId: user.id,
         email: user.email,
         name: user.name,
-        employeeBadge: user.employeeBadge
+        employeeBadge: user.employeeBadge,
+        role: user.role,
       },
       JWT.jwtSecret,
       { expiresIn: "5h" }
