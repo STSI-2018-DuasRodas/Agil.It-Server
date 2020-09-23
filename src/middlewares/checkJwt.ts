@@ -44,8 +44,8 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
 
     //The token is valid for 5 hours
     //We want to send a new token on every request
-    const { userId, email, name, employeeBadge } = jwtPayload;
-    const newToken = jwt.sign({ userId, email, name, employeeBadge }, JWT.jwtSecret, {
+    const { userId, email, name, employeeBadge, role } = jwtPayload;
+    const newToken = jwt.sign({ userId, email, name, employeeBadge, role }, JWT.jwtSecret, {
       expiresIn: "5h"
     });
     //set to response's header the new token
@@ -68,9 +68,7 @@ export const checkIntegration = (async authorization => {
 });
 
 export const getIntegrionUser = (async authorization => {
-
   try {
-
     let tmp = authorization.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
 
     let buf = Buffer.from(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
