@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
-import { NotificatoinStatus } from "./enum/NotificatoinStatus";
+import { NotificationStatus } from "./enum/NotificationStatus";
 import { User } from "./User";
 
 @Entity("notification")
@@ -25,10 +25,10 @@ export class Notification {
 
   @Column({
     type: "enum",
-    enum: NotificatoinStatus,
-    default: NotificatoinStatus.NEW
+    enum: NotificationStatus,
+    default: NotificationStatus.NEW
   })
-  public status: NotificatoinStatus = NotificatoinStatus.NEW;
+  public status: NotificationStatus = NotificationStatus.NEW;
 
   @ManyToOne(type => User, user => user.id)
   public user: User = undefined;
@@ -38,5 +38,10 @@ export class Notification {
 
   @UpdateDateColumn()
   public updatedAt: Date | undefined = undefined;
-  
+
+  @Column({
+    type: Boolean,
+    default: false
+  })
+  public deleted: boolean = false;
 }

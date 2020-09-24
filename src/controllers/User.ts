@@ -1,5 +1,7 @@
+import { NotificationStatus } from './../models/enum/NotificationStatus';
+import { NotificationController } from './Notification';
 import { UserRole } from './../models/enum/UserRole';
-import { getRepository, Not } from "typeorm";
+import { getRepository, Not, createQueryBuilder } from "typeorm";
 import { User } from "../models/User";
 import { CrudController } from "./CrudController";
 import { NextFunction, Request, Response } from "express";
@@ -50,6 +52,23 @@ export class UserController extends CrudController<User> {
     response.append('token', token);
 
     return user;
+  }
+
+  async getUserNotificationsRequest(request: Request, response: Response, next: NextFunction) {
+    const userId = request.params.id;
+
+    return this.getUserNotifications(userId);
+  }
+
+  async getUserNotifications(userId) {
+    return new NotificationController()
+      .getRepositoryEntity()
+      .createQueryBuilder('notification')
+      .where('notification.deleted = :deleted', { deleted: false })
+      .andWhere('notification.user = :userId', { userId })
+      .andWhere('notification.status in (:...statuses)', { statuses: [NotificationStatus.NEW, NotificationStatus.VIEWED] })
+      .orderBy('notification.createdAt', 'ASC')
+      .getMany();
   }
 
   public includes() {
