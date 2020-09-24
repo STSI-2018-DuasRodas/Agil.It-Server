@@ -28,8 +28,10 @@ export class UserController extends CrudController<User> {
           "deleted": false
         }
       });
+
+      if (user.role === UserRole.INTEGRATION) throw 'Usuário inválido'
     } catch (error) {
-      throw "Usuário ou senha incorreto";
+      throw 'Usuário ou senha incorreto';
     }
 
     //Sing JWT, valid for 5 hours

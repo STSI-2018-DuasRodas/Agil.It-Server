@@ -1,3 +1,5 @@
+import { Notification } from './../models/Notification';
+import { NotificationController } from './Notification';
 import { OrderSignature } from './../models/maintenance-order/OrderSignature';
 import { OrderEquipmentController } from './OrderEquipment';
 import { OrderSignatureController } from './OrderSignature';
@@ -257,6 +259,41 @@ export class MaintenanceOrderController {
       .getMany();
   }
 
+  public async asignOrderRequst(request: Request, response: Response, next: NextFunction) {
+    // route: [POST] maintenance-orders/:id/signatures
+    const orderId = request.params.id;
+
+    const { userId, status, note } = request.body;
+
+    return this.asignOrder(orderId, userId, status, note || '');
+  }
+  
+  public async inviteUserRequest(request: Request, response: Response, next: NextFunction) {
+    // route: [POST] maintenance-orders/:id/invite
+    const orderId = request.params.id;
+
+    const { userId } = request.body;
+
+    const token = <string>request.headers["token"];
+    const authorization = <string>request.headers["authorization"];
+    const endpointUser = await this.getEndpointUser(token, authorization)
+
+    return this.inviteUser(orderId, endpointUser, userId);
+  }
+  
+  public async delegateOrderRequest(request: Request, response: Response, next: NextFunction) {
+    // route: [POST] maintenance-orders/:id/delegate
+    const orderId = request.params.id;
+
+    const { userId } = request.body;
+    
+    const token = <string>request.headers["token"];
+    const authorization = <string>request.headers["authorization"];
+    const endpointUser = await this.getEndpointUser(token, authorization)
+
+    return this.delegateOrder(orderId, endpointUser, userId);
+  }
+
   public async updateStatusRequest(request: Request, response: Response, next: NextFunction) {
     // route: [PUT] maintenance-orders/:id/status
     const orderId = request.params.id;
@@ -314,7 +351,8 @@ export class MaintenanceOrderController {
       }
     }
     
-    await this.saveOrder(maintenanceOrder);
+    const savedOrder = await this.saveOrder(maintenanceOrder);
+    await this.notificarUsuarios(savedOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${savedOrder.orderNumber} para ${newStatus}`, true, true);
 
     return { status: newStatus };
   }
@@ -335,15 +373,6 @@ export class MaintenanceOrderController {
       status: (missingRoles.length === 0),
       missingRoles,
      };
-  }
-  
-  public async asignOrderRequst(request: Request, response: Response, next: NextFunction) {
-    // route: [POST] maintenance-orders/:id/signatures
-    const orderId = request.params.id;
-
-    const { userId, status, note } = request.body;
-
-    return this.asignOrder(orderId, userId, status, note || '');
   }
 
   public async asignOrder(orderId: number | string, userId: number | string, status?: SignatureStatus, note?: string) {
@@ -378,6 +407,9 @@ export class MaintenanceOrderController {
 
     const savedOrder = await this.saveOrder(maintenanceOrder);
 
+    // ? Notificar assinatura e mudança de status?
+    await this.notificarUsuarios(savedOrder, 'Ordem de manutenção assinada', `assinou a ordem ${savedOrder.orderNumber}`, true, true);
+
     if (allSigned) {
       await this.updateOrderStatus(orderId, userId, OrderStatus.SIGNATURED);
       orderStatus = OrderStatus.SIGNATURED;
@@ -403,7 +435,7 @@ export class MaintenanceOrderController {
     if (user.role === UserRole.INTEGRATION) {
       throw 'Usuário não pode assinar a ordem';
     } else if (user.role === UserRole.MAINTAINER) {
-      if (!maintenanceOrder.maintenanceWorker.some(maintenanceWorker => (maintenanceWorker.isMain && maintenanceWorker.user.id === user.id))) {
+      if (!this.validateMainUser(maintenanceOrder, user)) {
         throw 'Apenas o manutentor principal pode assinar a ordem';
       }
 
@@ -429,7 +461,162 @@ export class MaintenanceOrderController {
       }
     }
   }
+
+  public async inviteUser(orderId: number | string, userSolicitationId: number, userId: number) {
+    const [userSolicitation, user, order] = await Promise.all([
+      new UserController().get(userSolicitationId),
+      new UserController().get(userId),
+      this.getOrderById(orderId)
+    ]);
+
+    const isMainUser = this.validateMainUser(order, userSolicitation, [UserRole.ADMINISTRATOR, UserRole.MAINTAINER_LEADER, UserRole.SECTOR_LEADER]);
+    if (!isMainUser) throw `Usuário ${userSolicitation.name} não tem permissão para convidar manutentores na ordem ${order.orderNumber}`;
+
+    if (![UserRole.MAINTAINER, UserRole.MAINTAINER_LEADER].includes(user.role)) {
+      throw `Usuário ${user.name} não pode ser convidado pois não é um manutentor nem um líder de manutenção`;
+    }
+
+    if (this.validateUserInOrder(order, userId)) {
+      throw `Usuário ${user.name} já está participando da ordem ${order.orderNumber}`;
+    }
+
+    const invitedMaintenanceWorker: MaintenanceWorker = this.createMaintenanceWorker(order, user, false);
+    invitedMaintenanceWorker.createdBy = userSolicitation.id;
+    invitedMaintenanceWorker.updatedBy = userSolicitation.id;
+
+    await new MaintenanceWorkerController().saveEntity(invitedMaintenanceWorker);
+
+    await new NotificationController().saveEntity(this.createNotification(
+      'maintenanceOrder', orderId, user, `Convite para participar da ordem de manutenção ${order.orderNumber}`,`${userSolicitation.name} te convidou para a ordem ${order.orderNumber}`
+    ));
+
+    return {
+      mensagem: `${user.name} convidado para a ordem ${order.orderNumber} com sucesso`,
+    };
+  }
+
+  public async delegateOrder(orderId: number | string, userSolicitationId: number, userId: number) {
+    const [userSolicitation, user, order] = await Promise.all([
+      new UserController().get(userSolicitationId),
+      new UserController().get(userId),
+      this.getOrderById(orderId)
+    ]);
+
+    const isMainUser = this.validateMainUser(order, userSolicitation, [UserRole.ADMINISTRATOR, UserRole.MAINTAINER_LEADER, UserRole.SECTOR_LEADER]);
+    if (!isMainUser) throw `Usuário ${userSolicitation.name} não tem permissão para delegar a ordem ${order.orderNumber}`;
+
+    if (user.role !== UserRole.MAINTAINER && user.role !== UserRole.MAINTAINER_LEADER) {
+      throw 'Só é possível delegar a ordem para um manutentor ou um líder de manutenção';
+    }
+
+    if (this.validateUserInOrder(order, userId)) {
+      throw `Usuário ${user.name} já está participando da ordem ${order.orderNumber}`;
+    }
+
+    const mainMaintenanceWorker = order.maintenanceWorker.filter(maintainer => !maintainer.deleted && maintainer.isMain) || [];
+
+    for (const mainWorker of mainMaintenanceWorker) {
+      mainWorker.isMain = false;
+      mainWorker.updatedBy = userId;
+
+      await new MaintenanceWorkerController().saveEntity(mainWorker);
+    }
+
+    const delegatedMaintenanceWorker: MaintenanceWorker = this.createMaintenanceWorker(order, user, true);
+    delegatedMaintenanceWorker.createdBy = userSolicitation.id;
+    delegatedMaintenanceWorker.updatedBy = userSolicitation.id;
+
+    await new MaintenanceWorkerController().saveEntity(delegatedMaintenanceWorker);
+
+    await new NotificationController().saveEntity(this.createNotification(
+      'maintenanceOrder', orderId, user, `Ordem de manutenção ${order.orderNumber} delegada`, `${userSolicitation.name} te delegou a ordem ${order.orderNumber}`
+    ));
+
+    return {
+      mensagem: `Ordem Delegada para o usuário ${user.name} com sucesso`,
+    };
+  }
+
+  public validateMainUser(order: MaintenanceOrder, user: User, rolesFreePass: Array<UserRole> = []): boolean {
+    if (rolesFreePass.includes(user.role)) return true;
+    if (user.role !== UserRole.MAINTAINER) return false;
+    
+    const mainMaintainer:MaintenanceWorker | undefined = order.maintenanceWorker.find(maintainer => maintainer.isMain && !maintainer.deleted);
+
+    return (mainMaintainer && user.id === mainMaintainer.user.id);
+  }
+
+  public validateUserInOrder(order: MaintenanceOrder, userId): boolean {
+    return order.maintenanceWorker.some(maintenanceWorker => maintenanceWorker.user.id === userId && !maintenanceWorker.deleted);
+  }
   
+  public async notificarUsuarios(order: MaintenanceOrder, title:string, notificationDescription: string = '', addUserPrefix: boolean = false, notificateSolicitationUser: boolean = false) {
+    try {
+      const maintenanceOrder = filterDeleteds(order);
+      if (
+        !notificationDescription
+        || !notificationDescription.length
+        || !maintenanceOrder
+        || !(order instanceof MaintenanceOrder)
+        || !Array.isArray(maintenanceOrder.maintenanceWorker)
+        || !maintenanceOrder.maintenanceWorker.length
+      ) return;
+
+      const user = await new UserController().get(maintenanceOrder.updatedBy, []);
+
+      const description = (
+        addUserPrefix
+          ? `${user.name} ${notificationDescription}`
+          : notificationDescription
+      );
+
+      const packInserts = [];
+
+      if (notificateSolicitationUser && maintenanceOrder.solicitationUser && user.id !== maintenanceOrder.solicitationUser.id) {
+        
+        packInserts.push(new NotificationController().saveEntity(this.createNotification(
+          'maintenanceOrder', maintenanceOrder.id, user, title, description
+        )))
+      }
+
+      for (const maintenanceWorker of maintenanceOrder.maintenanceWorker) {
+        if (maintenanceWorker.user.id === user.id) return // ? Não queremos notificar o usuário que fez a ação
+
+        packInserts.push(new NotificationController().saveEntity(this.createNotification(
+          'maintenanceOrder', maintenanceOrder.id, maintenanceWorker.user, title, description
+        )))
+      }
+
+      await Promise.all(packInserts);
+    } catch(err) {
+      // ? Não queremos parar a execução em caso de erro na geração de notificação
+    }
+  }
+
+  public createNotification(artefact: string, artefactId:string | number, user: User, title: string, description: string, icon?: string): Notification {
+    const notification = new Notification();
+    notification.artefact = artefact;
+    notification.artefactId = String(artefactId);
+    notification.user = user;
+    
+    notification.title = title;
+    notification.description = description;
+    notification.icon = icon || ''
+
+    return notification;
+  }
+
+  public createMaintenanceWorker(order: MaintenanceOrder, user: User, isMain: boolean = false): MaintenanceWorker {
+    const maintenanceWorker = new MaintenanceWorker();
+
+    maintenanceWorker.maintenanceOrder = order;
+    maintenanceWorker.user = user;
+    maintenanceWorker.isMain = isMain;
+    maintenanceWorker.isActive = true;
+
+    return maintenanceWorker;
+  }
+
   public getWhereConditions(params: any = {}, query: any = {}, entity: any) {
 
     let filterObject = {};
@@ -446,9 +633,9 @@ export class MaintenanceOrderController {
       let keyProperty = '';
 
       if(key.length > 2 && key.substr(key.length-2,2) == 'Id') {
-        keyProperty=key.substr(0,key.length-2)
+        keyProperty = key.substr(0,key.length-2)
       } else {
-        keyProperty=key
+        keyProperty = key
       }
 
       const value = entries[key];
@@ -464,7 +651,15 @@ export class MaintenanceOrderController {
   }
 
   async updateFields(token:string, authorization:string, entity :MaintenanceOrder) {
+    const userId = await this.getEndpointUser(token, authorization)
 
+    entity["updatedBy"] = userId;
+    if (entity["createdBy"] === undefined) {
+      entity["createdBy"] = userId;
+    }
+  }
+
+  async getEndpointUser(token:string, authorization:string) {
     let userId;
 
     if (token) {
@@ -474,11 +669,8 @@ export class MaintenanceOrderController {
       const user:User = await getIntegrionUser(authorization)
       userId= user.id;
     }
-    
-    entity["updatedBy"] = userId;
-    if (entity["createdBy"] === undefined) {
-      entity["createdBy"] = userId;
-    }
+
+    return userId;
   }
 
   async validate(entity: MaintenanceOrder) : Promise<any> {
