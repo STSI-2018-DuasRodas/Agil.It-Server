@@ -303,7 +303,7 @@ export class MaintenanceOrderController {
     return this.updateOrderStatus(orderId, userId, orderStatus);
   }
 
-  public async updateOrderStatus(orderId: number | string, userId: number | string, newStatus: string) {
+  public async updateOrderStatus(orderId: number | string, userId: number | string, newStatus: OrderStatus) {
 
     if (!this.validateStatus(newStatus)) {
       throw `Status informado não é válido. deveria ser um dos seguintes: ${Object.keys(OrderStatus).join(', ')}`
@@ -327,7 +327,9 @@ export class MaintenanceOrderController {
 
     if (newStatus === 'assumed' && maintenanceWorker && maintenanceWorker.user.id !== userId) {
       throw 'Ordem já está assumida por outro manutentor';
+
     } else if (newStatus === 'assumed' && !maintenanceWorker) {
+
       const newMaintener = new MaintenanceWorker();
       newMaintener.isActive = true;
       newMaintener.isMain = true;
@@ -335,7 +337,9 @@ export class MaintenanceOrderController {
 
       if (!Array.isArray(maintenanceOrder.maintenanceWorker)) maintenanceOrder.maintenanceWorker = [];
       maintenanceOrder.maintenanceWorker.push(newMaintener);
-    } else if (['signed', 'finished'].includes(newStatus)) {
+    
+    } else if (['signatured', 'finished'].includes(newStatus)) {
+
       const currentSignatures = (maintenanceOrder.orderSignature || []).filter(signature => {
         if (signature.deleted === true) return false;
         if (signature.signatureStatus !== SignatureStatus.SIGNED) return false;
@@ -351,6 +355,7 @@ export class MaintenanceOrderController {
       }
     }
     
+    maintenanceOrder.orderStatus = newStatus;
     const savedOrder = await this.saveOrder(maintenanceOrder);
     await this.notificarUsuarios(savedOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${savedOrder.orderNumber} para ${newStatus}`, true, true);
 
@@ -362,7 +367,7 @@ export class MaintenanceOrderController {
     const pendingRoleSignatures = { ...(customSignatureRoles || changeValuePerKey(SignatureRole)) };
 
     signatures.forEach(signature => {
-      if (signature.signatureStatus === SignatureStatus.SIGNED) {
+      if (signature.signatureStatus === SignatureStatus.SIGNED && !signature.deleted) {
         delete pendingRoleSignatures[signature.signatureRole];
       }
     });
