@@ -357,7 +357,7 @@ export class MaintenanceOrderController {
     
     maintenanceOrder.orderStatus = newStatus;
     const savedOrder = await this.saveOrder(maintenanceOrder);
-    await this.notificarUsuarios(savedOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${savedOrder.orderNumber} para ${newStatus}`, true, true);
+    await this.notificarUsuarios(savedOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${savedOrder.orderNumber} para ${maintenanceOrder.orderStatusToString(newStatus).toLocaleLowerCase()}`, true, true);
 
     return { status: newStatus };
   }
@@ -412,8 +412,15 @@ export class MaintenanceOrderController {
 
     const savedOrder = await this.saveOrder(maintenanceOrder);
 
+    const signatureDenied = signature.signatureStatus === SignatureStatus.DENIED;
+
     // ? Notificar assinatura e mudança de status?
-    await this.notificarUsuarios(savedOrder, 'Ordem de manutenção assinada', `assinou a ordem ${savedOrder.orderNumber}`, true, true);
+    await this.notificarUsuarios(savedOrder,
+      `Ordem de manutenção ${signatureDenied ? 'assinatura negada' : 'assinada'}`,
+      `${signatureDenied ? 'negou a assinatura da' : 'assinou a'} ordem ${savedOrder.orderNumber}`,
+      true,
+      true
+    );
 
     if (allSigned) {
       await this.updateOrderStatus(orderId, userId, OrderStatus.SIGNATURED);
