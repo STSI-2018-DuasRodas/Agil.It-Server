@@ -328,12 +328,21 @@ export class MaintenanceOrderController {
     if (newStatus === 'assumed' && maintenanceWorker && maintenanceWorker.user.id !== userId) {
       throw 'Ordem já está assumida por outro manutentor';
 
-    } else if (newStatus === 'assumed' && !maintenanceWorker) {
+    } else if (newStatus === 'assumed') {
+
+      if (!userId) {
+        throw 'O usuário deve ser informado ao assumir uma ordem';
+      }
+
+      const user = await new UserController().get(userId);
+      if (!user) {
+        throw `Usuário ${userId} não cadastrado`;
+      }
 
       const newMaintener = new MaintenanceWorker();
       newMaintener.isActive = true;
       newMaintener.isMain = true;
-      newMaintener.user = await new UserController().get(userId);
+      newMaintener.user = user;
 
       if (!Array.isArray(maintenanceOrder.maintenanceWorker)) maintenanceOrder.maintenanceWorker = [];
       maintenanceOrder.maintenanceWorker.push(newMaintener);
