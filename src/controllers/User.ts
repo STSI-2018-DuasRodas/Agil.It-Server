@@ -38,7 +38,7 @@ export class UserController extends CrudController<User> {
   public generateJwtToken(user: User): string {
     return jwt.sign(
       {
-        userId: user.id,
+        userId: user.id || (<any>user).userId,
         email: user.email,
         name: user.name,
         employeeBadge: user.employeeBadge,
@@ -57,7 +57,7 @@ export class UserController extends CrudController<User> {
       await this.validateUser(password, { id: userId });
       return 'Válido'
     } catch {
-      throw 'Inválido'
+      throw 'Senha inválida';
     }
   }
 
