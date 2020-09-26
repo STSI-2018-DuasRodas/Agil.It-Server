@@ -363,10 +363,15 @@ export class MaintenanceOrderController {
         throw `Ordem com pendência de assinatura: ${missingRoles.join(', ')}`
       }
     }
-    
+
     maintenanceOrder.orderStatus = newStatus;
-    const savedOrder = await this.saveOrder(maintenanceOrder);
-    await this.notificarUsuarios(savedOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${savedOrder.orderNumber} para ${maintenanceOrder.orderStatusToString(newStatus).toLocaleLowerCase()}`, true, true);
+    await this.getRepositoryEntity().save(<any>{
+      id: maintenanceOrder.id,
+      orderStatus: newStatus,
+      updatedBy: userId,
+    });
+
+    await this.notificarUsuarios(maintenanceOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${maintenanceOrder.orderNumber} para ${maintenanceOrder.orderStatusToString(newStatus).toLocaleLowerCase()}`, true,undefined,true);
 
     return { status: newStatus };
   }
@@ -408,36 +413,39 @@ export class MaintenanceOrderController {
     signature.signatureStatus = SignatureStatus.SIGNED;
     signature.note = note || '';
     signature.signatureStatus = status || SignatureStatus.SIGNED;
+    signature.maintenanceOrder = <MaintenanceOrder>{ id: maintenanceOrder.id };
+
+    await new OrderSignatureController().saveEntity(signature);
 
     maintenanceOrder.orderSignature.push(signature);
     const { status: allSigned } = this.validateOrderSigned(maintenanceOrder.orderSignature);
 
-    let orderStatus: OrderStatus = maintenanceOrder.orderStatus;
+    let orderStatus: OrderStatus;
 
     if (!allSigned) {
       orderStatus = OrderStatus.SIGNATURE_PENDING;
-      maintenanceOrder.orderStatus = orderStatus;
+    } else {
+      orderStatus = OrderStatus.SIGNATURED;
     }
 
-    const savedOrder = await this.saveOrder(maintenanceOrder);
+    if (maintenanceOrder.orderStatus !== orderStatus) {
+      maintenanceOrder.orderStatus = orderStatus;
+      await this.updateOrderStatus(orderId, userId, orderStatus);
+    }
 
     const signatureDenied = signature.signatureStatus === SignatureStatus.DENIED;
 
     // ? Notificar assinatura e mudança de status?
-    await this.notificarUsuarios(savedOrder,
+    await this.notificarUsuarios(maintenanceOrder,
       `Ordem de manutenção ${signatureDenied ? 'assinatura negada' : 'assinada'}`,
-      `${signatureDenied ? 'negou a assinatura da' : 'assinou a'} ordem ${savedOrder.orderNumber}`,
+      `${signatureDenied ? 'negou a assinatura da' : 'assinou a'} ordem ${maintenanceOrder.orderNumber}`,
       true,
+      user,
       true
     );
 
-    if (allSigned) {
-      await this.updateOrderStatus(orderId, userId, OrderStatus.SIGNATURED);
-      orderStatus = OrderStatus.SIGNATURED;
-    }
-
     return {
-      ...savedOrder,
+      ...maintenanceOrder,
       orderStatus,
     };
   }
@@ -571,7 +579,7 @@ export class MaintenanceOrderController {
     return order.maintenanceWorker.some(maintenanceWorker => maintenanceWorker.user.id === userId && !maintenanceWorker.deleted);
   }
   
-  public async notificarUsuarios(order: MaintenanceOrder, title:string, notificationDescription: string = '', addUserPrefix: boolean = false, notificateSolicitationUser: boolean = false) {
+  public async notificarUsuarios(order: MaintenanceOrder, title:string, notificationDescription: string = '', addUserPrefix: boolean = false, user?: User, notificateSolicitationUser: boolean = false) {
     try {
       const maintenanceOrder = filterDeleteds(order);
       if (
@@ -583,8 +591,6 @@ export class MaintenanceOrderController {
         || !maintenanceOrder.maintenanceWorker.length
       ) return;
 
-      const user = await new UserController().get(maintenanceOrder.updatedBy, []);
-
       const description = (
         addUserPrefix
           ? `${user.name} ${notificationDescription}`
@@ -593,15 +599,15 @@ export class MaintenanceOrderController {
 
       const packInserts = [];
 
-      if (notificateSolicitationUser && maintenanceOrder.solicitationUser && user.id !== maintenanceOrder.solicitationUser.id) {
+      if (notificateSolicitationUser && maintenanceOrder.solicitationUser && (!user || user.id !== maintenanceOrder.solicitationUser.id)) {
         
         packInserts.push(new NotificationController().saveEntity(this.createNotification(
-          'maintenanceOrder', maintenanceOrder.id, user, title, description
+          'maintenanceOrder', maintenanceOrder.id, maintenanceOrder.solicitationUser, title, description
         )))
       }
 
       for (const maintenanceWorker of maintenanceOrder.maintenanceWorker) {
-        if (maintenanceWorker.user.id === user.id) return // ? Não queremos notificar o usuário que fez a ação
+        if (user && user.id === maintenanceWorker.user.id) return // ? Não queremos notificar o usuário que fez a ação
 
         packInserts.push(new NotificationController().saveEntity(this.createNotification(
           'maintenanceOrder', maintenanceOrder.id, maintenanceWorker.user, title, description
