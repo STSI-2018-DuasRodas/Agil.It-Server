@@ -27,5 +27,13 @@ export class UserCollection extends Collection {
       'getUserNotificationsRequest',
       `Usuário ou senha inválidos`
     ))
+    
+    this.addRoute(new Route(
+      Method.POST,
+      `${this.baseRoute}/validate-user`,
+      this.getController(),
+      'validateUserRequest',
+      `Usuário inválido`
+    ))
   }
 }

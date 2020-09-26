@@ -12,14 +12,12 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
     this.checkIntegration(authorization)
     .then(valid => {
       if (valid === true) {
-        next();
-        return;
+        return next();
       } else {
-        response.status(401).send();
-        return;  
+        return response.status(401).send();  
       }
     }).catch(err => {
-      response.status(500).send({
+      return response.status(500).send({
         "success": false,
         "error": err.message
       });
@@ -34,22 +32,12 @@ export const checkJwt = (request: Request, response: Response, next: NextFunctio
       jwtPayload = <any>jwt.verify(token, JWT.jwtSecret);
       response.locals.jwtPayload = jwtPayload;
     } catch (error) {
-      //If token is not valid, respond with error
-      response.status(200).send({
-        "success": false,
-        "error": error.message
-      });
-      return;
+      //If token is not valid, respond with unauthorized
+      return response.status(401).send();
     }
 
-    //The token is valid for 5 hours
-    //We want to send a new token on every request
-    const { userId, email, name, employeeBadge, role } = jwtPayload;
-    const newToken = jwt.sign({ userId, email, name, employeeBadge, role }, JWT.jwtSecret, {
-      expiresIn: "5h"
-    });
     //set to response's header the new token
-    response.append('token', newToken);
+    response.append('token', new UserController().generateJwtToken(<User> jwtPayload));
 
     //Call the next middleware or controller
     next();
