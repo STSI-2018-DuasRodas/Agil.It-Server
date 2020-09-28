@@ -314,6 +314,11 @@ export class MaintenanceOrderController {
       throw `Ordem ${orderId} não cadastrada`;
     }
 
+    const user = await new UserController().get(userId);
+    if (!user) {
+      throw `Usuário ${userId} não cadastrado`;
+    }
+
     const currentStatus = maintenanceOrder.orderStatus;
     const maintenanceWorker: MaintenanceWorker = maintenanceOrder.getMainWorker();
 
@@ -332,11 +337,6 @@ export class MaintenanceOrderController {
 
       if (!userId) {
         throw 'O usuário deve ser informado ao assumir uma ordem';
-      }
-
-      const user = await new UserController().get(userId);
-      if (!user) {
-        throw `Usuário ${userId} não cadastrado`;
       }
 
       const newMaintener = new MaintenanceWorker();
@@ -371,7 +371,7 @@ export class MaintenanceOrderController {
       updatedBy: userId,
     });
 
-    await this.notificarUsuarios(maintenanceOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${maintenanceOrder.orderNumber} para ${maintenanceOrder.orderStatusToString(newStatus).toLocaleLowerCase()}`, true,undefined,true);
+    await this.notificarUsuarios(maintenanceOrder, `Ordem de manutenção atualizada`, `atualizou a situação da ordem ${maintenanceOrder.orderNumber} para ${maintenanceOrder.orderStatusToString(newStatus).toLocaleLowerCase()}`, true, user, true);
 
     return { status: newStatus };
   }
