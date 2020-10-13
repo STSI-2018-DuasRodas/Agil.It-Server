@@ -24,6 +24,7 @@ import { OrderSafetyParamsCollection } from './routes/OrderSafetyParams';
 import { OrderSignatureCollection } from './routes/OrderSignature';
 import { WorkedTimeCollection } from './routes/WorkedTime';
 import { WorkerRequestCollection } from './routes/WorkerRequest';
+import { DashboardsCollection } from './routes/Dashboards';
 
 export class Routes {
   private collections : Array<Collection>;
@@ -56,6 +57,7 @@ export class Routes {
     this.addCollection(new WorkCenterCollection())
     this.addCollection(new WorkedTimeCollection())
     this.addCollection(new WorkerRequestCollection())
+    this.addCollection(new DashboardsCollection())
   }
 
   public getCollections(): Array<Collection> {

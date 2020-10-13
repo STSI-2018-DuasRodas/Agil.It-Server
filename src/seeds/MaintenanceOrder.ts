@@ -149,10 +149,9 @@ export class MaintenanceOrder extends Seed {
     const workersQty: number = this.getRandomNumber(0,3);
     const workers = [];
 
-    for (let i = 0; i < workersQty; i++) {
-      const isMain = (i === 0)  // Apenas o primeiro é o principal
-      workers.push(await this.CreateWorker(isMain));
-    }
+    if (!workersQty) return workers;
+
+    workers.push(await this.CreateWorker(true, 1));
 
     return workers;
   }
@@ -246,9 +245,9 @@ export class MaintenanceOrder extends Seed {
     return operation;
   }
 
-  public static async CreateWorker(isMain: boolean): Promise<any> {
+  public static async CreateWorker(isMain: boolean, id?: number): Promise<any> {
     
-    const userId: number = this.getRandomNumber(1,4);
+    const userId: number = id || this.getRandomNumber(1,4);
     const isActive: boolean = isMain ? true : this.getRandomBoolean()
 
     const user = await this.getUser(userId);
@@ -360,7 +359,7 @@ export class MaintenanceOrder extends Seed {
   public static getRandomOrderStatus(): OrderStatus
   {
     const arrayValues = Object.values(OrderStatus);
-    const index = this.getRandomNumber(0, arrayValues.length - 1)
+    const index = this.getRandomNumber(0, arrayValues.length - 3) // -3 para ignorar situação finalizada e assinada
 
     return arrayValues[index];
   }

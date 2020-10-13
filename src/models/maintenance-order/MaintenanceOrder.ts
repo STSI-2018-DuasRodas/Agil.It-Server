@@ -93,4 +93,22 @@ export abstract class MaintenanceOrder extends BaseClass {
   public getMainWorker(): MaintenanceWorker {
     return (this.maintenanceWorker || []).find(maintenanceWorker => maintenanceWorker.isMain);
   }
+
+  public orderStatusToString(status: OrderStatus) {
+    return this.translatedOrderStatus()[status];
+  }
+
+  public translatedOrderStatus() {
+    return {
+      created: 'Aberta',
+      assumed: 'Assumida',
+      started: 'Iniciada',
+      paused: 'Pausada',
+      stopped: 'Parada',
+      canceled: 'Cancelada',
+      'signature-pending': 'Pendente de Assinatura',
+      signatured: 'Assinada',
+      finished: 'Finalizada',
+    };
+  }
 }
