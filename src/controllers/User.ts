@@ -1,13 +1,13 @@
 import { NotificationStatus } from './../models/enum/NotificationStatus';
 import { NotificationController } from './Notification';
 import { UserRole } from './../models/enum/UserRole';
-import { getRepository, Not } from "typeorm";
-import { User } from "../models/User";
-import { CrudController } from "./CrudController";
-import { NextFunction, Request, Response } from "express";
-import * as jwt from "jsonwebtoken";
-import * as bcrypt from "bcrypt";
-import JWT from "../config/JWT";
+import { getRepository, Not } from 'typeorm';
+import { User } from '../models/User';
+import { CrudController } from './CrudController';
+import { NextFunction, Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
+import JWT from '../config/JWT';
 
 export class UserController extends CrudController<User> {
 
@@ -22,27 +22,27 @@ export class UserController extends CrudController<User> {
       throw 'Usuário ou senha não informado';
     }
 
-    const user: User | undefined = await this.getRepositoryEntity()
-    .createQueryBuilder('user')
-    .addSelect('user.password')
-    .where(`user.name = '${username}'`)
-    .orWhere(`user.email = '${username}'`)
-    .orWhere(`user.employeeBadge = '${username}'`)
-    .getOne()
+    try {
+      const user: User = await this.getUser({
+        email: username,
+        role: Not(UserRole.INTEGRATION),
+      }, [
+        'password', 'name', 'email', 'role', 'contact', 'birthDate', 'forceChangePassword', 'sector', 'workCenter', 'employeeBadge', 'gender', 'id', 'integrationID', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy', 'deleted'
+      ]);
 
-    console.log('login -> ', user);
+      const validPassword = await this.validatePassword(password, user.password);
+      if (!validPassword) throw 'Usuário inválido'
 
-    if (!user) {
-      throw 'Usuário inválido'
+      response.append('token', this.generateJwtToken(user));
+      return user;
+
+    } catch (error) {
+      throw 'Usuário ou senha incorreto';
     }
+  }
 
-    console.log('password -> ', password)
-    console.log('user.password -> ', user.password)
-    const validPassword = await this.validatePassword(password, user.password);
-    if (!validPassword) throw 'Usuário inválido'
-
-    //Sing JWT, valid for 5 hours
-    const token = jwt.sign(
+  public generateJwtToken(user: User): string {
+    return jwt.sign(
       {
         userId: user.id || (<any>user).userId,
         email: user.email,
@@ -60,20 +60,22 @@ export class UserController extends CrudController<User> {
     const { password } = request.body;
 
     try {
-      await this.validateUser(password, { id: userId });
-      return 'Válido'
-    } catch {
-      throw 'Senha inválida';
-    }
+      const user = await this.getUser({ id: userId }, ['password']);
+      if (await this.validatePassword(password, user.password))
+        return 'Válido'
+
+    } catch { }
+
+    throw 'Senha inválida';
   }
 
-  public async validateUser(password:string, customWhere:Object): Promise<User> {
+  public async getUser(customWhere:Object, select?: Array<keyof User>): Promise<User> {
     return this.getRepositoryEntity().findOneOrFail({
       where: {
         deleted: false,
-        password,
         ...(typeof customWhere === 'object' ? customWhere : {}),
-      }
+      },
+      select,
     });
   }
 
@@ -125,13 +127,10 @@ export class UserController extends CrudController<User> {
 
   public async validatePassword(password, savedPassword): Promise<boolean> {
     try {
-      const result = await bcrypt.compare(password, savedPassword);
-      console.log('validatePassword -> result -> ', result);
+      return (await bcrypt.compare(password, savedPassword));
     } catch (err) {
-      console.log('validatePassword -> err -> ', err);
+      return false;
     }
-
-    return false;
   }
 
   public async createPasswordHash(password) {
@@ -139,7 +138,7 @@ export class UserController extends CrudController<User> {
   }
 
   public includes() {
-    return ['workCenter','sector']
+    return ['workCenter', 'sector']
   }
   public getCustomWheresList() {
     return {
