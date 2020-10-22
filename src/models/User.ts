@@ -18,8 +18,9 @@ export class User extends BaseClass {
   @IsNotEmpty()
   public email: string = '';
 
-  @Column(/*{select: false}*/)
+  @Column({ select: false })
   @Length(4, 100)
+  @IsNotEmpty()
   public password: string = '';
 
   @Column({

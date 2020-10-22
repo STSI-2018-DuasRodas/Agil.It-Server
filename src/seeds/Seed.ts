@@ -48,6 +48,14 @@ export class Seed {
       'updatedBy': 1,
       ...properties
     }
-    return await this.controller.getRepositoryEntity().save(standardObject)
+
+    const isInserting = true;
+    const preSave = await this.controller.preSave(standardObject, isInserting);
+
+    const savedObject = await this.controller.getRepositoryEntity().save(standardObject);
+
+    await this.controller.posSave(savedObject, isInserting, preSave)
+
+    return savedObject;
   }
 }
