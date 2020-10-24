@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Agil-It",
   "scripts": {
-    "start": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts --type-check"
+    "start": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts --type-check",
+    "build": "tsc -p ."
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,9 @@
 {
   "type": "mysql",
-  "host": "localhost",
+  "host": "agilit.cynqhvbhhgu4.sa-east-1.rds.amazonaws.com",
   "port": 3306,
-  "username": "root",
-  "password": "",
+  "username": "agilit",
+  "password": "m4st3r#pass",
   "database": "agilit",
   "synchronize": true,
   "logging": ["error", "query"],
