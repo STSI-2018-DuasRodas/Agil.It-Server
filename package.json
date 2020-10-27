@@ -4,7 +4,8 @@
   "description": "Agil-It",
   "scripts": {
     "start": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts --type-check",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "dist": "sh ./scripts/dist.sh"
   },
   "repository": {
     "type": "git",
