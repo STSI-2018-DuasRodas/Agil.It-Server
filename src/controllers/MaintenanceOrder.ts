@@ -265,7 +265,12 @@ export class MaintenanceOrderController {
 
     const { userId, status, note } = request.body;
 
-    return this.asignOrder(orderId, userId, status, note || '');
+    const token = <string>request.headers["token"];
+    const authorization = <string>request.headers["authorization"];
+
+    const endPointUser = await this.getEndpointUser(token, authorization);
+
+    return this.asignOrder(orderId, userId, endPointUser, status, note || '');
   }
   
   public async inviteUserRequest(request: Request, response: Response, next: NextFunction) {
@@ -394,7 +399,7 @@ export class MaintenanceOrderController {
      };
   }
 
-  public async asignOrder(orderId: number | string, userId: number | string, status?: SignatureStatus, note?: string) {
+  public async asignOrder(orderId: number | string, userId: number | string, userEndPoint : number | string, status?: SignatureStatus, note?: string) {
     if (!userId) {
       throw 'usuário não informado (userId)!';
     }
@@ -414,6 +419,8 @@ export class MaintenanceOrderController {
     signature.note = note || '';
     signature.signatureStatus = status || SignatureStatus.SIGNED;
     signature.maintenanceOrder = <MaintenanceOrder>{ id: maintenanceOrder.id };
+    signature.createdBy = Number(userEndPoint);
+    signature.updatedBy = Number(userEndPoint);
 
     await new OrderSignatureController().saveEntity(signature);
 
@@ -445,7 +452,7 @@ export class MaintenanceOrderController {
     );
 
     return {
-      ...maintenanceOrder,
+      signature,
       orderStatus,
     };
   }
