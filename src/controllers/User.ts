@@ -109,14 +109,12 @@ export class UserController extends CrudController<User> {
   }
 
   public async getIntegrationUser(username, password): Promise<User> {
-    const user: User | undefined = await this.getRepositoryEntity()
-    .createQueryBuilder('user')
-    .addSelect('password')
-    .where(`user.name = '${username}'`)
-    .andWhere(`user.role = 'integration'`)
-    .getOne()
 
-    console.log('getIntegrationUser -> ', user);
+    const user: User = await this.getUser({
+      name: username,
+      role: UserRole.INTEGRATION,
+    }, ['password']);
+
     if (!user) throw new Error(`Usuário inválido`)
 
     const validPassword = await this.validatePassword(password, user.password);
