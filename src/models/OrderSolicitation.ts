@@ -8,4 +8,10 @@ export class Sector extends CrudClass {
     super();
   }
 
+  @Column({nullable: false})
+  @IsNotEmpty({
+    message:'Usuário Solicitante: Campo obrigatório.'
+  })
+  public solicitationUser: User = '';
+
 }
