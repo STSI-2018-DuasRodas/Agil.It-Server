@@ -59,14 +59,20 @@ export class UserController extends CrudController<User> {
     const { userId } = <any>jwt.verify(<string>request.headers['token'], JWT.jwtSecret);
     const { password } = request.body;
 
+    if (this.validateUser(userId, password))
+      return 'Válido'
+    
+    throw 'Senha inválida';
+  }
+
+  async validateUser(userId: number, password: string) {
     try {
       const user = await this.getUser({ id: userId }, ['password']);
       if (await this.validatePassword(password, user.password))
-        return 'Válido'
-
+        return true
     } catch { }
 
-    throw 'Senha inválida';
+    return false;
   }
 
   public async getUser(customWhere:Object, select?: Array<keyof User>): Promise<User> {
@@ -138,6 +144,7 @@ export class UserController extends CrudController<User> {
   public includes() {
     return ['workCenter', 'sector']
   }
+
   public getCustomWheresList() {
     return {
       role: Not(UserRole.INTEGRATION)

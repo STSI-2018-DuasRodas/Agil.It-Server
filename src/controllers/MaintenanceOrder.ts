@@ -263,12 +263,15 @@ export class MaintenanceOrderController {
     // route: [POST] maintenance-orders/:id/signatures
     const orderId = request.params.id;
 
-    const { userId, status, note } = request.body;
+    const { userId, password, status, note } = request.body;
 
     const token = <string>request.headers["token"];
     const authorization = <string>request.headers["authorization"];
 
     const endPointUser = await this.getEndpointUser(token, authorization);
+    
+    if (!await new UserController().validateUser(userId, password))
+      throw 'Senha inválida'
 
     return this.asignOrder(orderId, userId, endPointUser, status, note || '');
   }
