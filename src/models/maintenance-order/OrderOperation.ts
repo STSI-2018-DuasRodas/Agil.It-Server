@@ -32,6 +32,9 @@ export class OrderOperation extends CrudClass {
 
   @Column()
   public executed: boolean = false;
+  
+  @Column()
+  public isDisapproved: boolean = false;
 
   @Column({
     type: 'varchar',
