@@ -119,7 +119,7 @@ export class UserController extends CrudController<User> {
     const user: User = await this.getUser({
       name: username,
       role: UserRole.INTEGRATION,
-    }, ['password']);
+    }, ['password', 'id']);
 
     if (!user) throw new Error(`Usuário inválido`)
 
