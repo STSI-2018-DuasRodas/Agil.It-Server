@@ -263,12 +263,16 @@ export class MaintenanceOrderController {
     // route: [POST] maintenance-orders/:id/signatures
     const orderId = request.params.id;
 
-    const { userId, status, note } = request.body;
+    const { userId, password, status, note } = request.body;
 
     const token = <string>request.headers["token"];
     const authorization = <string>request.headers["authorization"];
 
     const endPointUser = await this.getEndpointUser(token, authorization);
+    if (!endPointUser) throw 'Unauthorized'
+    
+    if (!await new UserController().validateUser(userId, password))
+      throw 'Senha inválida'
 
     return this.asignOrder(orderId, userId, endPointUser, status, note || '');
   }
@@ -415,7 +419,6 @@ export class MaintenanceOrderController {
     const signature = new OrderSignature();
     signature.user = user;
     signature.signatureRole = signature.getUserRole(user.role);
-    signature.signatureStatus = SignatureStatus.SIGNED;
     signature.note = note || '';
     signature.signatureStatus = status || SignatureStatus.SIGNED;
     signature.maintenanceOrder = <MaintenanceOrder>{ id: maintenanceOrder.id };
@@ -451,10 +454,32 @@ export class MaintenanceOrderController {
       true
     );
 
+    if (signatureDenied)
+      await this.openLastSign(maintenanceOrder, signature.signatureRole, userId);
+
     return {
       signature,
       orderStatus,
     };
+  }
+
+  public async openLastSign(maintenanceOrder: MaintenanceOrder, signatureRole: SignatureRole, userId: number | string) {
+    const signatureRoleValues = Object.values(SignatureRole);
+    const indexSignature = signatureRoleValues.findIndex(role => role === signatureRole);
+
+    // if role index was not found or it is the first signature there is not 'last sign' to open
+    if (indexSignature < 1) return;
+    
+    const lastSignatureRole = signatureRoleValues[indexSignature-1];
+
+    const lastSign = maintenanceOrder.orderSignature.find(signature => signature.signatureRole === lastSignatureRole && !signature.deleted);
+    if (!lastSign) return;
+
+    lastSign.signatureStatus = SignatureStatus.NEW;
+    lastSign.updatedBy = Number(userId);
+    lastSign.maintenanceOrder = maintenanceOrder;
+
+    await new OrderSignatureController().saveEntity(lastSign);
   }
 
   public async validateOrderSignature(user: User, order: MaintenanceOrder) {

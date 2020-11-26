@@ -6,6 +6,7 @@ import { User } from '../models/User';
 import { CrudController } from './CrudController';
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 import JWT from '../config/JWT';
 
 export class UserController extends CrudController<User> {
@@ -22,10 +23,15 @@ export class UserController extends CrudController<User> {
     }
 
     try {
-      const user: User = await this.validateUser(password, {
+      const user: User = await this.getUser({
         email: username,
         role: Not(UserRole.INTEGRATION),
-      });
+      }, [
+        'password', 'name', 'email', 'role', 'contact', 'birthDate', 'forceChangePassword', 'sector', 'workCenter', 'employeeBadge', 'gender', 'id', 'integrationID', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy', 'deleted'
+      ]);
+
+      const validPassword = await this.validatePassword(password, user.password);
+      if (!validPassword) throw 'Usuário inválido'
 
       response.append('token', this.generateJwtToken(user));
       return user;
@@ -53,21 +59,29 @@ export class UserController extends CrudController<User> {
     const { userId } = <any>jwt.verify(<string>request.headers['token'], JWT.jwtSecret);
     const { password } = request.body;
 
-    try {
-      await this.validateUser(password, { id: userId });
+    if (this.validateUser(userId, password))
       return 'Válido'
-    } catch {
-      throw 'Senha inválida';
-    }
+    
+    throw 'Senha inválida';
   }
 
-  public async validateUser(password:string, customWhere:Object): Promise<User> {
+  async validateUser(userId: number, password: string) {
+    try {
+      const user = await this.getUser({ id: userId }, ['password']);
+      if (await this.validatePassword(password, user.password))
+        return true
+    } catch { }
+
+    return false;
+  }
+
+  public async getUser(customWhere:Object, select?: Array<keyof User>): Promise<User> {
     return this.getRepositoryEntity().findOneOrFail({
       where: {
         deleted: false,
-        password,
         ...(typeof customWhere === 'object' ? customWhere : {}),
-      }
+      },
+      select,
     });
   }
 
@@ -87,10 +101,50 @@ export class UserController extends CrudController<User> {
       .orderBy('notification.createdAt', 'ASC')
       .getMany();
   }
+  
+  /**
+    @param { Entity } entity entidade que está sendo salva
+    @param { boolean } isInserting se está inserindo recebe true, se estivar alterando recebe false
+  */
+  public async preSave(entity: any, isInserting: boolean) {
+    if (entity.password && !this.isCrypted(entity.password)) {
+      entity.password = await this.createPasswordHash(entity.password);
+    }
+
+    return {};
+  }
+
+  public async getIntegrationUser(username, password): Promise<User> {
+
+    const user: User = await this.getUser({
+      name: username,
+      role: UserRole.INTEGRATION,
+    }, ['password', 'id']);
+
+    if (!user) throw new Error(`Usuário inválido`)
+
+    const validPassword = await this.validatePassword(password, user.password);
+    if (!validPassword) throw new Error(`Usuário inválido`)
+
+    return user;
+  }
+
+  public async validatePassword(password, savedPassword): Promise<boolean> {
+    try {
+      return (await bcrypt.compare(password, savedPassword));
+    } catch (err) {
+      return false;
+    }
+  }
+
+  public async createPasswordHash(password) {
+    return bcrypt.hash(password, 10);
+  }
 
   public includes() {
-    return ['workCenter','sector']
+    return ['workCenter', 'sector']
   }
+
   public getCustomWheresList() {
     return {
       role: Not(UserRole.INTEGRATION)
@@ -99,5 +153,9 @@ export class UserController extends CrudController<User> {
 
   public validateGetbyDescription() {
     return false;
+  }
+
+  public isCrypted(password: string): boolean {
+    return (/\$2[a-zA-Z]{1}\$10\$/.test(password.substring(0,7)) && password.length === 60)
   }
 }

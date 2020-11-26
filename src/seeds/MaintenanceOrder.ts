@@ -226,8 +226,10 @@ export class MaintenanceOrder extends Seed {
     const executed = ((executeTime/planningTime) >= 0.85)  // Ter feito pelo menos 85% do trabalho
     const description: string = this.getRandomDescription()
     const defaultObservationId: number = this.getRandomNumber(1,3);
+    let isDisapproved = false;
 
     if (!executed) executeTime = 0;
+    else isDisapproved = this.getRandomBoolean();
 
     const defaultObservation = await this.getDefaultObservation(defaultObservationId)
 
@@ -239,6 +241,7 @@ export class MaintenanceOrder extends Seed {
     operation.operationNumber = operationNumber;
     operation.defaultObservation = defaultObservation;
     operation.description = description;
+    operation.isDisapproved = isDisapproved;
 
     operation.orderComponent = await this.loadOrderComponents();
 
