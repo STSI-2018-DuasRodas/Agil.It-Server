@@ -48,6 +48,13 @@ export class MaintenanceOrderCollection extends Collection {
     ))
     
     this.addRoute(new Route(
+      Method.GET,
+      `${this.getRouteWithId()}/worked-times`,
+      this.getController(),
+      'getOrderWorkedTimesRequest'
+    ))
+    
+    this.addRoute(new Route(
       [Method.PUT, Method.PATCH],
       `${this.getRouteWithId()}/status`,
       this.getController(),

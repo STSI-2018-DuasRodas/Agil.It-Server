@@ -312,6 +312,26 @@ export class MaintenanceOrderController {
     return this.updateOrderStatus(orderId, userId, orderStatus);
   }
 
+  
+  public async getOrderWorkedTimesRequest(request: Request, response: Response, next: NextFunction) {
+    // route: [GET] maintenance-orders/:id/worked-times
+    const orderId = Number(request.params.id);
+
+    return this.getOrderWorkedTimes(orderId);
+  }
+
+  public async getOrderWorkedTimes(maintenanceOrderId: number) {
+    
+    const queryBuilder = new MaintenanceWorkerController().getRepositoryEntity()
+      .createQueryBuilder('maintenanceWorker')
+      .leftJoinAndSelect('maintenanceWorker.workedTime', 'workedTime')
+      .where('maintenanceWorker.deleted = :deleted', { deleted: false })
+      .andWhere('workedTime.deleted = :deleted', { deleted: false })
+      .andWhere('maintenanceWorker.maintenanceOrder = :maintenanceOrderId', { maintenanceOrderId });
+
+    return queryBuilder.getMany();
+  }
+
   public async updateOrderStatus(orderId: number | string, userId: number | string, newStatus: OrderStatus) {
 
     if (!this.validateStatus(newStatus)) {
