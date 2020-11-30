@@ -325,11 +325,35 @@ export class MaintenanceOrderController {
     const queryBuilder = new MaintenanceWorkerController().getRepositoryEntity()
       .createQueryBuilder('maintenanceWorker')
       .leftJoinAndSelect('maintenanceWorker.workedTime', 'workedTime')
+      .leftJoinAndSelect('maintenanceWorker.user', 'user')
       .where('maintenanceWorker.deleted = :deleted', { deleted: false })
       .andWhere('workedTime.deleted = :deleted', { deleted: false })
       .andWhere('maintenanceWorker.maintenanceOrder = :maintenanceOrderId', { maintenanceOrderId });
 
-    return queryBuilder.getMany();
+    // return queryBuilder.getMany();
+    
+    const data = await queryBuilder.getMany();
+
+    return data.reduce((acc, maintenanceWorker) => {
+      if (!maintenanceWorker.workedTime || !maintenanceWorker.workedTime.length)
+        return acc;
+
+      const { id, name, email, role, gender } = maintenanceWorker.user;
+
+      acc.push({
+        user: {
+          id,
+          name,
+          email,
+          role,
+          gender,
+        },
+        maintenanceWorkerId: maintenanceWorker.id,
+        workedTime: maintenanceWorker.workedTime,
+      });
+
+      return acc;
+    }, []);
   }
 
   public async updateOrderStatus(orderId: number | string, userId: number | string, newStatus: OrderStatus) {
