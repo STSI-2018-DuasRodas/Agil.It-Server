@@ -12,6 +12,7 @@ export class DashboardsController {
       .getRepositoryEntity()
       .createQueryBuilder('maintenanceOrder')
       .leftJoinAndSelect('maintenanceOrder.orderSignature', 'orderSignature', 'orderSignature.deleted = :orderSignatureDeleted', { orderSignatureDeleted: false })
+      .leftJoinAndSelect('maintenanceOrder.orderLayout', 'orderLayout')
       .where('maintenanceOrder.deleted = :deleted', { deleted: false })
       .andWhere('maintenanceOrder.exported = :exported', { exported: false })
       .andWhere('maintenanceOrder.orderStatus in (:...statuses)', { statuses: [OrderStatus.SIGNATURED, OrderStatus.SIGNATURE_PENDING, OrderStatus.FINISHED] })
