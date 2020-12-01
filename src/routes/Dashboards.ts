@@ -11,7 +11,7 @@ export class DashboardsCollection extends Collection {
       Method.GET,
       `${this.getRoute()}/pending-orders`,
       this.getController(),
-      'getAdminDashboard'
+      'getPendingOrders'
     ))
   }
 }
