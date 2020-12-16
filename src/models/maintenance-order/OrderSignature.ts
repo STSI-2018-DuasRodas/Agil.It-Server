@@ -19,14 +19,14 @@ export class OrderSignature {
   public maintenanceOrder: MaintenanceOrder = undefined;
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: SignatureRole,
     nullable: false
   })
   public signatureRole: SignatureRole = undefined;
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: SignatureStatus,
     default: SignatureStatus.NEW
   })

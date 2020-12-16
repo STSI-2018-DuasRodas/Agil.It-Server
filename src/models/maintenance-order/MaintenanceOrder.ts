@@ -36,14 +36,14 @@ export abstract class MaintenanceOrder extends BaseClass {
   public orderLayout: OrderLayout | undefined = undefined;
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: OrderPriority,
     default: OrderPriority.LOW
   })
   public priority: OrderPriority = OrderPriority.LOW
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: OrderStatus,
     default: OrderStatus.CREATED
   })
@@ -55,7 +55,7 @@ export abstract class MaintenanceOrder extends BaseClass {
   @OneToMany(type => OrderSignature, orderSignature => orderSignature.maintenanceOrder, { cascade: false, nullable: true })
   public orderSignature: Array<OrderSignature>;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ default: false })
   public exported: boolean = false;
 
   @Column()

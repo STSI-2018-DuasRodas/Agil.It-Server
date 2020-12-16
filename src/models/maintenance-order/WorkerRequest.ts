@@ -19,14 +19,14 @@ export class WorkerRequest {
   public requestedBy: User = undefined;
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: WorkerRequestStatus,
     default: WorkerRequestStatus.REQUESTED
   })
   public status: WorkerRequestStatus = undefined;
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: RequestType
   })
   public type: RequestType = undefined;

@@ -7,7 +7,7 @@ import { IsNotEmpty } from "class-validator";
 export class OrderLayout extends BaseClass {
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: EnumOrderLayout,
     nullable: false
   })
