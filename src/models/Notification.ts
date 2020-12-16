@@ -24,7 +24,7 @@ export class Notification {
   artefactId: string = undefined;
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: NotificationStatus,
     default: NotificationStatus.NEW
   })

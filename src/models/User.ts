@@ -24,7 +24,7 @@ export class User extends BaseClass {
   public password: string = '';
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: UserRole
   })
   @IsNotEmpty()
@@ -62,7 +62,7 @@ export class User extends BaseClass {
   public employeeBadge: string = ''
 
   @Column({
-    type: "enum",
+    type: "simple-enum",
     enum: Gender
   })
   @IsNotEmpty()
