@@ -4,3 +4,5 @@ Neste package existem 2 arquivos, o `postman collection.json` é um arquivo para
 ### Publicar a coleção do postman
 Se o link mencionado acima estiver quebrado ou desatualizado, é possível publicar um novo atualizado.
 Para isso, basta importar a coleção `postman collection.json`, abrir a aba de coleções no postman e abrir a coleção agilit, clicar nos 3 pontinhos e clicar em publicar, após isso basta seguir os passos do formulário do Postman.
+
+![postman](https://user-images.githubusercontent.com/34343596/102556034-bd52c880-40a6-11eb-9d6d-57446435ae2b.gif)
